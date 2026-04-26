@@ -144,6 +144,23 @@ func writeHeaders(f *excelize.File, sheet string, headers []string) error {
 	return f.SetColWidth(sheet, "A", string('A'+rune(len(headers)-1)), 18)
 }
 
+// writeStaffTemplate is the shared shape for the 人员管理 子表 templates:
+// header row + one styled example row. Sheet name shows up as the tab
+// label in Excel, so it doubles as a hint about the template's purpose.
+func writeStaffTemplate(w io.Writer, sheet string, headers []string, example []any) error {
+	f := excelize.NewFile()
+	defer f.Close()
+	f.SetSheetName("Sheet1", sheet)
+	if err := writeHeaders(f, sheet, headers); err != nil {
+		return err
+	}
+	if err := writeExampleRow(f, sheet, example); err != nil {
+		return err
+	}
+	_, err := f.WriteTo(w)
+	return err
+}
+
 // writeExampleRow renders one example row at row 2 in italic grey text on a
 // soft background, so users immediately see it's filler and can replace or
 // delete it before re-uploading.
@@ -170,11 +187,11 @@ func deref(p *string) string {
 	return *p
 }
 
-func derefDate(p *time.Time) string {
+func derefDate(p *model.Date) string {
 	if p == nil {
 		return ""
 	}
-	return p.Format("2006-01-02")
+	return time.Time(*p).Format("2006-01-02")
 }
 
 func optStr(cells []string, i int) *string {
@@ -188,7 +205,7 @@ func optStr(cells []string, i int) *string {
 	return &v
 }
 
-func optDate(cells []string, i int) *time.Time {
+func optDate(cells []string, i int) *model.Date {
 	if i >= len(cells) {
 		return nil
 	}
@@ -199,7 +216,8 @@ func optDate(cells []string, i int) *time.Time {
 	formats := []string{"2006-01-02", "2006/1/2", "2006/01/02", time.RFC3339}
 	for _, f := range formats {
 		if t, err := time.Parse(f, v); err == nil {
-			return &t
+			d := model.Date(t)
+			return &d
 		}
 	}
 	// excelize may return numeric serials (e.g. "44197"); leave nil for now.

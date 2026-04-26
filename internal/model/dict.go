@@ -31,7 +31,26 @@ type SpaceWorkType struct{ SimpleDictType }
 
 func (SpaceWorkType) TableName() string { return "space_work_types" }
 
-type SafetyManagementType struct{ SimpleDictType }
+// SafetyManagementType is intentionally NOT embedded into SimpleDictType:
+// GORM's Preload over a relation with an embedded primary key sometimes
+// fails to flatten the FK reference (we hit this with
+// SafetyManagementStaff.SafetyManagementType showing up nil despite
+// `Preload("SafetyManagementType")`). A flat shape with the PK at the
+// top level lets the FK reference resolve cleanly.
+type SafetyManagementType struct {
+	ID    int64  `gorm:"primaryKey;column:id" json:"id"`
+	Title string `gorm:"column:title;size:255;not null" json:"title"`
+	// Sort / timestamps exist in the table but are intentionally
+	// dropped from the JSON output here — when this struct ships as a
+	// nested relation on SafetyManagementStaff, the detail drawer
+	// renders unknown sub-fields raw, and "sort: 0 / created_at: …"
+	// is just noise. Dropdown queries go through DictRow (separate
+	// flat shape) so they aren't affected.
+	Sort      int            `gorm:"column:sort;not null;default:0" json:"-"`
+	CreatedAt time.Time      `gorm:"column:created_at;autoCreateTime" json:"-"`
+	UpdatedAt time.Time      `gorm:"column:updated_at;autoUpdateTime" json:"-"`
+	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at;index" json:"-"`
+}
 
 func (SafetyManagementType) TableName() string { return "safety_management_types" }
 

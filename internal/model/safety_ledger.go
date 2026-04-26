@@ -1,7 +1,5 @@
 package model
 
-import "time"
-
 type SpecialEquipment struct {
 	ID               int64      `gorm:"primaryKey;column:id" json:"id"`
 	EquipmentName    *string    `gorm:"column:equipment_name" json:"equipment_name"`
@@ -12,8 +10,8 @@ type SpecialEquipment struct {
 	NormModel3       *string    `gorm:"column:norm_model3" json:"norm_model3"`
 	NormModel4       *string    `gorm:"column:norm_model4" json:"norm_model4"`
 	SerialNumber     *string    `gorm:"column:serial_number" json:"serial_number"`
-	UseTime          *time.Time `gorm:"column:use_time;type:date" json:"use_time"`
-	ValidPeriod      *time.Time `gorm:"column:valid_period;type:date" json:"valid_period"`
+	UseTime          *Date `gorm:"column:use_time;type:date" json:"use_time"`
+	ValidPeriod      *Date `gorm:"column:valid_period;type:date" json:"valid_period"`
 	InspectUnit      *string    `gorm:"column:inspect_unit" json:"inspect_unit"`
 	MaintainInfo     *string    `gorm:"column:maintain_info" json:"maintain_info"`
 	Comment          *string    `gorm:"column:comment" json:"comment"`
@@ -29,7 +27,7 @@ type SpecialEquipmentStaff struct {
 	Name        *string    `gorm:"column:name" json:"name"`
 	CertTitle   *string    `gorm:"column:cert_title" json:"cert_title"`
 	CertNumber  *string    `gorm:"column:cert_number" json:"cert_number"`
-	ValidPeriod *time.Time `gorm:"column:valid_period;type:date" json:"valid_period"`
+	ValidPeriod *Date `gorm:"column:valid_period;type:date" json:"valid_period"`
 	CompanyID   int64      `gorm:"column:company_id;not null" json:"company_id"`
 
 	Audit
@@ -43,7 +41,7 @@ type DangerousEquipment struct {
 	UtilizedLocation *string    `gorm:"column:utilized_location" json:"utilized_location"`
 	NormModel        *string    `gorm:"column:norm_model" json:"norm_model"`
 	SerialNumber     *string    `gorm:"column:serial_number" json:"serial_number"`
-	UseTime          *time.Time `gorm:"column:use_time;type:date" json:"use_time"`
+	UseTime          *Date `gorm:"column:use_time;type:date" json:"use_time"`
 	AutomationType   *string    `gorm:"column:automation_type" json:"automation_type"`
 	MaintainInfo     *string    `gorm:"column:maintain_info" json:"maintain_info"`
 	Comment          *string    `gorm:"column:comment" json:"comment"`

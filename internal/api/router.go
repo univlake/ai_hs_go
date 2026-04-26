@@ -13,6 +13,7 @@ import (
 	companyapi "ai_hs_go/internal/api/company"
 	companygroupapi "ai_hs_go/internal/api/companygroup"
 	permissionapi "ai_hs_go/internal/api/permission"
+	safetyarchapi "ai_hs_go/internal/api/safetyarchive"
 	platformapi "ai_hs_go/internal/api/platform"
 	roleapi "ai_hs_go/internal/api/role"
 	safetyapi "ai_hs_go/internal/api/safetyledger"
@@ -73,6 +74,18 @@ func (r *Router) Engine() *gin.Engine {
 	dictSvc := service.NewDictService(r.deps.DB)
 	checklistSvc := service.NewChecklistLibraryService(r.deps.DB)
 	regLibSvc := service.NewRegulationLibraryTypeService(r.deps.DB)
+	archSvc := service.NewSafetyArchitectureService(r.deps.DB)
+	filingSvc := service.NewFilingPermissionService(r.deps.DB)
+	buildingSvc := service.NewBuildingService(r.deps.DB)
+	investmentSvc := service.NewSecurityInvestmentService(r.deps.DB)
+	personnelSvc := service.NewPersonnelService(r.deps.DB)
+	certStatusSvc := service.NewCertificateStatusService(r.deps.DB)
+	productionStdSvc := service.NewProductionStandardizationService(r.deps.DB)
+	ohsSvc := service.NewOccupationalHealthSafetyService(r.deps.DB)
+	fundingExecSvc := service.NewFundingExecutionService(r.deps.DB)
+	safetyMgmtStaffSvc := service.NewSafetyManagementStaffService(r.deps.DB)
+	specialEquipStaffSvc := service.NewSpecialEquipmentStaffService(r.deps.DB)
+	elimCtrlStaffSvc := service.NewEliminationControlStaffService(r.deps.DB)
 
 	authH := authapi.NewHandler(authSvc, rbacSvc)
 	userH := userapi.NewHandler(userSvc, rbacSvc)
@@ -85,6 +98,21 @@ func (r *Router) Engine() *gin.Engine {
 	ledgerH := safetyapi.NewHandler(ledgerSvc)
 	uploadH := uploadapi.NewHandler(r.deps.OSS)
 	basedataH := basedataapi.NewHandler(dictSvc, checklistSvc, regLibSvc)
+	safetyArchH := safetyarchapi.NewHandler(safetyarchapi.HandlerDeps{
+		Architecture:         archSvc,
+		Filing:               filingSvc,
+		Building:             buildingSvc,
+		Investment:           investmentSvc,
+		Personnel:            personnelSvc,
+		CertStatus:           certStatusSvc,
+		ProductionStd:        productionStdSvc,
+		OHS:                  ohsSvc,
+		FundingExec:          fundingExecSvc,
+		SafetyMgmtStaff:      safetyMgmtStaffSvc,
+		SpecialEquipStaff:    specialEquipStaffSvc,
+		EliminationCtrlStaff: elimCtrlStaffSvc,
+		OSS:                  r.deps.OSS,
+	})
 
 	v1 := engine.Group("/api/v1")
 
@@ -197,6 +225,73 @@ func (r *Router) Engine() *gin.Engine {
 	business.DELETE("/company-groups/:id", middleware.RequirePermission(r.deps.Enforcer, "companies.update"), companyGroupH.Delete)
 	business.POST("/company-groups/:id/sync-kids", middleware.RequirePermission(r.deps.Enforcer, "companies.update"), companyGroupH.SyncKids)
 
+	// 安全档案 module — 5 sub-pages backed by 5 services in safetyarchive.Handler.
+	business.GET("/safety-architectures", middleware.RequirePermission(r.deps.Enforcer, "safety-architectures.list"), safetyArchH.ArchitectureGet)
+	business.POST("/safety-architectures", middleware.RequirePermission(r.deps.Enforcer, "safety-architectures.create"), safetyArchH.ArchitectureCreate)
+	business.PUT("/safety-architectures/:id", middleware.RequirePermission(r.deps.Enforcer, "safety-architectures.update"), safetyArchH.ArchitectureUpdate)
+
+	business.GET("/filing-permissions", middleware.RequirePermission(r.deps.Enforcer, "filing-permissions.list"), safetyArchH.FilingList)
+	business.POST("/filing-permissions", middleware.RequirePermission(r.deps.Enforcer, "filing-permissions.create"), safetyArchH.FilingCreate)
+	business.PUT("/filing-permissions/:id", middleware.RequirePermission(r.deps.Enforcer, "filing-permissions.update"), safetyArchH.FilingUpdate)
+	business.DELETE("/filing-permissions/:id", middleware.RequirePermission(r.deps.Enforcer, "filing-permissions.delete"), safetyArchH.FilingDelete)
+
+	business.GET("/buildings", middleware.RequirePermission(r.deps.Enforcer, "buildings.list"), safetyArchH.BuildingList)
+	business.POST("/buildings", middleware.RequirePermission(r.deps.Enforcer, "buildings.create"), safetyArchH.BuildingCreate)
+	business.PUT("/buildings/:id", middleware.RequirePermission(r.deps.Enforcer, "buildings.update"), safetyArchH.BuildingUpdate)
+	business.DELETE("/buildings/:id", middleware.RequirePermission(r.deps.Enforcer, "buildings.delete"), safetyArchH.BuildingDelete)
+
+	business.GET("/security-investments", middleware.RequirePermission(r.deps.Enforcer, "security-investments.list"), safetyArchH.InvestmentList)
+	business.POST("/security-investments", middleware.RequirePermission(r.deps.Enforcer, "security-investments.create"), safetyArchH.InvestmentCreate)
+	business.PUT("/security-investments/:id", middleware.RequirePermission(r.deps.Enforcer, "security-investments.update"), safetyArchH.InvestmentUpdate)
+	business.DELETE("/security-investments/:id", middleware.RequirePermission(r.deps.Enforcer, "security-investments.delete"), safetyArchH.InvestmentDelete)
+
+	business.GET("/personnels", middleware.RequirePermission(r.deps.Enforcer, "personnels.list"), safetyArchH.PersonnelList)
+	business.GET("/personnels/:id", middleware.RequirePermission(r.deps.Enforcer, "personnels.list"), safetyArchH.PersonnelGet)
+	business.POST("/personnels", middleware.RequirePermission(r.deps.Enforcer, "personnels.create"), safetyArchH.PersonnelCreate)
+	business.PUT("/personnels/:id", middleware.RequirePermission(r.deps.Enforcer, "personnels.update"), safetyArchH.PersonnelUpdate)
+
+	// Personnels page sub-tabs (持证情况)
+	business.GET("/certificate-statuses", middleware.RequirePermission(r.deps.Enforcer, "certificate-statuses.list"), safetyArchH.CertStatusList)
+	business.POST("/certificate-statuses", middleware.RequirePermission(r.deps.Enforcer, "certificate-statuses.create"), safetyArchH.CertStatusCreate)
+	business.PUT("/certificate-statuses/:id", middleware.RequirePermission(r.deps.Enforcer, "certificate-statuses.update"), safetyArchH.CertStatusUpdate)
+
+	// 安全人员管理 — 3 staff registries
+	business.GET("/safety-management", middleware.RequirePermission(r.deps.Enforcer, "safety-management.list"), safetyArchH.SafetyMgmtStaffList)
+	business.GET("/safety-management/template", middleware.RequirePermission(r.deps.Enforcer, "safety-management.list"), safetyArchH.SafetyMgmtStaffTemplate)
+	business.POST("/safety-management/import", middleware.RequirePermission(r.deps.Enforcer, "safety-management.create"), safetyArchH.SafetyMgmtStaffImport)
+	business.POST("/safety-management", middleware.RequirePermission(r.deps.Enforcer, "safety-management.create"), safetyArchH.SafetyMgmtStaffCreate)
+	business.PUT("/safety-management/:id", middleware.RequirePermission(r.deps.Enforcer, "safety-management.update"), safetyArchH.SafetyMgmtStaffUpdate)
+	business.DELETE("/safety-management/:id", middleware.RequirePermission(r.deps.Enforcer, "safety-management.delete"), safetyArchH.SafetyMgmtStaffDelete)
+
+	business.GET("/special-equipment-staff", middleware.RequirePermission(r.deps.Enforcer, "special-equipment-staff.list"), safetyArchH.SpecialEquipStaffList)
+	business.GET("/special-equipment-staff/template", middleware.RequirePermission(r.deps.Enforcer, "special-equipment-staff.list"), safetyArchH.SpecialEquipStaffTemplate)
+	business.POST("/special-equipment-staff/import", middleware.RequirePermission(r.deps.Enforcer, "special-equipment-staff.create"), safetyArchH.SpecialEquipStaffImport)
+	business.POST("/special-equipment-staff", middleware.RequirePermission(r.deps.Enforcer, "special-equipment-staff.create"), safetyArchH.SpecialEquipStaffCreate)
+	business.PUT("/special-equipment-staff/:id", middleware.RequirePermission(r.deps.Enforcer, "special-equipment-staff.update"), safetyArchH.SpecialEquipStaffUpdate)
+	business.DELETE("/special-equipment-staff/:id", middleware.RequirePermission(r.deps.Enforcer, "special-equipment-staff.delete"), safetyArchH.SpecialEquipStaffDelete)
+
+	business.GET("/elimination-control-staff", middleware.RequirePermission(r.deps.Enforcer, "elimination-control-staff.list"), safetyArchH.ElimCtrlStaffList)
+	business.GET("/elimination-control-staff/template", middleware.RequirePermission(r.deps.Enforcer, "elimination-control-staff.list"), safetyArchH.ElimCtrlStaffTemplate)
+	business.POST("/elimination-control-staff/import", middleware.RequirePermission(r.deps.Enforcer, "elimination-control-staff.create"), safetyArchH.ElimCtrlStaffImport)
+	business.POST("/elimination-control-staff", middleware.RequirePermission(r.deps.Enforcer, "elimination-control-staff.create"), safetyArchH.ElimCtrlStaffCreate)
+	business.PUT("/elimination-control-staff/:id", middleware.RequirePermission(r.deps.Enforcer, "elimination-control-staff.update"), safetyArchH.ElimCtrlStaffUpdate)
+	business.DELETE("/elimination-control-staff/:id", middleware.RequirePermission(r.deps.Enforcer, "elimination-control-staff.delete"), safetyArchH.ElimCtrlStaffDelete)
+
+	// Qualifications page sub-tabs (per-company singletons)
+	business.GET("/production-standardizations", middleware.RequirePermission(r.deps.Enforcer, "production-standardizations.list"), safetyArchH.ProductionStdGet)
+	business.POST("/production-standardizations", middleware.RequirePermission(r.deps.Enforcer, "production-standardizations.create"), safetyArchH.ProductionStdCreate)
+	business.PUT("/production-standardizations/:id", middleware.RequirePermission(r.deps.Enforcer, "production-standardizations.update"), safetyArchH.ProductionStdUpdate)
+
+	business.GET("/occupational-health-safeties", middleware.RequirePermission(r.deps.Enforcer, "occupational-health-safeties.list"), safetyArchH.OHSGet)
+	business.POST("/occupational-health-safeties", middleware.RequirePermission(r.deps.Enforcer, "occupational-health-safeties.create"), safetyArchH.OHSCreate)
+	business.PUT("/occupational-health-safeties/:id", middleware.RequirePermission(r.deps.Enforcer, "occupational-health-safeties.update"), safetyArchH.OHSUpdate)
+
+	// 安全投入 — 经费执行情况
+	business.GET("/funding-executions", middleware.RequirePermission(r.deps.Enforcer, "funding-executions.list"), safetyArchH.FundingExecList)
+	business.POST("/funding-executions", middleware.RequirePermission(r.deps.Enforcer, "funding-executions.create"), safetyArchH.FundingExecCreate)
+	business.PUT("/funding-executions/:id", middleware.RequirePermission(r.deps.Enforcer, "funding-executions.update"), safetyArchH.FundingExecUpdate)
+	business.DELETE("/funding-executions/:id", middleware.RequirePermission(r.deps.Enforcer, "funding-executions.delete"), safetyArchH.FundingExecDelete)
+
 	// Tenants (platform-admin)
 	tenants := business.Group("/tenants", middleware.RequirePlatformAdmin())
 	tenants.GET("", tenantH.List)
@@ -242,6 +337,13 @@ func (r *Router) Engine() *gin.Engine {
 	upload.POST("/complete", uploadH.Complete)
 	upload.POST("/abort", uploadH.Abort)
 	upload.GET("/signed", uploadH.SignedURL)
+
+	// Upload (OSS browser-direct POST policy) — used by OssUploadField.
+	// Different prefix (/upload, no -oss) to match the Laravel routes the
+	// frontend already calls.
+	uploadPolicy := business.Group("/upload", middleware.RequirePermission(r.deps.Enforcer, "upload.oss"))
+	uploadPolicy.GET("/oss-signature", uploadH.PostPolicy)
+	uploadPolicy.GET("/oss-sign", uploadH.SignByURL)
 
 	// Dashboard placeholders for not-yet-ported modules. Empty success
 	// payloads keep the SPA rendering until the real modules port (plan §10).

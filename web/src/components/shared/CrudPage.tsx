@@ -1201,6 +1201,7 @@ export function CrudPage({ config }: { config: CrudPageConfig }) {
             {/* Delete confirm modal */}
             <Modal
                 open={!!deleteId}
+                size="sm"
                 onClose={() => {
                     setDeleteId(null);
                     setDeleteLabel('');
@@ -1569,14 +1570,19 @@ function Modal({
     open,
     onClose,
     children,
+    size = 'lg',
 }: {
     open: boolean;
     onClose: () => void;
     children: React.ReactNode;
+    /** Width preset. `sm` (~26rem) for confirm dialogs; `lg` (~42rem)
+     *  default for create/edit forms. */
+    size?: 'sm' | 'lg';
 }) {
     if (!open) {
         return null;
     }
+    const widthCls = size === 'sm' ? 'max-w-sm' : 'max-w-2xl';
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -1586,7 +1592,9 @@ function Modal({
                 onClick={onClose}
             />
             {/* Panel */}
-            <div className="relative flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-blue-900/50 bg-[#0d1530] shadow-2xl shadow-black/60">
+            <div
+                className={`relative flex max-h-[92vh] w-full ${widthCls} flex-col overflow-hidden rounded-2xl border border-blue-900/50 bg-[#0d1530] shadow-2xl shadow-black/60`}
+            >
                 {children}
             </div>
         </div>

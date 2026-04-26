@@ -49,7 +49,7 @@ type Company struct {
 	OperationalTypeID   int64    `gorm:"column:operational_type_id;not null;default:1" json:"operational_type_id"`
 	AreaID              *int64   `gorm:"column:area_id" json:"area_id"`
 	Address             *string  `gorm:"column:address" json:"address"`
-	Established         *time.Time `gorm:"column:established;type:date" json:"established"`
+	Established         *Date `gorm:"column:established;type:date" json:"established"`
 	CreditCode          *string  `gorm:"column:credit_code" json:"credit_code"`
 	BusinessScope       *string  `gorm:"column:business_scope" json:"business_scope"`
 	CompanyIntroduction *string  `gorm:"column:company_introduction" json:"company_introduction"`
