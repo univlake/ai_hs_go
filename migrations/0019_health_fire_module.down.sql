@@ -1,0 +1,9 @@
+DROP TABLE IF EXISTS fire_facilities;
+DROP TABLE IF EXISTS fire_equipment;
+DROP TABLE IF EXISTS fire_safeties;
+DROP TABLE IF EXISTS hygiene_evaluations;
+DROP TABLE IF EXISTS health_checkups;
+DROP TABLE IF EXISTS health_reports;
+DROP TABLE IF EXISTS health_files;
+DROP TABLE IF EXISTS health_systems;
+DROP TABLE IF EXISTS occupational_hazards;

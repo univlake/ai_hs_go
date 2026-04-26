@@ -85,6 +85,46 @@ func (s *SafetyLedgerService) GetSpecialEquipment(ctx context.Context, id int64)
 	return &m, nil
 }
 
+// CopySpecialEquipment 批量复制选中行（去掉 id / 时间戳，保留业务字段 + company_id）。
+func (s *SafetyLedgerService) CopySpecialEquipment(ctx context.Context, ids []int64, uid int64) ([]int64, error) {
+	if len(ids) == 0 {
+		return nil, errs.New(errs.CodeUnprocessable, "缺少 ids")
+	}
+	var originals []model.SpecialEquipment
+	if err := s.db.WithContext(ctx).Where("id IN ?", ids).Find(&originals).Error; err != nil {
+		return nil, err
+	}
+	if len(originals) == 0 {
+		return nil, errs.New(errs.CodeNotFound, "未找到指定记录")
+	}
+	newIDs := make([]int64, 0, len(originals))
+	for _, o := range originals {
+		clone := model.SpecialEquipment{
+			EquipmentName:    o.EquipmentName,
+			SpecialTypeID:    o.SpecialTypeID,
+			UtilizedLocation: o.UtilizedLocation,
+			NormModel1:       o.NormModel1,
+			NormModel2:       o.NormModel2,
+			NormModel3:       o.NormModel3,
+			NormModel4:       o.NormModel4,
+			SerialNumber:     o.SerialNumber,
+			UseTime:          o.UseTime,
+			ValidPeriod:      o.ValidPeriod,
+			InspectUnit:      o.InspectUnit,
+			MaintainInfo:     o.MaintainInfo,
+			Comment:          o.Comment,
+			CompanyID:        o.CompanyID,
+		}
+		clone.UserID = uid
+		clone.LastUserID = uid
+		if err := s.db.WithContext(ctx).Create(&clone).Error; err != nil {
+			return nil, wrapWrite(err)
+		}
+		newIDs = append(newIDs, clone.ID)
+	}
+	return newIDs, nil
+}
+
 // ----- DangerousEquipment -----
 
 func (s *SafetyLedgerService) ListDangerousEquipment(ctx context.Context, p ListParams) ([]model.DangerousEquipment, int64, error) {
@@ -133,6 +173,41 @@ func (s *SafetyLedgerService) GetDangerousEquipment(ctx context.Context, id int6
 		return nil, mapNotFound(err)
 	}
 	return &m, nil
+}
+
+// CopyDangerousEquipment 批量复制选中行。
+func (s *SafetyLedgerService) CopyDangerousEquipment(ctx context.Context, ids []int64, uid int64) ([]int64, error) {
+	if len(ids) == 0 {
+		return nil, errs.New(errs.CodeUnprocessable, "缺少 ids")
+	}
+	var originals []model.DangerousEquipment
+	if err := s.db.WithContext(ctx).Where("id IN ?", ids).Find(&originals).Error; err != nil {
+		return nil, err
+	}
+	if len(originals) == 0 {
+		return nil, errs.New(errs.CodeNotFound, "未找到指定记录")
+	}
+	newIDs := make([]int64, 0, len(originals))
+	for _, o := range originals {
+		clone := model.DangerousEquipment{
+			EquipmentName:    o.EquipmentName,
+			UtilizedLocation: o.UtilizedLocation,
+			NormModel:        o.NormModel,
+			SerialNumber:     o.SerialNumber,
+			UseTime:          o.UseTime,
+			AutomationType:   o.AutomationType,
+			MaintainInfo:     o.MaintainInfo,
+			Comment:          o.Comment,
+			CompanyID:        o.CompanyID,
+		}
+		clone.UserID = uid
+		clone.LastUserID = uid
+		if err := s.db.WithContext(ctx).Create(&clone).Error; err != nil {
+			return nil, wrapWrite(err)
+		}
+		newIDs = append(newIDs, clone.ID)
+	}
+	return newIDs, nil
 }
 
 // ----- HazardousChemical -----

@@ -158,6 +158,21 @@ func (h *Handler) ExportDangerousEquipment(c *gin.Context) {
 	}
 }
 
+// CopyDangerousEquipment: POST /api/v1/dangerous-equipment/copy
+func (h *Handler) CopyDangerousEquipment(c *gin.Context) {
+	var req copyReq
+	if err := c.ShouldBindJSON(&req); err != nil || len(req.IDs) == 0 {
+		response.BadRequest(c, "缺少 ids")
+		return
+	}
+	ids, err := h.svc.CopyDangerousEquipment(c.Request.Context(), req.IDs, middleware.CurrentUserID(c))
+	if err != nil {
+		writeAppError(c, err)
+		return
+	}
+	response.Success(c, gin.H{"ids": ids, "count": len(ids)})
+}
+
 // ImportDangerousEquipment: POST /api/v1/dangerous-equipment/import
 func (h *Handler) ImportDangerousEquipment(c *gin.Context) {
 	companyID := scopeCompanyOrFail(c)

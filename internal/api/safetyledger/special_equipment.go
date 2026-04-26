@@ -154,6 +154,26 @@ func (h *Handler) TemplateSpecialEquipment(c *gin.Context) {
 	}
 }
 
+// CopySpecialEquipment: POST /api/v1/special-equipment/copy
+func (h *Handler) CopySpecialEquipment(c *gin.Context) {
+	var req copyReq
+	if err := c.ShouldBindJSON(&req); err != nil || len(req.IDs) == 0 {
+		response.BadRequest(c, "缺少 ids")
+		return
+	}
+	ids, err := h.svc.CopySpecialEquipment(c.Request.Context(), req.IDs, middleware.CurrentUserID(c))
+	if err != nil {
+		writeAppError(c, err)
+		return
+	}
+	response.Success(c, gin.H{"ids": ids, "count": len(ids)})
+}
+
+// copyReq — 与 fire-equipment / fire-facilities 复制接口共用的请求体形状。
+type copyReq struct {
+	IDs []int64 `json:"ids"`
+}
+
 // ImportSpecialEquipment: POST /api/v1/special-equipment/import (multipart form, field: file)
 func (h *Handler) ImportSpecialEquipment(c *gin.Context) {
 	companyID := scopeCompanyOrFail(c)

@@ -12,6 +12,7 @@ import (
 	basedataapi "ai_hs_go/internal/api/basedata"
 	companyapi "ai_hs_go/internal/api/company"
 	companygroupapi "ai_hs_go/internal/api/companygroup"
+	healthfireapi "ai_hs_go/internal/api/healthfire"
 	majorhazardapi "ai_hs_go/internal/api/majorhazard"
 	meetingtrainingapi "ai_hs_go/internal/api/meetingtraining"
 	permissionapi "ai_hs_go/internal/api/permission"
@@ -108,6 +109,8 @@ func (r *Router) Engine() *gin.Engine {
 	thirdPartyH := thirdpartyapi.NewHandler(thirdPartySvc)
 	meetingTrainingSvc := service.NewMeetingTrainingService(r.deps.DB)
 	meetingTrainingH := meetingtrainingapi.NewHandler(meetingTrainingSvc)
+	healthFireSvc := service.NewHealthFireService(r.deps.DB)
+	healthFireH := healthfireapi.NewHandler(healthFireSvc)
 	uploadH := uploadapi.NewHandler(r.deps.OSS)
 	basedataH := basedataapi.NewHandler(dictSvc, checklistSvc, regLibSvc)
 	safetyArchH := safetyarchapi.NewHandler(safetyarchapi.HandlerDeps{
@@ -329,6 +332,7 @@ func (r *Router) Engine() *gin.Engine {
 	business.GET("/special-equipment/template", middleware.RequirePermission(r.deps.Enforcer, "special-equipment.list"), ledgerH.TemplateSpecialEquipment)
 	business.GET("/special-equipment/export", middleware.RequirePermission(r.deps.Enforcer, "special-equipment.list"), ledgerH.ExportSpecialEquipment)
 	business.POST("/special-equipment/import", middleware.RequirePermission(r.deps.Enforcer, "special-equipment.create"), ledgerH.ImportSpecialEquipment)
+	business.POST("/special-equipment/copy", middleware.RequirePermission(r.deps.Enforcer, "special-equipment.create"), ledgerH.CopySpecialEquipment)
 
 	business.GET("/dangerous-equipment", middleware.RequirePermission(r.deps.Enforcer, "dangerous-equipment.list"), ledgerH.ListDangerousEquipment)
 	business.POST("/dangerous-equipment", middleware.RequirePermission(r.deps.Enforcer, "dangerous-equipment.create"), ledgerH.CreateDangerousEquipment)
@@ -337,6 +341,7 @@ func (r *Router) Engine() *gin.Engine {
 	business.GET("/dangerous-equipment/template", middleware.RequirePermission(r.deps.Enforcer, "dangerous-equipment.list"), ledgerH.TemplateDangerousEquipment)
 	business.GET("/dangerous-equipment/export", middleware.RequirePermission(r.deps.Enforcer, "dangerous-equipment.list"), ledgerH.ExportDangerousEquipment)
 	business.POST("/dangerous-equipment/import", middleware.RequirePermission(r.deps.Enforcer, "dangerous-equipment.create"), ledgerH.ImportDangerousEquipment)
+	business.POST("/dangerous-equipment/copy", middleware.RequirePermission(r.deps.Enforcer, "dangerous-equipment.create"), ledgerH.CopyDangerousEquipment)
 
 	business.GET("/hazardous-chemicals", middleware.RequirePermission(r.deps.Enforcer, "hazardous-chemicals.list"), ledgerH.ListHazardousChemicals)
 	business.POST("/hazardous-chemicals", middleware.RequirePermission(r.deps.Enforcer, "hazardous-chemicals.create"), ledgerH.CreateHazardousChemical)
@@ -377,6 +382,7 @@ func (r *Router) Engine() *gin.Engine {
 	business.DELETE("/evaluation-units/:id", middleware.RequirePermission(r.deps.Enforcer, "evaluation-units.delete"), thirdPartyH.DeleteEvaluationUnit)
 
 	business.GET("/skill-units", middleware.RequirePermission(r.deps.Enforcer, "skill-units.list"), thirdPartyH.ListSkillUnit)
+	business.GET("/skill-units/:id", middleware.RequirePermission(r.deps.Enforcer, "skill-units.list"), thirdPartyH.GetSkillUnit)
 	business.POST("/skill-units", middleware.RequirePermission(r.deps.Enforcer, "skill-units.create"), thirdPartyH.CreateSkillUnit)
 	business.PUT("/skill-units/:id", middleware.RequirePermission(r.deps.Enforcer, "skill-units.update"), thirdPartyH.UpdateSkillUnit)
 	business.DELETE("/skill-units/:id", middleware.RequirePermission(r.deps.Enforcer, "skill-units.delete"), thirdPartyH.DeleteSkillUnit)
@@ -405,6 +411,68 @@ func (r *Router) Engine() *gin.Engine {
 	business.POST("/other-trainings", middleware.RequirePermission(r.deps.Enforcer, "other-trainings.create"), meetingTrainingH.CreateOtherTraining)
 	business.PUT("/other-trainings/:id", middleware.RequirePermission(r.deps.Enforcer, "other-trainings.update"), meetingTrainingH.UpdateOtherTraining)
 	business.DELETE("/other-trainings/:id", middleware.RequirePermission(r.deps.Enforcer, "other-trainings.delete"), meetingTrainingH.DeleteOtherTraining)
+
+	// 职业健康 + 消防安全 — 5 + 1（小模块）+ 3 模块共用 HealthFireService。
+	// 静态后缀 (/template /export /import /copy) 必须先于 /:id 注册，避免命中通配。
+	business.GET("/occupational-hazards", middleware.RequirePermission(r.deps.Enforcer, "occupational-hazards.list"), healthFireH.ListOccupationalHazard)
+	business.GET("/occupational-hazards-template", middleware.RequirePermission(r.deps.Enforcer, "occupational-hazards.list"), healthFireH.TemplateOccupationalHazard)
+	business.GET("/occupational-hazards-export", middleware.RequirePermission(r.deps.Enforcer, "occupational-hazards.list"), healthFireH.ExportOccupationalHazard)
+	business.POST("/occupational-hazards-import", middleware.RequirePermission(r.deps.Enforcer, "occupational-hazards.create"), healthFireH.ImportOccupationalHazard)
+	business.GET("/occupational-hazards/:id", middleware.RequirePermission(r.deps.Enforcer, "occupational-hazards.list"), healthFireH.GetOccupationalHazard)
+	business.POST("/occupational-hazards", middleware.RequirePermission(r.deps.Enforcer, "occupational-hazards.create"), healthFireH.CreateOccupationalHazard)
+	business.PUT("/occupational-hazards/:id", middleware.RequirePermission(r.deps.Enforcer, "occupational-hazards.update"), healthFireH.UpdateOccupationalHazard)
+	business.DELETE("/occupational-hazards/:id", middleware.RequirePermission(r.deps.Enforcer, "occupational-hazards.delete"), healthFireH.DeleteOccupationalHazard)
+
+	business.GET("/health-systems", middleware.RequirePermission(r.deps.Enforcer, "health-systems.list"), healthFireH.GetHealthSystem)
+	business.POST("/health-systems", middleware.RequirePermission(r.deps.Enforcer, "health-systems.create"), healthFireH.CreateHealthSystem)
+	business.PUT("/health-systems/:id", middleware.RequirePermission(r.deps.Enforcer, "health-systems.update"), healthFireH.UpdateHealthSystem)
+
+	business.GET("/health-files", middleware.RequirePermission(r.deps.Enforcer, "health-files.list"), healthFireH.ListHealthFile)
+	business.GET("/health-files-template", middleware.RequirePermission(r.deps.Enforcer, "health-files.list"), healthFireH.TemplateHealthFile)
+	business.GET("/health-files-export", middleware.RequirePermission(r.deps.Enforcer, "health-files.list"), healthFireH.ExportHealthFile)
+	business.POST("/health-files-import", middleware.RequirePermission(r.deps.Enforcer, "health-files.create"), healthFireH.ImportHealthFile)
+	business.GET("/health-files/:id", middleware.RequirePermission(r.deps.Enforcer, "health-files.list"), healthFireH.GetHealthFile)
+	business.POST("/health-files", middleware.RequirePermission(r.deps.Enforcer, "health-files.create"), healthFireH.CreateHealthFile)
+	business.PUT("/health-files/:id", middleware.RequirePermission(r.deps.Enforcer, "health-files.update"), healthFireH.UpdateHealthFile)
+	business.DELETE("/health-files/:id", middleware.RequirePermission(r.deps.Enforcer, "health-files.delete"), healthFireH.DeleteHealthFile)
+
+	business.GET("/health-reports", middleware.RequirePermission(r.deps.Enforcer, "health-reports.list"), healthFireH.ListHealthReport)
+	business.GET("/health-reports/:id", middleware.RequirePermission(r.deps.Enforcer, "health-reports.list"), healthFireH.GetHealthReport)
+	business.POST("/health-reports", middleware.RequirePermission(r.deps.Enforcer, "health-reports.create"), healthFireH.CreateHealthReport)
+	business.PUT("/health-reports/:id", middleware.RequirePermission(r.deps.Enforcer, "health-reports.update"), healthFireH.UpdateHealthReport)
+	business.DELETE("/health-reports/:id", middleware.RequirePermission(r.deps.Enforcer, "health-reports.delete"), healthFireH.DeleteHealthReport)
+
+	business.GET("/health-checkups", middleware.RequirePermission(r.deps.Enforcer, "health-checkups.list"), healthFireH.ListHealthCheckup)
+	business.GET("/health-checkups/:id", middleware.RequirePermission(r.deps.Enforcer, "health-checkups.list"), healthFireH.GetHealthCheckup)
+	business.POST("/health-checkups", middleware.RequirePermission(r.deps.Enforcer, "health-checkups.create"), healthFireH.CreateHealthCheckup)
+	business.PUT("/health-checkups/:id", middleware.RequirePermission(r.deps.Enforcer, "health-checkups.update"), healthFireH.UpdateHealthCheckup)
+	business.DELETE("/health-checkups/:id", middleware.RequirePermission(r.deps.Enforcer, "health-checkups.delete"), healthFireH.DeleteHealthCheckup)
+
+	business.GET("/hygiene-evaluations", middleware.RequirePermission(r.deps.Enforcer, "hygiene-evaluations.list"), healthFireH.ListHygieneEvaluation)
+	business.GET("/hygiene-evaluations/:id", middleware.RequirePermission(r.deps.Enforcer, "hygiene-evaluations.list"), healthFireH.GetHygieneEvaluation)
+	business.POST("/hygiene-evaluations", middleware.RequirePermission(r.deps.Enforcer, "hygiene-evaluations.create"), healthFireH.CreateHygieneEvaluation)
+	business.PUT("/hygiene-evaluations/:id", middleware.RequirePermission(r.deps.Enforcer, "hygiene-evaluations.update"), healthFireH.UpdateHygieneEvaluation)
+	business.DELETE("/hygiene-evaluations/:id", middleware.RequirePermission(r.deps.Enforcer, "hygiene-evaluations.delete"), healthFireH.DeleteHygieneEvaluation)
+
+	business.GET("/fire-safeties", middleware.RequirePermission(r.deps.Enforcer, "fire-safeties.list"), healthFireH.ListFireSafety)
+	business.GET("/fire-safeties/:id", middleware.RequirePermission(r.deps.Enforcer, "fire-safeties.list"), healthFireH.GetFireSafety)
+	business.POST("/fire-safeties", middleware.RequirePermission(r.deps.Enforcer, "fire-safeties.create"), healthFireH.CreateFireSafety)
+	business.PUT("/fire-safeties/:id", middleware.RequirePermission(r.deps.Enforcer, "fire-safeties.update"), healthFireH.UpdateFireSafety)
+	business.DELETE("/fire-safeties/:id", middleware.RequirePermission(r.deps.Enforcer, "fire-safeties.delete"), healthFireH.DeleteFireSafety)
+
+	business.GET("/fire-equipment", middleware.RequirePermission(r.deps.Enforcer, "fire-equipment.list"), healthFireH.ListFireEquipment)
+	business.POST("/fire-equipment/copy", middleware.RequirePermission(r.deps.Enforcer, "fire-equipment.create"), healthFireH.CopyFireEquipment)
+	business.GET("/fire-equipment/:id", middleware.RequirePermission(r.deps.Enforcer, "fire-equipment.list"), healthFireH.GetFireEquipment)
+	business.POST("/fire-equipment", middleware.RequirePermission(r.deps.Enforcer, "fire-equipment.create"), healthFireH.CreateFireEquipment)
+	business.PUT("/fire-equipment/:id", middleware.RequirePermission(r.deps.Enforcer, "fire-equipment.update"), healthFireH.UpdateFireEquipment)
+	business.DELETE("/fire-equipment/:id", middleware.RequirePermission(r.deps.Enforcer, "fire-equipment.delete"), healthFireH.DeleteFireEquipment)
+
+	business.GET("/fire-facilities", middleware.RequirePermission(r.deps.Enforcer, "fire-facilities.list"), healthFireH.ListFireFacility)
+	business.POST("/fire-facilities/copy", middleware.RequirePermission(r.deps.Enforcer, "fire-facilities.create"), healthFireH.CopyFireFacility)
+	business.GET("/fire-facilities/:id", middleware.RequirePermission(r.deps.Enforcer, "fire-facilities.list"), healthFireH.GetFireFacility)
+	business.POST("/fire-facilities", middleware.RequirePermission(r.deps.Enforcer, "fire-facilities.create"), healthFireH.CreateFireFacility)
+	business.PUT("/fire-facilities/:id", middleware.RequirePermission(r.deps.Enforcer, "fire-facilities.update"), healthFireH.UpdateFireFacility)
+	business.DELETE("/fire-facilities/:id", middleware.RequirePermission(r.deps.Enforcer, "fire-facilities.delete"), healthFireH.DeleteFireFacility)
 
 	// Upload (OSS multipart)
 	upload := business.Group("/upload-oss", middleware.RequirePermission(r.deps.Enforcer, "upload.oss"))

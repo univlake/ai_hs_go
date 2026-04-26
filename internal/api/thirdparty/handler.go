@@ -255,6 +255,22 @@ type skillUnitReq struct {
 	Kids            []skillUnitKidReq `json:"kids"`
 }
 
+// GetSkillUnit — 详情接口，前端 hygiene-evaluations / fire-safeties 用 /skill-units/{id}
+// 拉子表 kids 来填充资质证书下拉。
+func (h *Handler) GetSkillUnit(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "无效 id")
+		return
+	}
+	row, err := h.svc.GetSkillUnit(c.Request.Context(), id)
+	if err != nil {
+		writeAppError(c, err)
+		return
+	}
+	response.Success(c, row)
+}
+
 func (h *Handler) ListSkillUnit(c *gin.Context) {
 	companyID := scopeCompanyOrFail(c)
 	if companyID == 0 {
