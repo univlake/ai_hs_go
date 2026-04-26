@@ -86,6 +86,11 @@ const ProcessHazardous = lazyPage('process/hazardous/Index');
 // /space-work/space-works 作为 href（permission space-works.list），这里挂载
 // 同一组件而不动 Sidebar，避免误碰其他不在本次范围的链接。
 const ProcessConfinedSpace = lazyPage('process/confined-space/Index');
+const ThirdPartyDesignUnits = lazyPage('third-party/design-units/Index');
+const ThirdPartyConstructionUnits = lazyPage('third-party/construction-units/Index');
+const ThirdPartyTechnicalServices = lazyPage('third-party/technical-services/Index');
+const MeetingInternalMeetings = lazyPage('meeting/internal-meetings/Index');
+const TrainingEducation = lazyPage('training/education/Index');
 const Placeholder = lazyPage('_placeholder');
 
 export const router = createBrowserRouter([
@@ -162,6 +167,11 @@ export const router = createBrowserRouter([
           { path: '/process/key-hazardous', element: <LoadingShell><ProcessKeyHazardous /></LoadingShell> },
           { path: '/process/hazardous', element: <LoadingShell><ProcessHazardous /></LoadingShell> },
           { path: '/space-work/space-works', element: <LoadingShell><ProcessConfinedSpace /></LoadingShell> },
+          { path: '/third-party/design-units', element: <LoadingShell><ThirdPartyDesignUnits /></LoadingShell> },
+          { path: '/third-party/construction-units', element: <LoadingShell><ThirdPartyConstructionUnits /></LoadingShell> },
+          { path: '/third-party/technical-services', element: <LoadingShell><ThirdPartyTechnicalServices /></LoadingShell> },
+          { path: '/meeting/internal-meetings', element: <LoadingShell><MeetingInternalMeetings /></LoadingShell> },
+          { path: '/training/education', element: <LoadingShell><TrainingEducation /></LoadingShell> },
           // Sidebar 旧 href 兼容（之前指向 /equipment/major-hazardous）
           { path: '/equipment/major-hazardous', element: <LoadingShell><SafetyDangerousEquipment /></LoadingShell> },
           // Catch-all inside AppLayout: shows a friendly "尚未迁移" page

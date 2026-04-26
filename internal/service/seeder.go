@@ -58,6 +58,17 @@ var CorePermissions = []string{
 	"hazardous-processes.list", "hazardous-processes.create", "hazardous-processes.update", "hazardous-processes.delete",
 	"space-works.list", "space-works.create", "space-works.update", "space-works.delete",
 
+	// 第三方管理（设计单位 / 评价单位 / 技术服务单位）
+	"design-units.list", "design-units.create", "design-units.update", "design-units.delete",
+	"evaluation-units.list", "evaluation-units.create", "evaluation-units.update", "evaluation-units.delete",
+	"skill-units.list", "skill-units.create", "skill-units.update", "skill-units.delete",
+
+	// 会议培训（内部会议 / 内部、外部、相关方培训）
+	"internal-meetings.list", "internal-meetings.create", "internal-meetings.update", "internal-meetings.delete",
+	"internal-trainings.list", "internal-trainings.create", "internal-trainings.update", "internal-trainings.delete",
+	"external-trainings.list", "external-trainings.create", "external-trainings.update", "external-trainings.delete",
+	"other-trainings.list", "other-trainings.create", "other-trainings.update", "other-trainings.delete",
+
 	// File upload
 	"upload.file", "upload.oss",
 }
@@ -100,6 +111,13 @@ var SeededRoles = []SeededRole{
 			"major-hazardous-processes.list", "major-hazardous-processes.create", "major-hazardous-processes.update", "major-hazardous-processes.delete",
 			"hazardous-processes.list", "hazardous-processes.create", "hazardous-processes.update", "hazardous-processes.delete",
 			"space-works.list", "space-works.create", "space-works.update", "space-works.delete",
+			"design-units.list", "design-units.create", "design-units.update", "design-units.delete",
+			"evaluation-units.list", "evaluation-units.create", "evaluation-units.update", "evaluation-units.delete",
+			"skill-units.list", "skill-units.create", "skill-units.update", "skill-units.delete",
+			"internal-meetings.list", "internal-meetings.create", "internal-meetings.update", "internal-meetings.delete",
+			"internal-trainings.list", "internal-trainings.create", "internal-trainings.update", "internal-trainings.delete",
+			"external-trainings.list", "external-trainings.create", "external-trainings.update", "external-trainings.delete",
+			"other-trainings.list", "other-trainings.create", "other-trainings.update", "other-trainings.delete",
 			"upload.file", "upload.oss",
 		},
 	},
@@ -117,6 +135,8 @@ var SeededRoles = []SeededRole{
 			"special-equipment.list", "dangerous-equipment.list", "hazardous-chemicals.list",
 			"major-hazards.list",
 			"major-hazardous-processes.list", "hazardous-processes.list", "space-works.list",
+			"design-units.list", "evaluation-units.list", "skill-units.list",
+			"internal-meetings.list", "internal-trainings.list", "external-trainings.list", "other-trainings.list",
 		},
 	},
 }

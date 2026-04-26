@@ -13,6 +13,7 @@ import (
 	companyapi "ai_hs_go/internal/api/company"
 	companygroupapi "ai_hs_go/internal/api/companygroup"
 	majorhazardapi "ai_hs_go/internal/api/majorhazard"
+	meetingtrainingapi "ai_hs_go/internal/api/meetingtraining"
 	permissionapi "ai_hs_go/internal/api/permission"
 	platformapi "ai_hs_go/internal/api/platform"
 	processapi "ai_hs_go/internal/api/process"
@@ -20,6 +21,7 @@ import (
 	safetyarchapi "ai_hs_go/internal/api/safetyarchive"
 	safetyapi "ai_hs_go/internal/api/safetyledger"
 	tenantapi "ai_hs_go/internal/api/tenant"
+	thirdpartyapi "ai_hs_go/internal/api/thirdparty"
 	uploadapi "ai_hs_go/internal/api/upload"
 	userapi "ai_hs_go/internal/api/user"
 	"ai_hs_go/internal/auth"
@@ -102,6 +104,10 @@ func (r *Router) Engine() *gin.Engine {
 	majorHazardH := majorhazardapi.NewHandler(majorHazardSvc)
 	processSvc := service.NewProcessService(r.deps.DB)
 	processH := processapi.NewHandler(processSvc)
+	thirdPartySvc := service.NewThirdPartyService(r.deps.DB)
+	thirdPartyH := thirdpartyapi.NewHandler(thirdPartySvc)
+	meetingTrainingSvc := service.NewMeetingTrainingService(r.deps.DB)
+	meetingTrainingH := meetingtrainingapi.NewHandler(meetingTrainingSvc)
 	uploadH := uploadapi.NewHandler(r.deps.OSS)
 	basedataH := basedataapi.NewHandler(dictSvc, checklistSvc, regLibSvc)
 	safetyArchH := safetyarchapi.NewHandler(safetyarchapi.HandlerDeps{
@@ -358,6 +364,47 @@ func (r *Router) Engine() *gin.Engine {
 	business.POST("/space-works", middleware.RequirePermission(r.deps.Enforcer, "space-works.create"), processH.CreateSpaceWork)
 	business.PUT("/space-works/:id", middleware.RequirePermission(r.deps.Enforcer, "space-works.update"), processH.UpdateSpaceWork)
 	business.DELETE("/space-works/:id", middleware.RequirePermission(r.deps.Enforcer, "space-works.delete"), processH.DeleteSpaceWork)
+
+	// 第三方管理 — 三模块共用 ThirdPartyService（设计单位 / 评价单位 / 技术服务单位）。
+	business.GET("/design-units", middleware.RequirePermission(r.deps.Enforcer, "design-units.list"), thirdPartyH.ListDesignUnit)
+	business.POST("/design-units", middleware.RequirePermission(r.deps.Enforcer, "design-units.create"), thirdPartyH.CreateDesignUnit)
+	business.PUT("/design-units/:id", middleware.RequirePermission(r.deps.Enforcer, "design-units.update"), thirdPartyH.UpdateDesignUnit)
+	business.DELETE("/design-units/:id", middleware.RequirePermission(r.deps.Enforcer, "design-units.delete"), thirdPartyH.DeleteDesignUnit)
+
+	business.GET("/evaluation-units", middleware.RequirePermission(r.deps.Enforcer, "evaluation-units.list"), thirdPartyH.ListEvaluationUnit)
+	business.POST("/evaluation-units", middleware.RequirePermission(r.deps.Enforcer, "evaluation-units.create"), thirdPartyH.CreateEvaluationUnit)
+	business.PUT("/evaluation-units/:id", middleware.RequirePermission(r.deps.Enforcer, "evaluation-units.update"), thirdPartyH.UpdateEvaluationUnit)
+	business.DELETE("/evaluation-units/:id", middleware.RequirePermission(r.deps.Enforcer, "evaluation-units.delete"), thirdPartyH.DeleteEvaluationUnit)
+
+	business.GET("/skill-units", middleware.RequirePermission(r.deps.Enforcer, "skill-units.list"), thirdPartyH.ListSkillUnit)
+	business.POST("/skill-units", middleware.RequirePermission(r.deps.Enforcer, "skill-units.create"), thirdPartyH.CreateSkillUnit)
+	business.PUT("/skill-units/:id", middleware.RequirePermission(r.deps.Enforcer, "skill-units.update"), thirdPartyH.UpdateSkillUnit)
+	business.DELETE("/skill-units/:id", middleware.RequirePermission(r.deps.Enforcer, "skill-units.delete"), thirdPartyH.DeleteSkillUnit)
+
+	// 会议培训 — 四模块共用 MeetingTrainingService（内部会议 / 内部、外部、相关方培训）。
+	business.GET("/internal-meetings", middleware.RequirePermission(r.deps.Enforcer, "internal-meetings.list"), meetingTrainingH.ListInternalMeeting)
+	business.GET("/internal-meetings/:id", middleware.RequirePermission(r.deps.Enforcer, "internal-meetings.list"), meetingTrainingH.GetInternalMeeting)
+	business.POST("/internal-meetings", middleware.RequirePermission(r.deps.Enforcer, "internal-meetings.create"), meetingTrainingH.CreateInternalMeeting)
+	business.PUT("/internal-meetings/:id", middleware.RequirePermission(r.deps.Enforcer, "internal-meetings.update"), meetingTrainingH.UpdateInternalMeeting)
+	business.DELETE("/internal-meetings/:id", middleware.RequirePermission(r.deps.Enforcer, "internal-meetings.delete"), meetingTrainingH.DeleteInternalMeeting)
+
+	business.GET("/internal-trainings", middleware.RequirePermission(r.deps.Enforcer, "internal-trainings.list"), meetingTrainingH.ListInternalTraining)
+	business.GET("/internal-trainings/:id", middleware.RequirePermission(r.deps.Enforcer, "internal-trainings.list"), meetingTrainingH.GetInternalTraining)
+	business.POST("/internal-trainings", middleware.RequirePermission(r.deps.Enforcer, "internal-trainings.create"), meetingTrainingH.CreateInternalTraining)
+	business.PUT("/internal-trainings/:id", middleware.RequirePermission(r.deps.Enforcer, "internal-trainings.update"), meetingTrainingH.UpdateInternalTraining)
+	business.DELETE("/internal-trainings/:id", middleware.RequirePermission(r.deps.Enforcer, "internal-trainings.delete"), meetingTrainingH.DeleteInternalTraining)
+
+	business.GET("/external-trainings", middleware.RequirePermission(r.deps.Enforcer, "external-trainings.list"), meetingTrainingH.ListExternalTraining)
+	business.GET("/external-trainings/:id", middleware.RequirePermission(r.deps.Enforcer, "external-trainings.list"), meetingTrainingH.GetExternalTraining)
+	business.POST("/external-trainings", middleware.RequirePermission(r.deps.Enforcer, "external-trainings.create"), meetingTrainingH.CreateExternalTraining)
+	business.PUT("/external-trainings/:id", middleware.RequirePermission(r.deps.Enforcer, "external-trainings.update"), meetingTrainingH.UpdateExternalTraining)
+	business.DELETE("/external-trainings/:id", middleware.RequirePermission(r.deps.Enforcer, "external-trainings.delete"), meetingTrainingH.DeleteExternalTraining)
+
+	business.GET("/other-trainings", middleware.RequirePermission(r.deps.Enforcer, "other-trainings.list"), meetingTrainingH.ListOtherTraining)
+	business.GET("/other-trainings/:id", middleware.RequirePermission(r.deps.Enforcer, "other-trainings.list"), meetingTrainingH.GetOtherTraining)
+	business.POST("/other-trainings", middleware.RequirePermission(r.deps.Enforcer, "other-trainings.create"), meetingTrainingH.CreateOtherTraining)
+	business.PUT("/other-trainings/:id", middleware.RequirePermission(r.deps.Enforcer, "other-trainings.update"), meetingTrainingH.UpdateOtherTraining)
+	business.DELETE("/other-trainings/:id", middleware.RequirePermission(r.deps.Enforcer, "other-trainings.delete"), meetingTrainingH.DeleteOtherTraining)
 
 	// Upload (OSS multipart)
 	upload := business.Group("/upload-oss", middleware.RequirePermission(r.deps.Enforcer, "upload.oss"))
