@@ -69,6 +69,19 @@ var CorePermissions = []string{
 	"external-trainings.list", "external-trainings.create", "external-trainings.update", "external-trainings.delete",
 	"other-trainings.list", "other-trainings.create", "other-trainings.update", "other-trainings.delete",
 
+	// 职业健康（5 模块 + 1 小模块：健康体系）
+	"occupational-hazards.list", "occupational-hazards.create", "occupational-hazards.update", "occupational-hazards.delete",
+	"health-systems.list", "health-systems.create", "health-systems.update",
+	"health-files.list", "health-files.create", "health-files.update", "health-files.delete",
+	"health-reports.list", "health-reports.create", "health-reports.update", "health-reports.delete",
+	"health-checkups.list", "health-checkups.create", "health-checkups.update", "health-checkups.delete",
+	"hygiene-evaluations.list", "hygiene-evaluations.create", "hygiene-evaluations.update", "hygiene-evaluations.delete",
+
+	// 消防安全（消防安全 / 消防器材 / 消防设施）
+	"fire-safeties.list", "fire-safeties.create", "fire-safeties.update", "fire-safeties.delete",
+	"fire-equipment.list", "fire-equipment.create", "fire-equipment.update", "fire-equipment.delete",
+	"fire-facilities.list", "fire-facilities.create", "fire-facilities.update", "fire-facilities.delete",
+
 	// File upload
 	"upload.file", "upload.oss",
 }
@@ -118,6 +131,15 @@ var SeededRoles = []SeededRole{
 			"internal-trainings.list", "internal-trainings.create", "internal-trainings.update", "internal-trainings.delete",
 			"external-trainings.list", "external-trainings.create", "external-trainings.update", "external-trainings.delete",
 			"other-trainings.list", "other-trainings.create", "other-trainings.update", "other-trainings.delete",
+			"occupational-hazards.list", "occupational-hazards.create", "occupational-hazards.update", "occupational-hazards.delete",
+			"health-systems.list", "health-systems.create", "health-systems.update",
+			"health-files.list", "health-files.create", "health-files.update", "health-files.delete",
+			"health-reports.list", "health-reports.create", "health-reports.update", "health-reports.delete",
+			"health-checkups.list", "health-checkups.create", "health-checkups.update", "health-checkups.delete",
+			"hygiene-evaluations.list", "hygiene-evaluations.create", "hygiene-evaluations.update", "hygiene-evaluations.delete",
+			"fire-safeties.list", "fire-safeties.create", "fire-safeties.update", "fire-safeties.delete",
+			"fire-equipment.list", "fire-equipment.create", "fire-equipment.update", "fire-equipment.delete",
+			"fire-facilities.list", "fire-facilities.create", "fire-facilities.update", "fire-facilities.delete",
 			"upload.file", "upload.oss",
 		},
 	},
@@ -137,6 +159,9 @@ var SeededRoles = []SeededRole{
 			"major-hazardous-processes.list", "hazardous-processes.list", "space-works.list",
 			"design-units.list", "evaluation-units.list", "skill-units.list",
 			"internal-meetings.list", "internal-trainings.list", "external-trainings.list", "other-trainings.list",
+			"occupational-hazards.list", "health-systems.list",
+			"health-files.list", "health-reports.list", "health-checkups.list", "hygiene-evaluations.list",
+			"fire-safeties.list", "fire-equipment.list", "fire-facilities.list",
 		},
 	},
 }

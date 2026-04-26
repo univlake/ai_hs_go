@@ -60,6 +60,14 @@ const SafetySpecialEquipment = lazyPage('safety/special-equipment/Index');
 const SafetyDangerousEquipment = lazyPage('safety/dangerous-equipment/Index');
 const SafetyHazardousChemicals = lazyPage('safety/hazardous-chemicals/Index');
 const SafetyMajorHazards = lazyPage('safety/major-hazards/Index');
+const SafetyFireSafeties = lazyPage('safety/fire-safeties/Index');
+const HealthFiles = lazyPage('health/health-files/Index');
+const HealthOccupationalHazards = lazyPage('health/occupational-hazards/Index');
+const HealthCheckups = lazyPage('health/health-checkups/Index');
+const HealthHygieneEvaluations = lazyPage('health/hygiene-evaluations/Index');
+const HealthDiseaseReport = lazyPage('health/disease-report/Index');
+const FireEquipment = lazyPage('fire/equipment/Index');
+const FireFacilities = lazyPage('fire/facilities/Index');
 const EnterpriseCurrent = lazyPage('enterprise/current/Index');
 const EnterpriseSubsidiaries = lazyPage('enterprise/subsidiaries/Index');
 const EnterpriseApproval = lazyPage('enterprise/approval/Index');
@@ -144,6 +152,14 @@ export const router = createBrowserRouter([
           { path: '/safety/dangerous-equipment', element: <LoadingShell><SafetyDangerousEquipment /></LoadingShell> },
           { path: '/safety/hazardous-chemicals', element: <LoadingShell><SafetyHazardousChemicals /></LoadingShell> },
           { path: '/safety/major-hazards', element: <LoadingShell><SafetyMajorHazards /></LoadingShell> },
+          { path: '/safety/fire-safeties', element: <LoadingShell><SafetyFireSafeties /></LoadingShell> },
+          { path: '/health/health-files', element: <LoadingShell><HealthFiles /></LoadingShell> },
+          { path: '/health/occupational-hazards', element: <LoadingShell><HealthOccupationalHazards /></LoadingShell> },
+          { path: '/health/health-checkups', element: <LoadingShell><HealthCheckups /></LoadingShell> },
+          { path: '/health/hygiene-evaluations', element: <LoadingShell><HealthHygieneEvaluations /></LoadingShell> },
+          { path: '/health/disease-report', element: <LoadingShell><HealthDiseaseReport /></LoadingShell> },
+          { path: '/fire/equipment', element: <LoadingShell><FireEquipment /></LoadingShell> },
+          { path: '/fire/facilities', element: <LoadingShell><FireFacilities /></LoadingShell> },
           { path: '/enterprise/current', element: <LoadingShell><EnterpriseCurrent /></LoadingShell> },
           { path: '/enterprise/subsidiaries', element: <LoadingShell><EnterpriseSubsidiaries /></LoadingShell> },
           { path: '/enterprise/approval', element: <LoadingShell><EnterpriseApproval /></LoadingShell> },
