@@ -929,6 +929,16 @@ const navSections: NavSection[] = [
                         href: '/system/safety-management-types',
                         permission: 'base-data.view',
                     },
+                    {
+                        title: '危险工艺类型',
+                        href: '/system/dangerous-craft-types',
+                        permission: 'base-data.view',
+                    },
+                    {
+                        title: '法规库类型',
+                        href: '/system/regulation-library-types',
+                        permission: 'base-data.view',
+                    },
                 ],
             },
         ],
@@ -976,8 +986,6 @@ const extraRoutePermissions: Record<string, string | string[]> = {
     '/statistics/accident-bulletins': 'accident-bulletins.list',
     '/statistics/expert-inspections': 'expert-inspections.list',
     '/system/companies': 'companies.list',
-    '/system/dangerous-craft-types': 'dangerous-craft-types.list',
-    '/system/regulation-library-types': 'regulation-library-types.list',
     '/training/other-trainings': 'other-trainings.list',
 };
 

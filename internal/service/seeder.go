@@ -28,6 +28,7 @@ var CorePermissions = []string{
 
 	// Base data
 	"base-data.view", "base-data.manage",
+	"checklist-libraries.list", "checklist-libraries.create", "checklist-libraries.update", "checklist-libraries.delete",
 	"personnels.list", "personnels.create", "personnels.update",
 
 	// Safety ledger (MVP)
@@ -56,7 +57,8 @@ var SeededRoles = []SeededRole{
 		Permissions: []string{
 			"users.list", "users.create", "users.update",
 			"companies.list", "companies.update", "companies.tree",
-			"base-data.view",
+			"base-data.view", "base-data.manage",
+			"checklist-libraries.list", "checklist-libraries.create", "checklist-libraries.update", "checklist-libraries.delete",
 			"personnels.list", "personnels.create", "personnels.update",
 			"special-equipment.list", "special-equipment.create", "special-equipment.update", "special-equipment.delete",
 			"special-equipment-staff.list", "special-equipment-staff.create", "special-equipment-staff.update", "special-equipment-staff.delete",
@@ -69,6 +71,7 @@ var SeededRoles = []SeededRole{
 		Name: "viewer",
 		Permissions: []string{
 			"users.list", "companies.list", "companies.tree", "base-data.view",
+			"checklist-libraries.list",
 			"special-equipment.list", "dangerous-equipment.list", "hazardous-chemicals.list",
 		},
 	},
@@ -125,34 +128,279 @@ var SeededSpecialTypes = []string{
 var SeededEnterpriseTypes = []string{"机械", "化工", "商贸租赁", "其他"}
 var SeededOperationalTypes = []string{"生产", "停工", "改造", "搬迁"}
 
+// New base-data dictionary seeds (mirrors Laravel BaseDataSeeder + the
+// RegulationLibraryTypeSeeder split file). The Laravel project ships these
+// with no `sort` column for most tables; we keep sort=0 to preserve the
+// natural insertion order, which the frontend's `ORDER BY sort, id` query
+// then renders top-to-bottom in the same sequence as Laravel.
+var SeededRecordTypes = []string{
+	"安全生产许可证", "危化品安全使用许可证", "危化品登记证",
+	"危化品使用备案", "重大危险源备案", "易制毒生产备案",
+	"应急预案备案有效", "职业健康备案",
+}
+
+var SeededProcessTypes = []string{
+	"高温高压（压力大于等于0.1Mpa，温度高于及等于100度）",
+	"铸造工艺", "冲剪工艺", "吊装", "焊接",
+	"压力容器操作", "喷涂工艺", "产生可燃爆粉尘的工艺",
+	"产生有毒有害物质的工艺", "使用甲乙类危险化学品的工艺",
+	"涉及涉氨制冷工艺", "其他",
+}
+
+var SeededSpaceWorkTypes = []string{
+	"坑", "沟", "槽", "池", "井", "管道", "罐", "箱",
+	"炉", "室", "仓(斗)", "塔(釜)", "其他", "反应器", "锅筒",
+}
+
+var SeededSafetyManagementTypes = []string{
+	"安全负责人", "安管员", "生产管理", "设备管理",
+	"质量管理", "人事管理", "其他管理",
+}
+
+var SeededDangerousCraftTypes = []string{
+	"光气及光气化工艺", "电解工艺", "氯化工艺", "硝化工艺",
+	"合成氨工艺", "裂解(裂化)工艺", "氟化工艺", "加氢工艺",
+	"重氮化工艺", "氧化工艺", "过氧化工艺", "氨基化工艺",
+	"磺化工艺", "聚合工艺", "烷基化工艺", "新型煤化工艺",
+	"电石生产工艺", "偶氮化工艺",
+}
+
+// RegulationLibraryType seeds describe a 2-level tree: 5 top-level
+// categories + 9 sub-items under 安全生产部门规章 + 15 sub-items under
+// 标准规范 = 29 rows total. ParentTitle is matched against the top-level
+// row's title to look up pid at insert time. AllName is set verbatim from
+// the catalog the user provided (parent（child）format) — that same
+// format is what the service's computeAllName produces for any
+// user-created descendants going forward.
+type seededRegLibType struct {
+	Title       string
+	ParentTitle string // "" for top-level
+	AllName     string
+}
+
+var SeededRegulationLibraryTypes = []seededRegLibType{
+	// Top-level
+	{"安全生产部门规章", "", "安全生产部门规章"},
+	{"安全生产法律", "", "安全生产法律"},
+	{"安全生产行政法规", "", "安全生产行政法规"},
+	{"标准规范", "", "标准规范"},
+	{"地方管理条例", "", "地方管理条例"},
+
+	// Children of 安全生产部门规章
+	{"劳动防护用品", "安全生产部门规章", "安全生产部门规章（劳动防护用品）"},
+	{"劳动卫生", "安全生产部门规章", "安全生产部门规章（劳动卫生）"},
+	{"培训考核", "安全生产部门规章", "安全生产部门规章（培训考核）"},
+	{"三同时", "安全生产部门规章", "安全生产部门规章（三同时）"},
+	{"伤亡事故调查和处理", "安全生产部门规章", "安全生产部门规章（伤亡事故调查和处理）"},
+	{"特种设备", "安全生产部门规章", "安全生产部门规章（特种设备）"},
+	{"危险化学品", "安全生产部门规章", "安全生产部门规章（危险化学品）"},
+	{"消防管理", "安全生产部门规章", "安全生产部门规章（消防管理）"},
+	{"综合类", "安全生产部门规章", "安全生产部门规章（综合类）"},
+
+	// Children of 标准规范
+	{"安全技术综合", "标准规范", "标准规范（安全技术综合）"},
+	{"电气方面", "标准规范", "标准规范（电气方面）"},
+	{"防火防爆安全技术", "标准规范", "标准规范（防火防爆安全技术）"},
+	{"机械方面", "标准规范", "标准规范（机械方面）"},
+	{"交通", "标准规范", "标准规范（交通）"},
+	{"劳动防护用品", "标准规范", "标准规范（劳动防护用品）"},
+	{"劳动卫生", "标准规范", "标准规范（劳动卫生）"},
+	{"喷涂企业", "标准规范", "标准规范（喷涂企业）"},
+	{"涉氨企业", "标准规范", "标准规范（涉氨企业）"},
+	{"涉燃爆粉尘", "标准规范", "标准规范（涉燃爆粉尘）"},
+	{"生产设备安全技术", "标准规范", "标准规范（生产设备安全技术）"},
+	{"危险化学品", "标准规范", "标准规范（危险化学品）"},
+	{"消防综合", "标准规范", "标准规范（消防综合）"},
+	{"冶炼企业", "标准规范", "标准规范（冶炼企业）"},
+	{"有限空间", "标准规范", "标准规范（有限空间）"},
+}
+
+// seedDictTable upserts a slice of {title} rows into a base-data table.
+// Idempotent — uses a SELECT-then-INSERT loop instead of ON CONFLICT so
+// reseeding doesn't reset auto-increment ids that other rows already point
+// at (e.g. SafetyEquipment.special_type_id).
+func seedDictTable(ctx context.Context, db *gorm.DB, table string, titles []string, withSort bool) error {
+	for i, title := range titles {
+		var count int64
+		if err := db.WithContext(ctx).Table(table).
+			Where("title = ? AND deleted_at IS NULL", title).
+			Count(&count).Error; err != nil {
+			return err
+		}
+		if count > 0 {
+			continue
+		}
+		row := map[string]any{
+			"title":      title,
+			"created_at": gorm.Expr("NOW()"),
+			"updated_at": gorm.Expr("NOW()"),
+		}
+		if withSort {
+			row["sort"] = i
+		}
+		if err := db.WithContext(ctx).Table(table).Create(&row).Error; err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func seedBaseData(ctx context.Context, db *gorm.DB) error {
-	for _, title := range SeededSpecialTypes {
-		var existing model.SpecialType
-		err := db.WithContext(ctx).Where("title = ?", title).First(&existing).Error
-		if err == nil {
+	if err := seedDictTable(ctx, db, "special_types", SeededSpecialTypes, false); err != nil {
+		return err
+	}
+	if err := seedDictTable(ctx, db, "enterprise_types", SeededEnterpriseTypes, false); err != nil {
+		return err
+	}
+	if err := seedDictTable(ctx, db, "operational_types", SeededOperationalTypes, false); err != nil {
+		return err
+	}
+	if err := seedDictTable(ctx, db, "record_types", SeededRecordTypes, false); err != nil {
+		return err
+	}
+	if err := seedDictTable(ctx, db, "process_types", SeededProcessTypes, false); err != nil {
+		return err
+	}
+	if err := seedDictTable(ctx, db, "space_work_types", SeededSpaceWorkTypes, false); err != nil {
+		return err
+	}
+	if err := seedDictTable(ctx, db, "safety_management_types", SeededSafetyManagementTypes, false); err != nil {
+		return err
+	}
+	if err := seedDictTable(ctx, db, "dangerous_craft_types", SeededDangerousCraftTypes, false); err != nil {
+		return err
+	}
+	if err := seedRegulationLibraryTypes(ctx, db); err != nil {
+		return err
+	}
+	return nil
+}
+
+// seedRegulationLibraryTypes plants the 2-level catalog described by
+// SeededRegulationLibraryTypes.
+//
+// Two passes: top-level rows go in first so child rows have their pid
+// available via a title→id lookup. Each row is upserted (insert when
+// missing, otherwise leave alone) keyed on (title, pid) so reseeding is
+// idempotent. After all 29 entries are in, a cleanup pass hard-deletes
+// any other regulation_library_types rows so the table mirrors the
+// catalog exactly — important here because earlier seed runs put items
+// like "劳动防护用品" at pid=0 that now belong under pid=parent.
+func seedRegulationLibraryTypes(ctx context.Context, db *gorm.DB) error {
+	type rlt struct {
+		ID    int64
+		Title string
+		Pid   int64
+	}
+
+	upsert := func(title string, pid int64, allName string, sort int) error {
+		var count int64
+		if err := db.WithContext(ctx).Table("regulation_library_types").
+			Where("title = ? AND pid = ? AND deleted_at IS NULL", title, pid).
+			Count(&count).Error; err != nil {
+			return err
+		}
+		if count > 0 {
+			// Refresh all_name / sort + force company_id back to 0 so
+			// rows accidentally tagged to a tenant by an earlier UI test
+			// drop back to the global dictionary state.
+			return db.WithContext(ctx).Table("regulation_library_types").
+				Where("title = ? AND pid = ? AND deleted_at IS NULL", title, pid).
+				Updates(map[string]any{
+					"all_name":   allName,
+					"sort":       sort,
+					"company_id": 0,
+					"updated_at": gorm.Expr("NOW()"),
+				}).Error
+		}
+		row := map[string]any{
+			"title":      title,
+			"pid":        pid,
+			"all_name":   allName,
+			"sort":       sort,
+			"created_at": gorm.Expr("NOW()"),
+			"updated_at": gorm.Expr("NOW()"),
+		}
+		return db.WithContext(ctx).Table("regulation_library_types").Create(&row).Error
+	}
+
+	// Pass 1: top-level rows. sort = index across the whole list (Laravel
+	// preserves the data-file order via foreach key).
+	for i, e := range SeededRegulationLibraryTypes {
+		if e.ParentTitle != "" {
 			continue
 		}
-		if err := db.WithContext(ctx).Create(&model.SpecialType{Title: title}).Error; err != nil {
+		if err := upsert(e.Title, 0, e.AllName, i); err != nil {
 			return err
 		}
 	}
-	for _, title := range SeededEnterpriseTypes {
-		var existing model.EnterpriseType
-		err := db.WithContext(ctx).Where("title = ?", title).First(&existing).Error
-		if err == nil {
+
+	// Build a title→id map for top-level rows (parent lookup). Children
+	// expect to land under exactly one parent, so duplicate top-level
+	// titles aren't supported in the seed catalog (and the data above
+	// indeed has none).
+	var roots []rlt
+	if err := db.WithContext(ctx).Table("regulation_library_types").
+		Select("id, title, pid").
+		Where("pid = 0 AND deleted_at IS NULL").
+		Find(&roots).Error; err != nil {
+		return err
+	}
+	rootIDByTitle := make(map[string]int64, len(roots))
+	for _, r := range roots {
+		rootIDByTitle[r.Title] = r.ID
+	}
+
+	// Pass 2: children. Skip silently if the named parent is missing
+	// (would only happen if the data above is internally inconsistent).
+	for i, e := range SeededRegulationLibraryTypes {
+		if e.ParentTitle == "" {
 			continue
 		}
-		if err := db.WithContext(ctx).Create(&model.EnterpriseType{Title: title}).Error; err != nil {
+		pid, ok := rootIDByTitle[e.ParentTitle]
+		if !ok {
+			continue
+		}
+		if err := upsert(e.Title, pid, e.AllName, i); err != nil {
 			return err
 		}
 	}
-	for _, title := range SeededOperationalTypes {
-		var existing model.OperationalType
-		err := db.WithContext(ctx).Where("title = ?", title).First(&existing).Error
-		if err == nil {
-			continue
+
+	// Cleanup: collect (title, pid) keys present in the seed and
+	// hard-delete every row not matching. Earlier seeds left orphans at
+	// pid=0 with titles that now belong as children — purge them so the
+	// list reflects the new catalog exactly.
+	wanted := make(map[string]struct{}, len(SeededRegulationLibraryTypes))
+	for _, e := range SeededRegulationLibraryTypes {
+		var pid int64
+		if e.ParentTitle != "" {
+			pid = rootIDByTitle[e.ParentTitle]
 		}
-		if err := db.WithContext(ctx).Create(&model.OperationalType{Title: title}).Error; err != nil {
+		wanted[fmt.Sprintf("%d|%s", pid, e.Title)] = struct{}{}
+	}
+
+	var existing []rlt
+	if err := db.WithContext(ctx).Table("regulation_library_types").
+		Select("id, title, pid").
+		Where("deleted_at IS NULL").
+		Find(&existing).Error; err != nil {
+		return err
+	}
+	var orphanIDs []int64
+	for _, row := range existing {
+		key := fmt.Sprintf("%d|%s", row.Pid, row.Title)
+		if _, ok := wanted[key]; !ok {
+			orphanIDs = append(orphanIDs, row.ID)
+		}
+	}
+	if len(orphanIDs) > 0 {
+		// Hard delete (Unscoped) — soft-deleting would just leave the rows
+		// blocking future re-seeds via the (title,pid) uniqueness-by-
+		// existence check above.
+		if err := db.WithContext(ctx).Table("regulation_library_types").
+			Unscoped().
+			Where("id IN ?", orphanIDs).
+			Delete(nil).Error; err != nil {
 			return err
 		}
 	}

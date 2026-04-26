@@ -63,6 +63,16 @@ const EnterpriseCurrent = lazyPage('enterprise/current/Index');
 const EnterpriseSubsidiaries = lazyPage('enterprise/subsidiaries/Index');
 const EnterpriseApproval = lazyPage('enterprise/approval/Index');
 const EnterpriseGrouping = lazyPage('enterprise/grouping/Index');
+const SystemEnterpriseTypes = lazyPage('system/enterprise-types/Index');
+const SystemOperationalTypes = lazyPage('system/operational-types/Index');
+const SystemRecordTypes = lazyPage('system/record-types/Index');
+const SystemProcessTypes = lazyPage('system/process-types/Index');
+const SystemSpecialTypes = lazyPage('system/special-types/Index');
+const SystemSpaceWorkTypes = lazyPage('system/space-work-types/Index');
+const SystemSafetyManagementTypes = lazyPage('system/safety-management-types/Index');
+const SystemDangerousCraftTypes = lazyPage('system/dangerous-craft-types/Index');
+const SystemRegulationLibraryTypes = lazyPage('system/regulation-library-types/Index');
+const KnowledgeChecklists = lazyPage('knowledge/checklists/Index');
 const Placeholder = lazyPage('_placeholder');
 
 export const router = createBrowserRouter([
@@ -119,6 +129,16 @@ export const router = createBrowserRouter([
           { path: '/enterprise/subsidiaries', element: <LoadingShell><EnterpriseSubsidiaries /></LoadingShell> },
           { path: '/enterprise/approval', element: <LoadingShell><EnterpriseApproval /></LoadingShell> },
           { path: '/enterprise/grouping', element: <LoadingShell><EnterpriseGrouping /></LoadingShell> },
+          { path: '/system/enterprise-types', element: <LoadingShell><SystemEnterpriseTypes /></LoadingShell> },
+          { path: '/system/operational-types', element: <LoadingShell><SystemOperationalTypes /></LoadingShell> },
+          { path: '/system/record-types', element: <LoadingShell><SystemRecordTypes /></LoadingShell> },
+          { path: '/system/process-types', element: <LoadingShell><SystemProcessTypes /></LoadingShell> },
+          { path: '/system/special-types', element: <LoadingShell><SystemSpecialTypes /></LoadingShell> },
+          { path: '/system/space-work-types', element: <LoadingShell><SystemSpaceWorkTypes /></LoadingShell> },
+          { path: '/system/safety-management-types', element: <LoadingShell><SystemSafetyManagementTypes /></LoadingShell> },
+          { path: '/system/dangerous-craft-types', element: <LoadingShell><SystemDangerousCraftTypes /></LoadingShell> },
+          { path: '/system/regulation-library-types', element: <LoadingShell><SystemRegulationLibraryTypes /></LoadingShell> },
+          { path: '/knowledge/checklists', element: <LoadingShell><KnowledgeChecklists /></LoadingShell> },
           // Sidebar 旧 href 兼容（之前指向 /equipment/major-hazardous）
           { path: '/equipment/major-hazardous', element: <LoadingShell><SafetyDangerousEquipment /></LoadingShell> },
           // Catch-all inside AppLayout: shows a friendly "尚未迁移" page

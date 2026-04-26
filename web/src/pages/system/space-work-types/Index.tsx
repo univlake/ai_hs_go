@@ -2,7 +2,7 @@ import { CrudPage } from '@/components/shared/CrudPage';
 import type { CrudPageConfig } from '@/components/shared/CrudPage';
 
 const config: CrudPageConfig = {
-    title: '有限空间类型',
+    title: '作业类型',
     endpoint: '/space-work-types',
     columns: [
         { key: 'id', header: 'ID', width: 60 },
@@ -14,7 +14,7 @@ const config: CrudPageConfig = {
         { key: 'sort', label: '排序', type: 'number' },
     ],
     searchField: 'title',
-    searchPlaceholder: '搜索有限空间类型...',
+    searchPlaceholder: '搜索作业类型...',
     permissions: {
         list: 'base-data.view',
         create: 'base-data.manage',

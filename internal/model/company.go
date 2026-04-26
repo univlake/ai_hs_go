@@ -23,6 +23,7 @@ func (BaseArea) TableName() string { return "base_areas" }
 type EnterpriseType struct {
 	ID        int64          `gorm:"primaryKey" json:"id"`
 	Title     string         `gorm:"column:title;not null" json:"title"`
+	Sort      int            `gorm:"column:sort;not null;default:0" json:"sort"`
 	CreatedAt time.Time      `gorm:"column:created_at;autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time      `gorm:"column:updated_at;autoUpdateTime" json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at;index" json:"-"`
@@ -33,6 +34,7 @@ func (EnterpriseType) TableName() string { return "enterprise_types" }
 type OperationalType struct {
 	ID        int64          `gorm:"primaryKey" json:"id"`
 	Title     string         `gorm:"column:title;not null" json:"title"`
+	Sort      int            `gorm:"column:sort;not null;default:0" json:"sort"`
 	CreatedAt time.Time      `gorm:"column:created_at;autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time      `gorm:"column:updated_at;autoUpdateTime" json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at;index" json:"-"`
