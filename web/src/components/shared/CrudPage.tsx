@@ -773,11 +773,21 @@ export function CrudPage({ config }: { config: CrudPageConfig }) {
                 const rowCompanyId = row.original.company_id as
                     | number
                     | undefined;
-                // Row may still be locked even if the page is editable — when the row belongs
-                // to a different company (only possible in bloc drill-downs; isSubordinate is
-                // already folded into globalReadOnly above).
+                // Row may still be locked even if the page is editable —
+                // when the row belongs to a different company (only
+                // possible in bloc drill-downs; isSubordinate is already
+                // folded into globalReadOnly above).
+                //
+                // Three cases pass:
+                //   • companyScoped=false → page is for a global dict, no
+                //     per-row company check applies at all
+                //   • rowCompanyId === undefined / 0 → row carries no
+                //     company anchor (seed data, shared dict)
+                //   • rowCompanyId === rootCompany.id → user's own tenant
                 const rowBelongsToUs =
+                    !companyScoped ||
                     rowCompanyId === undefined ||
+                    rowCompanyId === 0 ||
                     rowCompanyId === rootCompany?.id;
 
                 return (

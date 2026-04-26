@@ -2,7 +2,7 @@ import { CrudPage } from '@/components/shared/CrudPage';
 import type { CrudPageConfig } from '@/components/shared/CrudPage';
 
 const config: CrudPageConfig = {
-    title: '安全管理类型',
+    title: '安全管理人员类型',
     endpoint: '/safety-management-types',
     columns: [
         { key: 'id', header: 'ID', width: 60 },
@@ -14,7 +14,7 @@ const config: CrudPageConfig = {
         { key: 'sort', label: '排序', type: 'number' },
     ],
     searchField: 'title',
-    searchPlaceholder: '搜索安全管理类型...',
+    searchPlaceholder: '搜索安全管理人员类型...',
     permissions: {
         list: 'base-data.view',
         create: 'base-data.manage',

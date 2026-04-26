@@ -70,6 +70,9 @@ func (r *Router) Engine() *gin.Engine {
 	userSvc := service.NewUserService(r.deps.DB)
 	companySvc := service.NewCompanyService(r.deps.DB, companyRepo)
 	companyGroupSvc := service.NewCompanyGroupService(r.deps.DB)
+	dictSvc := service.NewDictService(r.deps.DB)
+	checklistSvc := service.NewChecklistLibraryService(r.deps.DB)
+	regLibSvc := service.NewRegulationLibraryTypeService(r.deps.DB)
 
 	authH := authapi.NewHandler(authSvc, rbacSvc)
 	userH := userapi.NewHandler(userSvc, rbacSvc)
@@ -81,7 +84,7 @@ func (r *Router) Engine() *gin.Engine {
 	ledgerSvc := service.NewSafetyLedgerService(r.deps.DB)
 	ledgerH := safetyapi.NewHandler(ledgerSvc)
 	uploadH := uploadapi.NewHandler(r.deps.OSS)
-	basedataH := basedataapi.NewHandler(r.deps.DB)
+	basedataH := basedataapi.NewHandler(dictSvc, checklistSvc, regLibSvc)
 
 	v1 := engine.Group("/api/v1")
 
@@ -138,10 +141,42 @@ func (r *Router) Engine() *gin.Engine {
 	// Permissions
 	business.GET("/permissions", middleware.RequirePermission(r.deps.Enforcer, "permissions.list"), permissionH.List)
 
-	// Base data dictionaries (read-only for any authenticated user)
-	business.GET("/special-types", basedataH.SpecialTypes)
-	business.GET("/enterprise-types", basedataH.EnterpriseTypes)
-	business.GET("/operational-types", basedataH.OperationalTypes)
+	// Base data dictionaries — 9 type tables share one generic handler set
+	// dispatched by URL slug. Reads are gated by base-data.view; mutations
+	// by base-data.manage to mirror Laravel routes/api/base-data.php.
+	dictSlugs := []string{
+		"enterprise-types",
+		"operational-types",
+		"record-types",
+		"process-types",
+		"special-types",
+		"space-work-types",
+		"safety-management-types",
+		"dangerous-craft-types",
+		// regulation-library-types is registered separately below — its
+		// table carries pid/all_name and needs the dedicated service that
+		// keeps the tree consistent.
+	}
+	for _, slug := range dictSlugs {
+		s := slug
+		business.GET("/"+s, middleware.RequirePermission(r.deps.Enforcer, "base-data.view"), basedataH.DictList(s))
+		business.POST("/"+s, middleware.RequirePermission(r.deps.Enforcer, "base-data.manage"), basedataH.DictCreate(s))
+		business.PUT("/"+s+"/:id", middleware.RequirePermission(r.deps.Enforcer, "base-data.manage"), basedataH.DictUpdate(s))
+		business.DELETE("/"+s+"/:id", middleware.RequirePermission(r.deps.Enforcer, "base-data.manage"), basedataH.DictDelete(s))
+	}
+
+	// Regulation library types — multi-level (pid + all_name).
+	business.GET("/regulation-library-types", middleware.RequirePermission(r.deps.Enforcer, "base-data.view"), basedataH.RegLibTypeList)
+	business.POST("/regulation-library-types", middleware.RequirePermission(r.deps.Enforcer, "base-data.manage"), basedataH.RegLibTypeCreate)
+	business.PUT("/regulation-library-types/:id", middleware.RequirePermission(r.deps.Enforcer, "base-data.manage"), basedataH.RegLibTypeUpdate)
+	business.DELETE("/regulation-library-types/:id", middleware.RequirePermission(r.deps.Enforcer, "base-data.manage"), basedataH.RegLibTypeDelete)
+
+	// Checklist libraries — separate from the dictionary CRUD because each
+	// row carries title + status + annex URLs + tenant scope.
+	business.GET("/checklist-libraries", middleware.RequirePermission(r.deps.Enforcer, "checklist-libraries.list"), basedataH.ChecklistList)
+	business.POST("/checklist-libraries", middleware.RequirePermission(r.deps.Enforcer, "checklist-libraries.create"), basedataH.ChecklistCreate)
+	business.PUT("/checklist-libraries/:id", middleware.RequirePermission(r.deps.Enforcer, "checklist-libraries.update"), basedataH.ChecklistUpdate)
+	business.DELETE("/checklist-libraries/:id", middleware.RequirePermission(r.deps.Enforcer, "checklist-libraries.delete"), basedataH.ChecklistDelete)
 
 	// Companies
 	business.GET("/companies", middleware.RequirePermission(r.deps.Enforcer, "companies.list"), companyH.List)

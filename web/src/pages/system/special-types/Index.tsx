@@ -2,7 +2,7 @@ import { CrudPage } from '@/components/shared/CrudPage';
 import type { CrudPageConfig } from '@/components/shared/CrudPage';
 
 const config: CrudPageConfig = {
-    title: '特殊类型',
+    title: '特种设备类型',
     endpoint: '/special-types',
     columns: [
         { key: 'id', header: 'ID', width: 60 },
@@ -14,7 +14,7 @@ const config: CrudPageConfig = {
         { key: 'sort', label: '排序', type: 'number' },
     ],
     searchField: 'title',
-    searchPlaceholder: '搜索特殊类型...',
+    searchPlaceholder: '搜索特种设备类型...',
     permissions: {
         list: 'base-data.view',
         create: 'base-data.manage',

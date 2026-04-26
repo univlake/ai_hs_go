@@ -1,0 +1,10 @@
+DROP TABLE IF EXISTS checklist_libraries;
+DROP TABLE IF EXISTS regulation_library_types;
+DROP TABLE IF EXISTS dangerous_craft_types;
+DROP TABLE IF EXISTS safety_management_types;
+DROP TABLE IF EXISTS space_work_types;
+DROP TABLE IF EXISTS process_types;
+DROP TABLE IF EXISTS record_types;
+ALTER TABLE special_types     DROP COLUMN IF EXISTS sort;
+ALTER TABLE operational_types DROP COLUMN IF EXISTS sort;
+ALTER TABLE enterprise_types  DROP COLUMN IF EXISTS sort;
