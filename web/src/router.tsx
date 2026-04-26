@@ -59,6 +59,7 @@ const SystemRoles = lazyPage('system/roles/Index');
 const SafetySpecialEquipment = lazyPage('safety/special-equipment/Index');
 const SafetyDangerousEquipment = lazyPage('safety/dangerous-equipment/Index');
 const SafetyHazardousChemicals = lazyPage('safety/hazardous-chemicals/Index');
+const SafetyMajorHazards = lazyPage('safety/major-hazards/Index');
 const EnterpriseCurrent = lazyPage('enterprise/current/Index');
 const EnterpriseSubsidiaries = lazyPage('enterprise/subsidiaries/Index');
 const EnterpriseApproval = lazyPage('enterprise/approval/Index');
@@ -130,6 +131,7 @@ export const router = createBrowserRouter([
           { path: '/safety/special-equipment', element: <LoadingShell><SafetySpecialEquipment /></LoadingShell> },
           { path: '/safety/dangerous-equipment', element: <LoadingShell><SafetyDangerousEquipment /></LoadingShell> },
           { path: '/safety/hazardous-chemicals', element: <LoadingShell><SafetyHazardousChemicals /></LoadingShell> },
+          { path: '/safety/major-hazards', element: <LoadingShell><SafetyMajorHazards /></LoadingShell> },
           { path: '/enterprise/current', element: <LoadingShell><EnterpriseCurrent /></LoadingShell> },
           { path: '/enterprise/subsidiaries', element: <LoadingShell><EnterpriseSubsidiaries /></LoadingShell> },
           { path: '/enterprise/approval', element: <LoadingShell><EnterpriseApproval /></LoadingShell> },
