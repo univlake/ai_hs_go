@@ -39,7 +39,8 @@ func dictTableForSlug(slug string) string {
 		"special-types",
 		"space-work-types",
 		"safety-management-types",
-		"dangerous-craft-types":
+		"dangerous-craft-types",
+		"hazards":
 		// regulation-library-types is intentionally NOT in this list — its
 		// table has extra hierarchy columns (pid / all_name / audit) and
 		// flows through RegulationLibraryTypeService.

@@ -58,6 +58,12 @@ type DangerousCraftType struct{ SimpleDictType }
 
 func (DangerousCraftType) TableName() string { return "dangerous_craft_types" }
 
+// Hazard — 危险有害因素字典。confined-space 页面把多个 hazard 的 id 用逗号
+// 拼接存到 space_works.hazard_id；未来 风险源 / 隐患排查 也会引用这里。
+type Hazard struct{ SimpleDictType }
+
+func (Hazard) TableName() string { return "hazards" }
+
 // RegulationLibraryType is multi-level (tree). pid points at the parent
 // id (0 = top-level), all_name is the slash-joined full path
 // ("安全生产法律 / 行政法规 / 安全许可证条例") used by the list display
