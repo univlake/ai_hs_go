@@ -12,6 +12,7 @@ import (
 	basedataapi "ai_hs_go/internal/api/basedata"
 	companyapi "ai_hs_go/internal/api/company"
 	companygroupapi "ai_hs_go/internal/api/companygroup"
+	majorhazardapi "ai_hs_go/internal/api/majorhazard"
 	permissionapi "ai_hs_go/internal/api/permission"
 	safetyarchapi "ai_hs_go/internal/api/safetyarchive"
 	platformapi "ai_hs_go/internal/api/platform"
@@ -96,6 +97,8 @@ func (r *Router) Engine() *gin.Engine {
 	tenantH := tenantapi.NewHandler(companySvc)
 	ledgerSvc := service.NewSafetyLedgerService(r.deps.DB)
 	ledgerH := safetyapi.NewHandler(ledgerSvc)
+	majorHazardSvc := service.NewMajorHazardService(r.deps.DB)
+	majorHazardH := majorhazardapi.NewHandler(majorHazardSvc)
 	uploadH := uploadapi.NewHandler(r.deps.OSS)
 	basedataH := basedataapi.NewHandler(dictSvc, checklistSvc, regLibSvc)
 	safetyArchH := safetyarchapi.NewHandler(safetyarchapi.HandlerDeps{
@@ -329,6 +332,12 @@ func (r *Router) Engine() *gin.Engine {
 	business.POST("/hazardous-chemicals", middleware.RequirePermission(r.deps.Enforcer, "hazardous-chemicals.create"), ledgerH.CreateHazardousChemical)
 	business.PUT("/hazardous-chemicals/:id", middleware.RequirePermission(r.deps.Enforcer, "hazardous-chemicals.update"), ledgerH.UpdateHazardousChemical)
 	business.DELETE("/hazardous-chemicals/:id", middleware.RequirePermission(r.deps.Enforcer, "hazardous-chemicals.delete"), ledgerH.DeleteHazardousChemical)
+
+	// 重大危险源（major_hazards + major_constitutes）— 主表 CRUD，子表整体替换。
+	business.GET("/major-hazards", middleware.RequirePermission(r.deps.Enforcer, "major-hazards.list"), majorHazardH.List)
+	business.POST("/major-hazards", middleware.RequirePermission(r.deps.Enforcer, "major-hazards.create"), majorHazardH.Create)
+	business.PUT("/major-hazards/:id", middleware.RequirePermission(r.deps.Enforcer, "major-hazards.update"), majorHazardH.Update)
+	business.DELETE("/major-hazards/:id", middleware.RequirePermission(r.deps.Enforcer, "major-hazards.delete"), majorHazardH.Delete)
 
 	// Upload (OSS multipart)
 	upload := business.Group("/upload-oss", middleware.RequirePermission(r.deps.Enforcer, "upload.oss"))

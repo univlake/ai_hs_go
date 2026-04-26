@@ -235,9 +235,12 @@ export default function SafetySpecialEquipment() {
 
     useEffect(() => {
         api.get(API.specialTypes())
-            .then((res) =>
-                setSpecialTypes((res.data?.data as SpecialType[]) ?? []),
-            )
+            .then((res) => {
+                // /special-types is a paginated dict endpoint — items live at
+                // res.data.data.data, not res.data.data (which is the page envelope).
+                const items = (res.data?.data?.data as SpecialType[]) ?? [];
+                setSpecialTypes(items);
+            })
             .catch(() => {
                 // dictionary lookup is non-critical — form just shows an
                 // empty type select if it fails
