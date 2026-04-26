@@ -53,6 +53,11 @@ var CorePermissions = []string{
 	"hazardous-chemicals.list", "hazardous-chemicals.create", "hazardous-chemicals.update", "hazardous-chemicals.delete",
 	"major-hazards.list", "major-hazards.create", "major-hazards.update", "major-hazards.delete",
 
+	// 工艺信息（重点监管 / 较大危险 / 有限空间辨识）
+	"major-hazardous-processes.list", "major-hazardous-processes.create", "major-hazardous-processes.update", "major-hazardous-processes.delete",
+	"hazardous-processes.list", "hazardous-processes.create", "hazardous-processes.update", "hazardous-processes.delete",
+	"space-works.list", "space-works.create", "space-works.update", "space-works.delete",
+
 	// File upload
 	"upload.file", "upload.oss",
 }
@@ -92,6 +97,9 @@ var SeededRoles = []SeededRole{
 			"dangerous-equipment.list", "dangerous-equipment.create", "dangerous-equipment.update", "dangerous-equipment.delete",
 			"hazardous-chemicals.list", "hazardous-chemicals.create", "hazardous-chemicals.update", "hazardous-chemicals.delete",
 			"major-hazards.list", "major-hazards.create", "major-hazards.update", "major-hazards.delete",
+			"major-hazardous-processes.list", "major-hazardous-processes.create", "major-hazardous-processes.update", "major-hazardous-processes.delete",
+			"hazardous-processes.list", "hazardous-processes.create", "hazardous-processes.update", "hazardous-processes.delete",
+			"space-works.list", "space-works.create", "space-works.update", "space-works.delete",
 			"upload.file", "upload.oss",
 		},
 	},
@@ -108,6 +116,7 @@ var SeededRoles = []SeededRole{
 			"funding-executions.list",
 			"special-equipment.list", "dangerous-equipment.list", "hazardous-chemicals.list",
 			"major-hazards.list",
+			"major-hazardous-processes.list", "hazardous-processes.list", "space-works.list",
 		},
 	},
 }
@@ -198,6 +207,24 @@ var SeededDangerousCraftTypes = []string{
 	"重氮化工艺", "氧化工艺", "过氧化工艺", "氨基化工艺",
 	"磺化工艺", "聚合工艺", "烷基化工艺", "新型煤化工艺",
 	"电石生产工艺", "偶氮化工艺",
+}
+
+// SeededHazards — 危险有害因素初始项。confined-space 页面里多选用。
+var SeededHazards = []string{
+	"易燃易爆气体或者其蒸汽",
+	"有毒气体或者其蒸汽",
+	"缺氧或富氧",
+	"坍塌",
+	"机械伤害",
+	"酸碱腐蚀性化学品或者其蒸汽",
+	"易挥发的危险化学品",
+	"通风不良",
+	"交叉作业",
+	"高热高湿",
+	"物体打击",
+	"高处坠落",
+	"触电",
+	"灼烫",
 }
 
 // RegulationLibraryType seeds describe a 2-level tree: 5 top-level
@@ -303,6 +330,9 @@ func seedBaseData(ctx context.Context, db *gorm.DB) error {
 		return err
 	}
 	if err := seedDictTable(ctx, db, "dangerous_craft_types", SeededDangerousCraftTypes, false); err != nil {
+		return err
+	}
+	if err := seedDictTable(ctx, db, "hazards", SeededHazards, false); err != nil {
 		return err
 	}
 	if err := seedRegulationLibraryTypes(ctx, db); err != nil {
@@ -528,13 +558,13 @@ func seedSuperAdmin(ctx context.Context, db *gorm.DB, enforcer *casbin.Enforcer,
 		return err2
 	}
 	user := model.User{
-		Username:               cred.Username,
-		Password:               string(hashed),
-		Nickname:               cred.Nickname,
-		CompanyID:              nil,
-		Status:                 UserStatusEnable,
-		IsPlatformAdmin:        true,
-		MustChangeCredentials:  true, // force first-login setup
+		Username:              cred.Username,
+		Password:              string(hashed),
+		Nickname:              cred.Nickname,
+		CompanyID:             nil,
+		Status:                UserStatusEnable,
+		IsPlatformAdmin:       true,
+		MustChangeCredentials: true, // force first-login setup
 	}
 	if err := db.WithContext(ctx).Create(&user).Error; err != nil {
 		return err

@@ -14,9 +14,10 @@ import (
 	companygroupapi "ai_hs_go/internal/api/companygroup"
 	majorhazardapi "ai_hs_go/internal/api/majorhazard"
 	permissionapi "ai_hs_go/internal/api/permission"
-	safetyarchapi "ai_hs_go/internal/api/safetyarchive"
 	platformapi "ai_hs_go/internal/api/platform"
+	processapi "ai_hs_go/internal/api/process"
 	roleapi "ai_hs_go/internal/api/role"
+	safetyarchapi "ai_hs_go/internal/api/safetyarchive"
 	safetyapi "ai_hs_go/internal/api/safetyledger"
 	tenantapi "ai_hs_go/internal/api/tenant"
 	uploadapi "ai_hs_go/internal/api/upload"
@@ -99,6 +100,8 @@ func (r *Router) Engine() *gin.Engine {
 	ledgerH := safetyapi.NewHandler(ledgerSvc)
 	majorHazardSvc := service.NewMajorHazardService(r.deps.DB)
 	majorHazardH := majorhazardapi.NewHandler(majorHazardSvc)
+	processSvc := service.NewProcessService(r.deps.DB)
+	processH := processapi.NewHandler(processSvc)
 	uploadH := uploadapi.NewHandler(r.deps.OSS)
 	basedataH := basedataapi.NewHandler(dictSvc, checklistSvc, regLibSvc)
 	safetyArchH := safetyarchapi.NewHandler(safetyarchapi.HandlerDeps{
@@ -184,6 +187,7 @@ func (r *Router) Engine() *gin.Engine {
 		"space-work-types",
 		"safety-management-types",
 		"dangerous-craft-types",
+		"hazards",
 		// regulation-library-types is registered separately below — its
 		// table carries pid/all_name and needs the dedicated service that
 		// keeps the tree consistent.
@@ -338,6 +342,22 @@ func (r *Router) Engine() *gin.Engine {
 	business.POST("/major-hazards", middleware.RequirePermission(r.deps.Enforcer, "major-hazards.create"), majorHazardH.Create)
 	business.PUT("/major-hazards/:id", middleware.RequirePermission(r.deps.Enforcer, "major-hazards.update"), majorHazardH.Update)
 	business.DELETE("/major-hazards/:id", middleware.RequirePermission(r.deps.Enforcer, "major-hazards.delete"), majorHazardH.Delete)
+
+	// 工艺信息 — 三模块共用 ProcessService（重点监管 / 较大危险 / 有限空间）。
+	business.GET("/major-hazardous-processes", middleware.RequirePermission(r.deps.Enforcer, "major-hazardous-processes.list"), processH.ListMajorHazardous)
+	business.POST("/major-hazardous-processes", middleware.RequirePermission(r.deps.Enforcer, "major-hazardous-processes.create"), processH.CreateMajorHazardous)
+	business.PUT("/major-hazardous-processes/:id", middleware.RequirePermission(r.deps.Enforcer, "major-hazardous-processes.update"), processH.UpdateMajorHazardous)
+	business.DELETE("/major-hazardous-processes/:id", middleware.RequirePermission(r.deps.Enforcer, "major-hazardous-processes.delete"), processH.DeleteMajorHazardous)
+
+	business.GET("/hazardous-processes", middleware.RequirePermission(r.deps.Enforcer, "hazardous-processes.list"), processH.ListHazardous)
+	business.POST("/hazardous-processes", middleware.RequirePermission(r.deps.Enforcer, "hazardous-processes.create"), processH.CreateHazardous)
+	business.PUT("/hazardous-processes/:id", middleware.RequirePermission(r.deps.Enforcer, "hazardous-processes.update"), processH.UpdateHazardous)
+	business.DELETE("/hazardous-processes/:id", middleware.RequirePermission(r.deps.Enforcer, "hazardous-processes.delete"), processH.DeleteHazardous)
+
+	business.GET("/space-works", middleware.RequirePermission(r.deps.Enforcer, "space-works.list"), processH.ListSpaceWork)
+	business.POST("/space-works", middleware.RequirePermission(r.deps.Enforcer, "space-works.create"), processH.CreateSpaceWork)
+	business.PUT("/space-works/:id", middleware.RequirePermission(r.deps.Enforcer, "space-works.update"), processH.UpdateSpaceWork)
+	business.DELETE("/space-works/:id", middleware.RequirePermission(r.deps.Enforcer, "space-works.delete"), processH.DeleteSpaceWork)
 
 	// Upload (OSS multipart)
 	upload := business.Group("/upload-oss", middleware.RequirePermission(r.deps.Enforcer, "upload.oss"))

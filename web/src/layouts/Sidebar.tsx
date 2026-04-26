@@ -935,6 +935,11 @@ const navSections: NavSection[] = [
                         permission: 'base-data.view',
                     },
                     {
+                        title: '危险有害因素',
+                        href: '/system/hazards',
+                        permission: 'base-data.view',
+                    },
+                    {
                         title: '法规库类型',
                         href: '/system/regulation-library-types',
                         permission: 'base-data.view',

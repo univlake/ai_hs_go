@@ -72,6 +72,7 @@ const SystemSpecialTypes = lazyPage('system/special-types/Index');
 const SystemSpaceWorkTypes = lazyPage('system/space-work-types/Index');
 const SystemSafetyManagementTypes = lazyPage('system/safety-management-types/Index');
 const SystemDangerousCraftTypes = lazyPage('system/dangerous-craft-types/Index');
+const SystemHazards = lazyPage('system/hazards/Index');
 const SystemRegulationLibraryTypes = lazyPage('system/regulation-library-types/Index');
 const KnowledgeChecklists = lazyPage('knowledge/checklists/Index');
 const SafetyArchOrgStructure = lazyPage('safety-archives/org-structure/Index');
@@ -79,6 +80,12 @@ const SafetyArchQualifications = lazyPage('safety-archives/qualifications/Index'
 const SafetyArchInvestment = lazyPage('safety-archives/safety-investment/Index');
 const SafetyPersonnels = lazyPage('safety/personnels/Index');
 const SafetyBuildings = lazyPage('safety/buildings/Index');
+const ProcessKeyHazardous = lazyPage('process/key-hazardous/Index');
+const ProcessHazardous = lazyPage('process/hazardous/Index');
+// 有限空间辨识页面文件实际位于 process/confined-space/，但 Sidebar 用
+// /space-work/space-works 作为 href（permission space-works.list），这里挂载
+// 同一组件而不动 Sidebar，避免误碰其他不在本次范围的链接。
+const ProcessConfinedSpace = lazyPage('process/confined-space/Index');
 const Placeholder = lazyPage('_placeholder');
 
 export const router = createBrowserRouter([
@@ -144,6 +151,7 @@ export const router = createBrowserRouter([
           { path: '/system/space-work-types', element: <LoadingShell><SystemSpaceWorkTypes /></LoadingShell> },
           { path: '/system/safety-management-types', element: <LoadingShell><SystemSafetyManagementTypes /></LoadingShell> },
           { path: '/system/dangerous-craft-types', element: <LoadingShell><SystemDangerousCraftTypes /></LoadingShell> },
+          { path: '/system/hazards', element: <LoadingShell><SystemHazards /></LoadingShell> },
           { path: '/system/regulation-library-types', element: <LoadingShell><SystemRegulationLibraryTypes /></LoadingShell> },
           { path: '/knowledge/checklists', element: <LoadingShell><KnowledgeChecklists /></LoadingShell> },
           { path: '/safety-archives/org-structure', element: <LoadingShell><SafetyArchOrgStructure /></LoadingShell> },
@@ -151,6 +159,9 @@ export const router = createBrowserRouter([
           { path: '/safety-archives/safety-investment', element: <LoadingShell><SafetyArchInvestment /></LoadingShell> },
           { path: '/safety/personnels', element: <LoadingShell><SafetyPersonnels /></LoadingShell> },
           { path: '/safety/buildings', element: <LoadingShell><SafetyBuildings /></LoadingShell> },
+          { path: '/process/key-hazardous', element: <LoadingShell><ProcessKeyHazardous /></LoadingShell> },
+          { path: '/process/hazardous', element: <LoadingShell><ProcessHazardous /></LoadingShell> },
+          { path: '/space-work/space-works', element: <LoadingShell><ProcessConfinedSpace /></LoadingShell> },
           // Sidebar 旧 href 兼容（之前指向 /equipment/major-hazardous）
           { path: '/equipment/major-hazardous', element: <LoadingShell><SafetyDangerousEquipment /></LoadingShell> },
           // Catch-all inside AppLayout: shows a friendly "尚未迁移" page
