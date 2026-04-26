@@ -15,6 +15,7 @@ import {
     Upload,
 } from 'lucide-react';
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { DatePicker } from '@/components/shared/DatePicker';
 import { DetailButton } from '@/components/shared/DetailButton';
 import { ObjectDetailDrawer } from '@/components/shared/ObjectDetailDrawer';
 import { useScope } from '@/contexts/ScopeContext';
@@ -716,6 +717,9 @@ function StaffSubModulesSection({
                 <StaffTable
                     endpoint="/safety-management"
                     companyId={companyId}
+                    detailLabels={{
+                        safety_management_type: '人员类型',
+                    }}
                     columns={[
                         { key: 'name', header: '姓名' },
                         {
@@ -824,11 +828,16 @@ function StaffTable({
     companyId,
     columns,
     formFields,
+    detailLabels,
 }: {
     endpoint: string;
     companyId: number | undefined;
     columns: TableColumn[];
     formFields: FormFieldDef[];
+    /** Extra label entries merged into the detail drawer's labels map.
+     *  Use for keys that aren't in formFields — e.g. eager-loaded
+     *  relation objects like `safety_management_type`. */
+    detailLabels?: Record<string, string>;
 }) {
     const { data, loading, reload, total } = useApiList<
         Record<string, unknown>
@@ -1139,9 +1148,12 @@ function StaffTable({
                 title="人员详情"
                 data={detail.data}
                 onClose={detail.close}
-                labels={Object.fromEntries(
-                    formFields.map((field) => [field.key, field.label]),
-                )}
+                labels={{
+                    ...Object.fromEntries(
+                        formFields.map((field) => [field.key, field.label]),
+                    ),
+                    ...(detailLabels ?? {}),
+                }}
             />
 
             {/* Create/Edit modal */}
@@ -1192,6 +1204,16 @@ function StaffTable({
                                                 </option>
                                             ))}
                                         </select>
+                                    ) : field.type === 'date' ? (
+                                        <DatePicker
+                                            value={form[field.key] ?? ''}
+                                            onChange={(v) =>
+                                                setForm((f) => ({
+                                                    ...f,
+                                                    [field.key]: v,
+                                                }))
+                                            }
+                                        />
                                     ) : (
                                         <input
                                             type={field.type ?? 'text'}

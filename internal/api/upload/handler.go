@@ -158,6 +158,49 @@ func (h *Handler) SignedURL(c *gin.Context) {
 	response.Success(c, gin.H{"url": url})
 }
 
+// PostPolicy: GET /api/v1/upload/oss-signature
+//
+// Frontend OssUploadField does a browser-direct multipart POST to the
+// OSS bucket using these values. Mirrors Laravel OssService::policy.
+func (h *Handler) PostPolicy(c *gin.Context) {
+	if h.oss == nil {
+		response.Failed(c, 503, "OSS 未配置")
+		return
+	}
+	dir := c.DefaultQuery("dir", fmt.Sprintf("uploads/%s/", time.Now().Format("2006/01")))
+	if dir == "" {
+		dir = "uploads/"
+	}
+	policy, err := h.oss.SignPostPolicy(dir, time.Hour)
+	if err != nil {
+		response.Internal(c, "签名失败: "+err.Error())
+		return
+	}
+	response.Success(c, policy)
+}
+
+// SignByURL: GET /api/v1/upload/oss-sign?url=https://bucket.oss.../path/file.png
+//
+// The legacy frontend stores either a relative key or a full bucket URL
+// in `annex_url`; storage.SignURL normalizes both forms.
+func (h *Handler) SignByURL(c *gin.Context) {
+	if h.oss == nil {
+		response.Failed(c, 503, "OSS 未配置")
+		return
+	}
+	raw := c.Query("url")
+	if raw == "" {
+		response.BadRequest(c, "缺少 url")
+		return
+	}
+	signed, err := h.oss.SignURL(raw, time.Hour, nil)
+	if err != nil {
+		response.Internal(c, "签名失败")
+		return
+	}
+	response.Success(c, signed)
+}
+
 func buildKey(companyID, userID int64, filename string) string {
 	return fmt.Sprintf("uploads/c%d/u%d/%s_%s", companyID, userID, time.Now().Format("20060102"), uuid.NewString()+"_"+filename)
 }

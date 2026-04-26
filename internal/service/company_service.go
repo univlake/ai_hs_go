@@ -397,16 +397,16 @@ func (s *CompanyService) Update(ctx context.Context, id int64, in UpdateCompanyI
 	return &c, nil
 }
 
-// parseDateOnly accepts the same date formats parseDate elsewhere accepts,
-// returning nil on failure or empty input. Kept private to this package
-// since its only consumer right now is Update.
-func parseDateOnly(s string) *time.Time {
+// parseDateOnly returns a *model.Date suitable for assigning to date-only
+// columns. nil on empty / unrecognised input.
+func parseDateOnly(s string) *model.Date {
 	if s == "" {
 		return nil
 	}
 	for _, f := range []string{"2006-01-02", "2006/01/02", "2006/1/2"} {
 		if t, err := time.Parse(f, s); err == nil {
-			return &t
+			d := model.Date(t)
+			return &d
 		}
 	}
 	return nil

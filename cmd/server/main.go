@@ -68,6 +68,19 @@ func main() {
 		ossClient, err = storage.New(cfg.OSS)
 		if err != nil {
 			logger.Warn("oss init", zap.Error(err))
+		} else if len(cfg.CORS.AllowedOrigins) > 0 {
+			// Push the same allowed origins the API uses to OSS so the
+			// browser-direct POST upload doesn't trip the bucket's
+			// default CORS denial. Best-effort — keys with bucket-read
+			// scope only will hit AccessDenied here, but the upload
+			// flow may still work if CORS is set out-of-band.
+			if err := ossClient.EnsureCORS(cfg.CORS.AllowedOrigins); err != nil {
+				logger.Warn("oss cors setup failed (configure manually if needed)",
+					zap.Error(err))
+			} else {
+				logger.Info("oss cors rules applied",
+					zap.Strings("origins", cfg.CORS.AllowedOrigins))
+			}
 		}
 	} else {
 		logger.Info("oss not configured; upload endpoints will return 503")

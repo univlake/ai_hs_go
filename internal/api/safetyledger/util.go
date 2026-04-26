@@ -6,16 +6,19 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+
+	"ai_hs_go/internal/model"
 )
 
-func parseDate(p *string) *time.Time {
+func parseDate(p *string) *model.Date {
 	if p == nil || *p == "" {
 		return nil
 	}
 	formats := []string{"2006-01-02", "2006/01/02", "2006/1/2", time.RFC3339}
 	for _, f := range formats {
 		if t, err := time.Parse(f, *p); err == nil {
-			return &t
+			d := model.Date(t)
+			return &d
 		}
 	}
 	return nil

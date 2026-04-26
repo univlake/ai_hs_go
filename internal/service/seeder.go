@@ -29,7 +29,22 @@ var CorePermissions = []string{
 	// Base data
 	"base-data.view", "base-data.manage",
 	"checklist-libraries.list", "checklist-libraries.create", "checklist-libraries.update", "checklist-libraries.delete",
+
+	// Safety archive (5 sub-modules)
+	"safety-architectures.list", "safety-architectures.create", "safety-architectures.update",
+	"filing-permissions.list", "filing-permissions.create", "filing-permissions.update", "filing-permissions.delete",
+	"buildings.list", "buildings.create", "buildings.update", "buildings.delete",
+	"security-investments.list", "security-investments.create", "security-investments.update", "security-investments.delete",
 	"personnels.list", "personnels.create", "personnels.update",
+
+	// Safety archive sub-tabs (人员管理子页 + 安全资质子页 + 安全投入子页)
+	"certificate-statuses.list", "certificate-statuses.create", "certificate-statuses.update",
+	"safety-management.list", "safety-management.create", "safety-management.update", "safety-management.delete",
+	"special-equipment-staff.list", "special-equipment-staff.create", "special-equipment-staff.update", "special-equipment-staff.delete",
+	"elimination-control-staff.list", "elimination-control-staff.create", "elimination-control-staff.update", "elimination-control-staff.delete",
+	"production-standardizations.list", "production-standardizations.create", "production-standardizations.update",
+	"occupational-health-safeties.list", "occupational-health-safeties.create", "occupational-health-safeties.update",
+	"funding-executions.list", "funding-executions.create", "funding-executions.update", "funding-executions.delete",
 
 	// Safety ledger (MVP)
 	"special-equipment.list", "special-equipment.create", "special-equipment.update", "special-equipment.delete",
@@ -59,7 +74,18 @@ var SeededRoles = []SeededRole{
 			"companies.list", "companies.update", "companies.tree",
 			"base-data.view", "base-data.manage",
 			"checklist-libraries.list", "checklist-libraries.create", "checklist-libraries.update", "checklist-libraries.delete",
+			"safety-architectures.list", "safety-architectures.create", "safety-architectures.update",
+			"filing-permissions.list", "filing-permissions.create", "filing-permissions.update", "filing-permissions.delete",
+			"buildings.list", "buildings.create", "buildings.update", "buildings.delete",
+			"security-investments.list", "security-investments.create", "security-investments.update", "security-investments.delete",
 			"personnels.list", "personnels.create", "personnels.update",
+			"certificate-statuses.list", "certificate-statuses.create", "certificate-statuses.update",
+			"safety-management.list", "safety-management.create", "safety-management.update", "safety-management.delete",
+			"special-equipment-staff.list", "special-equipment-staff.create", "special-equipment-staff.update", "special-equipment-staff.delete",
+			"elimination-control-staff.list", "elimination-control-staff.create", "elimination-control-staff.update", "elimination-control-staff.delete",
+			"production-standardizations.list", "production-standardizations.create", "production-standardizations.update",
+			"occupational-health-safeties.list", "occupational-health-safeties.create", "occupational-health-safeties.update",
+			"funding-executions.list", "funding-executions.create", "funding-executions.update", "funding-executions.delete",
 			"special-equipment.list", "special-equipment.create", "special-equipment.update", "special-equipment.delete",
 			"special-equipment-staff.list", "special-equipment-staff.create", "special-equipment-staff.update", "special-equipment-staff.delete",
 			"dangerous-equipment.list", "dangerous-equipment.create", "dangerous-equipment.update", "dangerous-equipment.delete",
@@ -72,6 +98,12 @@ var SeededRoles = []SeededRole{
 		Permissions: []string{
 			"users.list", "companies.list", "companies.tree", "base-data.view",
 			"checklist-libraries.list",
+			"safety-architectures.list", "filing-permissions.list", "buildings.list",
+			"security-investments.list", "personnels.list",
+			"certificate-statuses.list", "safety-management.list",
+			"special-equipment-staff.list", "elimination-control-staff.list",
+			"production-standardizations.list", "occupational-health-safeties.list",
+			"funding-executions.list",
 			"special-equipment.list", "dangerous-equipment.list", "hazardous-chemicals.list",
 		},
 	},
