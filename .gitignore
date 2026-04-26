@@ -1,0 +1,28 @@
+/bin/
+/tmp/
+*.log
+*.test
+*.out
+.DS_Store
+.env
+.env.local
+configs/config.yaml
+configs/rsa_private.pem
+configs/rsa_public.pem
+
+# Compiled binaries (when go build is run at the project root or via air)
+/server
+/worker
+/migrate
+
+# Frontend
+/web/node_modules/
+/web/dist/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Claude Code per-machine config
+.claude/settings.local.json

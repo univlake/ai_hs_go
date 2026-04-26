@@ -1,0 +1,47 @@
+app:
+  env: local
+  port: 8080
+  log_level: info
+
+database:
+  host: 127.0.0.1
+  port: 5432
+  user: ai_hs
+  password: ai_hs
+  name: ai_hs_go
+  sslmode: disable
+  timezone: Asia/Shanghai
+  max_open_conns: 50
+  max_idle_conns: 10
+  conn_max_lifetime_minutes: 60
+
+redis:
+  addr: 127.0.0.1:6379
+  password: ""
+  db: 0
+
+jwt:
+  secret: please-change-me-to-a-32+byte-random-string
+  ttl_seconds: 86400
+  issuer: ai_hs_go
+
+rsa:
+  private_key_path: ./configs/rsa_private.pem
+  public_key_path: ./configs/rsa_public.pem
+
+oss:
+  endpoint: oss-cn-beijing.aliyuncs.com
+  access_key_id: ""
+  access_key_secret: ""
+  bucket: ai-hs-go
+  public_url: https://ai-hs-go.oss-cn-beijing.aliyuncs.com
+
+cors:
+  allowed_origins:
+    - http://localhost:5173
+    - http://127.0.0.1:5173
+
+ratelimit:
+  login_per_minute: 5
+  api_per_minute: 120
+  guest_per_minute: 30
