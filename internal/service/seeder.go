@@ -51,6 +51,7 @@ var CorePermissions = []string{
 	"special-equipment-staff.list", "special-equipment-staff.create", "special-equipment-staff.update", "special-equipment-staff.delete",
 	"dangerous-equipment.list", "dangerous-equipment.create", "dangerous-equipment.update", "dangerous-equipment.delete",
 	"hazardous-chemicals.list", "hazardous-chemicals.create", "hazardous-chemicals.update", "hazardous-chemicals.delete",
+	"major-hazards.list", "major-hazards.create", "major-hazards.update", "major-hazards.delete",
 
 	// File upload
 	"upload.file", "upload.oss",
@@ -90,6 +91,7 @@ var SeededRoles = []SeededRole{
 			"special-equipment-staff.list", "special-equipment-staff.create", "special-equipment-staff.update", "special-equipment-staff.delete",
 			"dangerous-equipment.list", "dangerous-equipment.create", "dangerous-equipment.update", "dangerous-equipment.delete",
 			"hazardous-chemicals.list", "hazardous-chemicals.create", "hazardous-chemicals.update", "hazardous-chemicals.delete",
+			"major-hazards.list", "major-hazards.create", "major-hazards.update", "major-hazards.delete",
 			"upload.file", "upload.oss",
 		},
 	},
@@ -105,6 +107,7 @@ var SeededRoles = []SeededRole{
 			"production-standardizations.list", "occupational-health-safeties.list",
 			"funding-executions.list",
 			"special-equipment.list", "dangerous-equipment.list", "hazardous-chemicals.list",
+			"major-hazards.list",
 		},
 	},
 }
