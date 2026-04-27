@@ -13,6 +13,14 @@ import (
 // They return empty success payloads so the SPA renders cleanly. Each stub is
 // listed in the migration manifest (see plan §10) — replace the corresponding
 // stub with a real handler when its module gets ported.
+//
+// 已下线的 stubs（在通知模块迁移后由真实 handler 接管）:
+//   /meeting-notifications/pending     → notificationH.PendingMeetingNotices
+//   /office-notify-notifications/pending → notificationH.PendingOfficeNotifyScopes
+//   /new-notify-notifications/pending  → notificationH.PendingNewNotifyScopes
+//   /information-drafts/dashboard/*    → notificationH.DashboardInformationDraft*
+//   /meeting-notices/:id/confirm       → notificationH.ConfirmMeetingNotice
+//   /new-notify-scopes/:id/read        → notificationH.MarkNewNotifyRead
 func mountDashboardStubs(g *gin.RouterGroup) {
 	emptyArray := func(c *gin.Context) { response.Success(c, []any{}) }
 
@@ -20,24 +28,15 @@ func mountDashboardStubs(g *gin.RouterGroup) {
 		// Expert inspection notifications (manifest §10.2 — controllers ExpertInspectionsController, ExpertCompany)
 		"/expert-inspection-notifications/company",
 		"/expert-inspection-notifications/expert",
-		// Meeting / Office / NewNotify pending notifications (manifest §10.2 H. Notifications)
-		"/meeting-notifications/pending",
-		"/office-notify-notifications/pending",
-		"/new-notify-notifications/pending",
-		// Information drafts (manifest §10.2 H. Notifications)
-		"/information-drafts/dashboard/pending",
-		"/information-drafts/dashboard/readings",
 	} {
 		g.GET(p, emptyArray)
 	}
 
-	// Confirm / mark-read POST endpoints — accept and 200 silently so the UI
-	// doesn't strand. They become real handlers once their module ports.
+	// Confirm POST endpoints — accept and 200 silently so the UI doesn't strand.
+	// They become real handlers once their module ports.
 	confirmStub := func(c *gin.Context) { response.Success(c, gin.H{"message": "ok"}) }
 	g.POST("/expert-inspection-companies/:id/confirm", confirmStub)
 	g.POST("/expert-inspection-users/:id/confirm", confirmStub)
-	g.POST("/meeting-notices/:id/confirm", confirmStub)
-	g.POST("/new-notify-scopes/:id/read", confirmStub)
 }
 
 // IsStubPath returns whether a path was served by the dashboard stubs.
@@ -46,12 +45,7 @@ func mountDashboardStubs(g *gin.RouterGroup) {
 func IsStubPath(path string) bool {
 	switch path {
 	case "/api/v1/expert-inspection-notifications/company",
-		"/api/v1/expert-inspection-notifications/expert",
-		"/api/v1/meeting-notifications/pending",
-		"/api/v1/office-notify-notifications/pending",
-		"/api/v1/new-notify-notifications/pending",
-		"/api/v1/information-drafts/dashboard/pending",
-		"/api/v1/information-drafts/dashboard/readings":
+		"/api/v1/expert-inspection-notifications/expert":
 		return true
 	}
 	return false

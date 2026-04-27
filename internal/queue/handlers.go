@@ -8,8 +8,6 @@ import (
 	"github.com/hibiken/asynq"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-
-	"ai_hs_go/internal/model"
 )
 
 type Handlers struct {
@@ -17,45 +15,30 @@ type Handlers struct {
 	Logger *zap.Logger
 }
 
-// HandleSendNotification mirrors SendNotificationJob: persists NewNotify +
-// per-user scope rows in a single transaction.
-func (h *Handlers) HandleSendNotification(ctx context.Context, t *asynq.Task) error {
+// HandleSendNotification — 历史占位 worker。原实现写入 new_notifies/new_notify_scopes，
+// 现在这两张表已重新分配给业务侧的「通知公告 - 通知型」模块（schema 完全不同），
+// 队列侧通知通道改为只记录日志，等真正接入推送/邮件时在此处接通。
+//
+// 没有任何业务路径调用 NewSendNotificationTask；队列只是 worker 启动时注册的两个
+// 任务类型之一，保留是为了兼容已部署 worker 的注册表。
+func (h *Handlers) HandleSendNotification(_ context.Context, t *asynq.Task) error {
 	var p SendNotificationPayload
 	if err := json.Unmarshal(t.Payload(), &p); err != nil {
 		return fmt.Errorf("unmarshal: %w", err)
 	}
-	dataJSON, _ := json.Marshal(p.Data)
-	return h.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		notify := &model.NewNotify{
-			Title: p.Title,
-			Body:  &p.Body,
-			Data:  dataJSON,
-		}
-		if err := tx.Create(notify).Error; err != nil {
-			return err
-		}
-		scopes := make([]model.NewNotifyScope, 0, len(p.UserIDs))
-		for _, uid := range p.UserIDs {
-			scopes = append(scopes, model.NewNotifyScope{NotifyID: notify.ID, UserID: uid})
-		}
-		if len(scopes) > 0 {
-			if err := tx.Create(&scopes).Error; err != nil {
-				return err
-			}
-		}
-		h.Logger.Info("notification dispatched",
-			zap.Int64("notify_id", notify.ID),
-			zap.Int("recipients", len(p.UserIDs)),
-		)
-		return nil
-	})
+	h.Logger.Info("notification task received (no-op)",
+		zap.String("title", p.Title),
+		zap.Int("recipients", len(p.UserIDs)),
+		zap.String("log_name", p.LogName),
+	)
+	return nil
 }
 
 // HandleExportExcel is a stub for the excel-export pipeline. Full implementation
 // loads rows, calls into the excel package, uploads to OSS, then chains a
 // notification. Phase 6 ships in-process exports for MVP; this hook is here so
 // the worker binary has both task types registered.
-func (h *Handlers) HandleExportExcel(ctx context.Context, t *asynq.Task) error {
+func (h *Handlers) HandleExportExcel(_ context.Context, t *asynq.Task) error {
 	var p ExportExcelPayload
 	if err := json.Unmarshal(t.Payload(), &p); err != nil {
 		return fmt.Errorf("unmarshal: %w", err)
@@ -65,7 +48,6 @@ func (h *Handlers) HandleExportExcel(ctx context.Context, t *asynq.Task) error {
 		zap.Int64("company_id", p.CompanyID),
 		zap.Int64("notify_user_id", p.NotifyUserID),
 	)
-	// TODO(phase 6.5): branch on p.Resource → call into internal/excel + storage.
 	return nil
 }
 

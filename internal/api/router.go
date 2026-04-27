@@ -16,6 +16,7 @@ import (
 	healthfireapi "ai_hs_go/internal/api/healthfire"
 	majorhazardapi "ai_hs_go/internal/api/majorhazard"
 	meetingtrainingapi "ai_hs_go/internal/api/meetingtraining"
+	notificationapi "ai_hs_go/internal/api/notification"
 	permissionapi "ai_hs_go/internal/api/permission"
 	platformapi "ai_hs_go/internal/api/platform"
 	processapi "ai_hs_go/internal/api/process"
@@ -117,6 +118,8 @@ func (r *Router) Engine() *gin.Engine {
 	riskH := riskapi.NewHandler(riskSvc, r.deps.OSS)
 	accidentEmergencySvc := service.NewAccidentEmergencyService(r.deps.DB, companyRepo)
 	accidentEmergencyH := accidentemergencyapi.NewHandler(accidentEmergencySvc)
+	notificationSvc := service.NewNotificationService(r.deps.DB, companyRepo)
+	notificationH := notificationapi.NewHandler(notificationSvc)
 	uploadH := uploadapi.NewHandler(r.deps.OSS)
 	basedataH := basedataapi.NewHandler(dictSvc, checklistSvc, regLibSvc)
 	safetyArchH := safetyarchapi.NewHandler(safetyarchapi.HandlerDeps{
@@ -542,6 +545,54 @@ func (r *Router) Engine() *gin.Engine {
 	business.POST("/emergency-teams", middleware.RequirePermission(r.deps.Enforcer, "emergency-teams.create"), accidentEmergencyH.CreateEmergencyTeam)
 	business.PUT("/emergency-teams/:id", middleware.RequirePermission(r.deps.Enforcer, "emergency-teams.update"), accidentEmergencyH.UpdateEmergencyTeam)
 	business.DELETE("/emergency-teams/:id", middleware.RequirePermission(r.deps.Enforcer, "emergency-teams.delete"), accidentEmergencyH.DeleteEmergencyTeam)
+
+	// 通知公告 / 会议通知 / 信息稿 — 三模块共用 NotificationService。
+	// 生产视图（receiveOnly 前端）跟集团视图共用同一组路由，前端切换 receiveOnly
+	// 即可隐藏写入控件，service 内 list 同时返回「我发起的 + 我接收的」两类记录。
+	//
+	// 任务型通知（office_notifies）
+	business.GET("/office-notifies", middleware.RequirePermission(r.deps.Enforcer, "office-notifies.list"), notificationH.ListOfficeNotify)
+	business.GET("/office-notifies/:id", middleware.RequirePermission(r.deps.Enforcer, "office-notifies.list"), notificationH.GetOfficeNotify)
+	business.POST("/office-notifies", middleware.RequirePermission(r.deps.Enforcer, "office-notifies.create"), notificationH.CreateOfficeNotify)
+	business.PUT("/office-notifies/:id", middleware.RequirePermission(r.deps.Enforcer, "office-notifies.update"), notificationH.UpdateOfficeNotify)
+	business.DELETE("/office-notifies/:id", middleware.RequirePermission(r.deps.Enforcer, "office-notifies.delete"), notificationH.DeleteOfficeNotify)
+	business.POST("/office-notify-scopes/:id/feedback", middleware.RequirePermission(r.deps.Enforcer, "office-notifies.list"), notificationH.SubmitOfficeNotifyFeedback)
+	business.GET("/office-notify-notifications/pending", notificationH.PendingOfficeNotifyScopes)
+
+	// 通知型通知（new_notifies）
+	business.GET("/new-notifies", middleware.RequirePermission(r.deps.Enforcer, "new-notifies.list"), notificationH.ListNewNotify)
+	business.GET("/new-notifies/:id", middleware.RequirePermission(r.deps.Enforcer, "new-notifies.list"), notificationH.GetNewNotify)
+	business.POST("/new-notifies", middleware.RequirePermission(r.deps.Enforcer, "new-notifies.create"), notificationH.CreateNewNotify)
+	business.PUT("/new-notifies/:id", middleware.RequirePermission(r.deps.Enforcer, "new-notifies.update"), notificationH.UpdateNewNotify)
+	business.DELETE("/new-notifies/:id", middleware.RequirePermission(r.deps.Enforcer, "new-notifies.delete"), notificationH.DeleteNewNotify)
+	business.POST("/new-notify-scopes/:id/read", notificationH.MarkNewNotifyRead)
+	business.GET("/new-notify-notifications/pending", notificationH.PendingNewNotifyScopes)
+
+	// 会议通知（meetings + meeting_notices + meeting_sign_ups）
+	business.GET("/meetings", middleware.RequirePermission(r.deps.Enforcer, "meetings.list"), notificationH.ListMeeting)
+	business.GET("/meetings/:id", middleware.RequirePermission(r.deps.Enforcer, "meetings.list"), notificationH.GetMeeting)
+	business.POST("/meetings", middleware.RequirePermission(r.deps.Enforcer, "meetings.create"), notificationH.CreateMeeting)
+	business.PUT("/meetings/:id", middleware.RequirePermission(r.deps.Enforcer, "meetings.update"), notificationH.UpdateMeeting)
+	business.DELETE("/meetings/:id", middleware.RequirePermission(r.deps.Enforcer, "meetings.delete"), notificationH.DeleteMeeting)
+	business.POST("/meeting-notices/:id/notify", middleware.RequirePermission(r.deps.Enforcer, "meetings.update"), notificationH.NotifyMeetingNotice)
+	business.POST("/meeting-notices/:id/confirm", notificationH.ConfirmMeetingNotice)
+	business.GET("/meeting-notifications/pending", notificationH.PendingMeetingNotices)
+
+	business.GET("/meeting-sign-ups", middleware.RequirePermission(r.deps.Enforcer, "meeting-sign-ups.list"), notificationH.ListMeetingSignUp)
+	business.GET("/meeting-sign-ups/:id", middleware.RequirePermission(r.deps.Enforcer, "meeting-sign-ups.list"), notificationH.GetMeetingSignUp)
+	business.POST("/meeting-sign-ups", middleware.RequirePermission(r.deps.Enforcer, "meeting-sign-ups.create"), notificationH.CreateMeetingSignUp)
+	business.PUT("/meeting-sign-ups/:id", middleware.RequirePermission(r.deps.Enforcer, "meeting-sign-ups.update"), notificationH.UpdateMeetingSignUp)
+	business.DELETE("/meeting-sign-ups/:id", middleware.RequirePermission(r.deps.Enforcer, "meeting-sign-ups.delete"), notificationH.DeleteMeetingSignUp)
+
+	// 信息稿管理（information_drafts）— 集团视图（received scope）跟生产视图（published scope）
+	// 共享同一组路由，前端通过 ?scope= 切换可见集合。dashboard/* 给仪表板「最新动态」+「待办」用。
+	business.GET("/information-drafts/dashboard/readings", notificationH.DashboardInformationDraftReadings)
+	business.GET("/information-drafts/dashboard/pending", notificationH.DashboardInformationDraftPending)
+	business.GET("/information-drafts", middleware.RequirePermission(r.deps.Enforcer, "information-drafts.list"), notificationH.ListInformationDraft)
+	business.GET("/information-drafts/:id", middleware.RequirePermission(r.deps.Enforcer, "information-drafts.list"), notificationH.GetInformationDraft)
+	business.POST("/information-drafts", middleware.RequirePermission(r.deps.Enforcer, "information-drafts.create"), notificationH.CreateInformationDraft)
+	business.PUT("/information-drafts/:id", middleware.RequirePermission(r.deps.Enforcer, "information-drafts.update"), notificationH.UpdateInformationDraft)
+	business.DELETE("/information-drafts/:id", middleware.RequirePermission(r.deps.Enforcer, "information-drafts.delete"), notificationH.DeleteInformationDraft)
 
 	// Upload (OSS multipart)
 	upload := business.Group("/upload-oss", middleware.RequirePermission(r.deps.Enforcer, "upload.oss"))

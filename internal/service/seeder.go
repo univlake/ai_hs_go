@@ -96,6 +96,13 @@ var CorePermissions = []string{
 	"emergency-supplies.list", "emergency-supplies.create", "emergency-supplies.update", "emergency-supplies.delete",
 	"emergency-teams.list", "emergency-teams.create", "emergency-teams.update", "emergency-teams.delete",
 
+	// 通知公告 / 会议通知 / 信息稿（生产视图 + 集团视图共用同一组权限）
+	"office-notifies.list", "office-notifies.create", "office-notifies.update", "office-notifies.delete",
+	"new-notifies.list", "new-notifies.create", "new-notifies.update", "new-notifies.delete",
+	"meetings.list", "meetings.create", "meetings.update", "meetings.delete",
+	"meeting-sign-ups.list", "meeting-sign-ups.create", "meeting-sign-ups.update", "meeting-sign-ups.delete",
+	"information-drafts.list", "information-drafts.create", "information-drafts.update", "information-drafts.delete",
+
 	// File upload
 	"upload.file", "upload.oss",
 }
@@ -164,6 +171,11 @@ var SeededRoles = []SeededRole{
 			"emergency-drills.list", "emergency-drills.create", "emergency-drills.update", "emergency-drills.delete",
 			"emergency-supplies.list", "emergency-supplies.create", "emergency-supplies.update", "emergency-supplies.delete",
 			"emergency-teams.list", "emergency-teams.create", "emergency-teams.update", "emergency-teams.delete",
+			"office-notifies.list", "office-notifies.create", "office-notifies.update", "office-notifies.delete",
+			"new-notifies.list", "new-notifies.create", "new-notifies.update", "new-notifies.delete",
+			"meetings.list", "meetings.create", "meetings.update", "meetings.delete",
+			"meeting-sign-ups.list", "meeting-sign-ups.create", "meeting-sign-ups.update", "meeting-sign-ups.delete",
+			"information-drafts.list", "information-drafts.create", "information-drafts.update", "information-drafts.delete",
 			"upload.file", "upload.oss",
 		},
 	},
@@ -190,6 +202,8 @@ var SeededRoles = []SeededRole{
 			"job-management.list", "three-togethers.list", "assess-detects.list",
 			"accident-bulletins.list", "bloc-accident-bulletins.list",
 			"emergency-drills.list", "emergency-supplies.list", "emergency-teams.list",
+			"office-notifies.list", "new-notifies.list", "meetings.list", "meeting-sign-ups.list",
+			"information-drafts.list",
 		},
 	},
 }

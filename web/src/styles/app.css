@@ -497,10 +497,18 @@ html.light .bg-black\/60 {
     background-color: rgba(27, 32, 52, 0.4) !important; /* #1b2034 @ 40% */
 }
 
-/* Focus ring — theme-aware */
+/* Focus ring — theme-aware. 表单控件由各自的 focus:border / focus:ring 自己负责
+ * 焦点指示，否则跟 2px 描边叠成双层边显得不干净。其他可聚焦元素（按钮、链接）
+ * 仍走全局描边以保持键盘可达性。 */
 *:focus-visible {
     outline: 2px solid var(--intent-primary);
     outline-offset: 2px;
+}
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[contenteditable='true']:focus-visible {
+    outline: none;
 }
 
 /* Link color — subtle but distinguishable */

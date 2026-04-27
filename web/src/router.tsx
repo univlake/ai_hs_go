@@ -108,6 +108,14 @@ const AccidentReport = lazyPage('accident/report/Index');
 const AccidentEmergency = lazyPage('accident/emergency/Index');
 const ManagementAccidentManagement = lazyPage('management/accidents/management/Index');
 const ManagementAccidentReport = lazyPage('management/accidents/report/Index');
+// 通知公告 / 会议通知 / 信息稿管理 — 生产视图（receiveOnly 由 wrapper 文件设置）+ 集团视图共用同一 *Page 组件
+const TasksNotices = lazyPage('tasks/notices/Index');
+const TasksManuscripts = lazyPage('tasks/manuscripts/Index');
+const ManagementTasksNotices = lazyPage('management/tasks/notices/Index');
+const ManagementTasksManuscripts = lazyPage('management/tasks/manuscripts/Index');
+const ManagementTasksMeetingNotices = lazyPage('management/tasks/meeting-notices/Index');
+const MeetingMeetings = lazyPage('meeting/meetings/Index');
+const MeetingMeetingSignUps = lazyPage('meeting/meeting-sign-ups/Index');
 const Placeholder = lazyPage('_placeholder');
 
 export const router = createBrowserRouter([
@@ -206,6 +214,14 @@ export const router = createBrowserRouter([
           { path: '/accident/emergency', element: <LoadingShell><AccidentEmergency /></LoadingShell> },
           { path: '/management/accidents/management', element: <LoadingShell><ManagementAccidentManagement /></LoadingShell> },
           { path: '/management/accidents/report', element: <LoadingShell><ManagementAccidentReport /></LoadingShell> },
+          // 通知公告 / 会议通知 / 信息稿管理 — 生产视图（/tasks /meeting）+ 集团视图（/management/tasks）
+          { path: '/tasks/notices', element: <LoadingShell><TasksNotices /></LoadingShell> },
+          { path: '/tasks/manuscripts', element: <LoadingShell><TasksManuscripts /></LoadingShell> },
+          { path: '/management/tasks/notices', element: <LoadingShell><ManagementTasksNotices /></LoadingShell> },
+          { path: '/management/tasks/manuscripts', element: <LoadingShell><ManagementTasksManuscripts /></LoadingShell> },
+          { path: '/management/tasks/meeting-notices', element: <LoadingShell><ManagementTasksMeetingNotices /></LoadingShell> },
+          { path: '/meeting/meetings', element: <LoadingShell><MeetingMeetings /></LoadingShell> },
+          { path: '/meeting/meeting-sign-ups', element: <LoadingShell><MeetingMeetingSignUps /></LoadingShell> },
           // Sidebar 旧 href 兼容（之前指向 /equipment/major-hazardous）
           { path: '/equipment/major-hazardous', element: <LoadingShell><SafetyDangerousEquipment /></LoadingShell> },
           // Catch-all inside AppLayout: shows a friendly "尚未迁移" page

@@ -572,7 +572,7 @@ export default function Dashboard() {
                             暂无最新动态
                         </p>
                     ) : (
-                        <ul className="space-y-1.5">
+                        <ul className="space-y-1">
                             {manuscripts.slice(0, 5).map((m) => {
                                 const isMine = m.company_id === companyId;
                                 const accent = isMine
@@ -584,33 +584,23 @@ export default function Dashboard() {
                                         <button
                                             type="button"
                                             onClick={() => setViewingDraft(m)}
-                                            className={`flex w-full flex-col gap-0.5 rounded-md border border-l-2 border-blue-900/40 ${accent} bg-[#070d1f] px-3 py-2 text-left transition-colors hover:border-sky-500/40 hover:bg-[#0a1329]`}
+                                            className={`flex w-full items-center gap-2 rounded-md border border-l-2 border-blue-900/40 ${accent} bg-[#070d1f] px-3 py-1.5 text-left transition-colors hover:border-sky-500/40 hover:bg-[#0a1329]`}
                                             title={`${m.name} · ${m.company_name}`}
                                         >
-                                            <div className="flex items-center gap-1.5">
-                                                {m.is_top === 1 && (
-                                                    <Pin className="h-3 w-3 shrink-0 text-amber-400" />
-                                                )}
-                                                <span className="truncate text-sm text-slate-100">
-                                                    {m.name}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center gap-2 text-[11px] text-slate-500">
-                                                <span
-                                                    className={`rounded px-1.5 py-0 text-[10px] ${isMine ? 'border border-emerald-500/30 bg-emerald-600/10 text-emerald-400' : 'border border-blue-500/30 bg-blue-600/10 text-blue-300'}`}
-                                                >
-                                                    {isMine ? '本企业' : '上级'}
-                                                </span>
-                                                <span className="truncate">
-                                                    {m.company_name}
-                                                </span>
-                                                <span className="ml-auto shrink-0">
-                                                    {String(m.created_at).slice(
-                                                        5,
-                                                        10,
-                                                    )}
-                                                </span>
-                                            </div>
+                                            {m.is_top === 1 && (
+                                                <Pin className="h-3 w-3 shrink-0 text-amber-400" />
+                                            )}
+                                            <span
+                                                className={`shrink-0 rounded px-1.5 py-0 text-[10px] ${isMine ? 'border border-emerald-500/30 bg-emerald-600/10 text-emerald-400' : 'border border-blue-500/30 bg-blue-600/10 text-blue-300'}`}
+                                            >
+                                                {isMine ? '本企业' : '上级'}
+                                            </span>
+                                            <span className="min-w-0 flex-1 truncate text-sm text-slate-100">
+                                                {m.name}
+                                            </span>
+                                            <span className="shrink-0 text-[11px] text-slate-500">
+                                                {String(m.created_at).slice(5, 10)}
+                                            </span>
                                         </button>
                                     </li>
                                 );
