@@ -26,3 +26,6 @@ configs/rsa_public.pem
 
 # Claude Code per-machine config
 .claude/settings.local.json
+
+# Runtime storage (generated docx / xlsx / uploads)
+/storage/

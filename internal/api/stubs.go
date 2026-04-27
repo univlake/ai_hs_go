@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"ai_hs_go/internal/middleware"
-	"ai_hs_go/internal/response"
 )
 
 // mountDashboardStubs registers placeholder endpoints used by the Dashboard
@@ -15,49 +14,43 @@ import (
 // stub with a real handler when its module gets ported.
 //
 // 已下线的 stubs（在通知模块迁移后由真实 handler 接管）:
-//   /meeting-notifications/pending     → notificationH.PendingMeetingNotices
-//   /office-notify-notifications/pending → notificationH.PendingOfficeNotifyScopes
-//   /new-notify-notifications/pending  → notificationH.PendingNewNotifyScopes
-//   /information-drafts/dashboard/*    → notificationH.DashboardInformationDraft*
-//   /meeting-notices/:id/confirm       → notificationH.ConfirmMeetingNotice
-//   /new-notify-scopes/:id/read        → notificationH.MarkNewNotifyRead
-func mountDashboardStubs(g *gin.RouterGroup) {
-	emptyArray := func(c *gin.Context) { response.Success(c, []any{}) }
-
-	for _, p := range []string{
-		// Expert inspection notifications (manifest §10.2 — controllers ExpertInspectionsController, ExpertCompany)
-		"/expert-inspection-notifications/company",
-		"/expert-inspection-notifications/expert",
-	} {
-		g.GET(p, emptyArray)
-	}
-
-	// Confirm POST endpoints — accept and 200 silently so the UI doesn't strand.
-	// They become real handlers once their module ports.
-	confirmStub := func(c *gin.Context) { response.Success(c, gin.H{"message": "ok"}) }
-	g.POST("/expert-inspection-companies/:id/confirm", confirmStub)
-	g.POST("/expert-inspection-users/:id/confirm", confirmStub)
-}
+//
+//	/meeting-notifications/pending     → notificationH.PendingMeetingNotices
+//	/office-notify-notifications/pending → notificationH.PendingOfficeNotifyScopes
+//	/new-notify-notifications/pending  → notificationH.PendingNewNotifyScopes
+//	/information-drafts/dashboard/*    → notificationH.DashboardInformationDraft*
+//	/meeting-notices/:id/confirm       → notificationH.ConfirmMeetingNotice
+//	/new-notify-scopes/:id/read        → notificationH.MarkNewNotifyRead
+//
+// 已下线的 stubs（在专家检查模块迁移后由真实 handler 接管）:
+//
+//	/expert-inspection-notifications/company → expertH.CompanyNotifications
+//	/expert-inspection-notifications/expert  → expertH.ExpertNotifications
+//	/expert-inspection-companies/:id/confirm → expertH.ConfirmCompany
+//	/expert-inspection-users/:id/confirm     → expertH.ConfirmUser
+//
+// 已下线的 stubs（在隐患信息模块迁移后由真实 handler 接管）:
+//
+//	/hidden-danger-infos (GET/POST/PUT/DELETE) → hiddenDangerH.{List,Create,Update,Delete}
+//	/hidden-danger-infos/:id/{rectify,confirm-rectification,archive} → hiddenDangerH.*
+//
+// 已下线的 stubs（在整改通知单 / 隐患分类统计 Excel 生成接入后由真实 handler 接管）:
+//
+//	/expert-inspection-companies/:id/rectification-sheet (POST/GET) → expertH.{Generate,Download}RectificationSheet
+//	/hazard-statistics → expertH.ExportHazardStatistics
+//
+// 当前没有剩余的 stubs；保留函数以便后续模块按相同模式追加。
+func mountDashboardStubs(_ *gin.RouterGroup) {}
 
 // IsStubPath returns whether a path was served by the dashboard stubs.
 // (Reserved for instrumentation / metrics; kept inline so future code can
 // distinguish placeholder hits from real ones.)
-func IsStubPath(path string) bool {
-	switch path {
-	case "/api/v1/expert-inspection-notifications/company",
-		"/api/v1/expert-inspection-notifications/expert":
-		return true
-	}
-	return false
-}
+func IsStubPath(_ string) bool { return false }
 
 // suppressStubsActivityLog is a tiny middleware stub-list checker — kept
 // alongside the stubs themselves so that activity-log noise filtering and
 // stub registration evolve together.
 func suppressStubsActivityLog(_ *gin.Context) bool {
-	// Kept as a hook for the activity_log middleware to consult once we wire
-	// stub-aware skip logic. Currently the middleware ignores GET requests
-	// already, so noise is bounded.
 	_ = middleware.CtxKeyUserID
 	return false
 }

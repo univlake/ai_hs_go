@@ -116,6 +116,11 @@ const ManagementTasksManuscripts = lazyPage('management/tasks/manuscripts/Index'
 const ManagementTasksMeetingNotices = lazyPage('management/tasks/meeting-notices/Index');
 const MeetingMeetings = lazyPage('meeting/meetings/Index');
 const MeetingMeetingSignUps = lazyPage('meeting/meeting-sign-ups/Index');
+// 专家检查 — 集团端 (/risk-control/expert-inspection) + 生产视图 (/risk/expert-inspection)
+// + 专家库 (/management/experts)。生产视图通过 wrapper 文件传 mode='production'。
+const RiskControlExpertInspection = lazyPage('risk-control/expert-inspection/Index');
+const RiskExpertInspection = lazyPage('risk/expert-inspection/Index');
+const ManagementExperts = lazyPage('management/experts/Index');
 const Placeholder = lazyPage('_placeholder');
 
 export const router = createBrowserRouter([
@@ -222,6 +227,11 @@ export const router = createBrowserRouter([
           { path: '/management/tasks/meeting-notices', element: <LoadingShell><ManagementTasksMeetingNotices /></LoadingShell> },
           { path: '/meeting/meetings', element: <LoadingShell><MeetingMeetings /></LoadingShell> },
           { path: '/meeting/meeting-sign-ups', element: <LoadingShell><MeetingMeetingSignUps /></LoadingShell> },
+          // 专家检查：/risk-control/expert-inspection（集团端）+ /risk/expert-inspection（生产视图）
+          // 专家库：/management/experts
+          { path: '/risk-control/expert-inspection', element: <LoadingShell><RiskControlExpertInspection /></LoadingShell> },
+          { path: '/risk/expert-inspection', element: <LoadingShell><RiskExpertInspection /></LoadingShell> },
+          { path: '/management/experts', element: <LoadingShell><ManagementExperts /></LoadingShell> },
           // Sidebar 旧 href 兼容（之前指向 /equipment/major-hazardous）
           { path: '/equipment/major-hazardous', element: <LoadingShell><SafetyDangerousEquipment /></LoadingShell> },
           // Catch-all inside AppLayout: shows a friendly "尚未迁移" page

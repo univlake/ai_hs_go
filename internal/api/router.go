@@ -11,9 +11,12 @@ import (
 	accidentemergencyapi "ai_hs_go/internal/api/accidentemergency"
 	authapi "ai_hs_go/internal/api/auth"
 	basedataapi "ai_hs_go/internal/api/basedata"
+	blocexpertapi "ai_hs_go/internal/api/blocexpert"
 	companyapi "ai_hs_go/internal/api/company"
 	companygroupapi "ai_hs_go/internal/api/companygroup"
+	expertapi "ai_hs_go/internal/api/expert"
 	healthfireapi "ai_hs_go/internal/api/healthfire"
+	hiddendangerapi "ai_hs_go/internal/api/hiddendanger"
 	majorhazardapi "ai_hs_go/internal/api/majorhazard"
 	meetingtrainingapi "ai_hs_go/internal/api/meetingtraining"
 	notificationapi "ai_hs_go/internal/api/notification"
@@ -26,6 +29,7 @@ import (
 	safetyapi "ai_hs_go/internal/api/safetyledger"
 	tenantapi "ai_hs_go/internal/api/tenant"
 	thirdpartyapi "ai_hs_go/internal/api/thirdparty"
+	todoapi "ai_hs_go/internal/api/todo"
 	uploadapi "ai_hs_go/internal/api/upload"
 	userapi "ai_hs_go/internal/api/user"
 	"ai_hs_go/internal/auth"
@@ -77,7 +81,9 @@ func (r *Router) Engine() *gin.Engine {
 	authSvc := service.NewAuthService(r.deps.DB, r.deps.JWT, r.deps.RSA)
 	rbacSvc := service.NewRBACService(r.deps.DB, r.deps.Enforcer)
 	userSvc := service.NewUserService(r.deps.DB)
-	companySvc := service.NewCompanyService(r.deps.DB, companyRepo)
+	// 注入 rbacSvc 让 CompanyService.Create / CreateRoot 自动给派生 c{id}_admin
+	// 分配 tenant_admin / tenant_root_admin 角色（Laravel 行为对齐）。
+	companySvc := service.NewCompanyService(r.deps.DB, companyRepo).WithRBAC(rbacSvc)
 	companyGroupSvc := service.NewCompanyGroupService(r.deps.DB)
 	dictSvc := service.NewDictService(r.deps.DB)
 	checklistSvc := service.NewChecklistLibraryService(r.deps.DB)
@@ -120,6 +126,16 @@ func (r *Router) Engine() *gin.Engine {
 	accidentEmergencyH := accidentemergencyapi.NewHandler(accidentEmergencySvc)
 	notificationSvc := service.NewNotificationService(r.deps.DB, companyRepo)
 	notificationH := notificationapi.NewHandler(notificationSvc)
+	// 检查通知单 docx 模板与生成文件落盘根目录跟 Laravel 对齐：
+	//   templates: configs/templates/enterprise_export.docx (随项目分发)
+	//   storage : storage/app/inspection-notices/YYYY/MM/   (运行时自动建)
+	expertSvc := service.NewExpertService(r.deps.DB, "./configs/templates/enterprise_export.docx", "./storage/app")
+	rectifySvc := service.NewRectificationSheetService(r.deps.DB, r.deps.OSS, "./storage/app")
+	expertH := expertapi.NewHandler(expertSvc, rectifySvc)
+	blocExpertH := blocexpertapi.NewHandler(expertSvc)
+	todoH := todoapi.NewHandler()
+	hiddenDangerSvc := service.NewHiddenDangerService(r.deps.DB)
+	hiddenDangerH := hiddendangerapi.NewHandler(hiddenDangerSvc)
 	uploadH := uploadapi.NewHandler(r.deps.OSS)
 	basedataH := basedataapi.NewHandler(dictSvc, checklistSvc, regLibSvc)
 	safetyArchH := safetyarchapi.NewHandler(safetyarchapi.HandlerDeps{
@@ -593,6 +609,63 @@ func (r *Router) Engine() *gin.Engine {
 	business.POST("/information-drafts", middleware.RequirePermission(r.deps.Enforcer, "information-drafts.create"), notificationH.CreateInformationDraft)
 	business.PUT("/information-drafts/:id", middleware.RequirePermission(r.deps.Enforcer, "information-drafts.update"), notificationH.UpdateInformationDraft)
 	business.DELETE("/information-drafts/:id", middleware.RequirePermission(r.deps.Enforcer, "information-drafts.delete"), notificationH.DeleteInformationDraft)
+
+	// 专家检查 + 专家库 + 待办事项 — 跟 Laravel routes/api/statistics-reporting.php 对齐。
+	//
+	// expert-inspections.{list,create,update,delete} 三个层级（计划 / 受检企业 / 专家指派）
+	// 共享一组权限。仪表板通知、my-checks、my-assignments、confirm 不走权限中间件，
+	// 登录态即可（跟 Laravel 一致），具体可见性通过 service 层的 (company_id / user_id)
+	// 过滤兜底。
+	business.GET("/expert-inspections", middleware.RequirePermission(r.deps.Enforcer, "expert-inspections.list"), expertH.ListInspection)
+	business.GET("/expert-inspections/:id", middleware.RequirePermission(r.deps.Enforcer, "expert-inspections.list"), expertH.GetInspection)
+	business.GET("/expert-inspection-companies", middleware.RequirePermission(r.deps.Enforcer, "expert-inspections.list"), expertH.ListCompany)
+	business.GET("/expert-inspection-users", middleware.RequirePermission(r.deps.Enforcer, "expert-inspections.list"), expertH.ListUser)
+	business.POST("/expert-inspections", middleware.RequirePermission(r.deps.Enforcer, "expert-inspections.create"), expertH.CreateInspection)
+	business.POST("/expert-inspection-companies", middleware.RequirePermission(r.deps.Enforcer, "expert-inspections.create"), expertH.CreateCompany)
+	business.POST("/expert-inspection-users", middleware.RequirePermission(r.deps.Enforcer, "expert-inspections.create"), expertH.CreateUser)
+	business.PUT("/expert-inspections/:id", middleware.RequirePermission(r.deps.Enforcer, "expert-inspections.update"), expertH.UpdateInspection)
+	business.PUT("/expert-inspection-companies/:id", middleware.RequirePermission(r.deps.Enforcer, "expert-inspections.update"), expertH.UpdateCompany)
+	business.PUT("/expert-inspection-users/:id", middleware.RequirePermission(r.deps.Enforcer, "expert-inspections.update"), expertH.UpdateUser)
+	business.DELETE("/expert-inspections/:id", middleware.RequirePermission(r.deps.Enforcer, "expert-inspections.delete"), expertH.DeleteInspection)
+	business.DELETE("/expert-inspection-companies/:id", middleware.RequirePermission(r.deps.Enforcer, "expert-inspections.delete"), expertH.DeleteCompany)
+	business.DELETE("/expert-inspection-users/:id", middleware.RequirePermission(r.deps.Enforcer, "expert-inspections.delete"), expertH.DeleteUser)
+	// 通知 / 确认 / 我的检查 — 不走权限，仅鉴权。
+	business.GET("/expert-inspection-notifications/company", expertH.CompanyNotifications)
+	business.GET("/expert-inspection-notifications/expert", expertH.ExpertNotifications)
+	business.GET("/my-check-inspections", expertH.MyCheckInspections)
+	business.GET("/my-expert-assignments", expertH.MyExpertAssignments)
+	business.POST("/expert-inspection-companies/:id/confirm", expertH.ConfirmCompany)
+	business.POST("/expert-inspection-users/:id/confirm", expertH.ConfirmUser)
+	// 检查通知单 docx 生成 / 下载（计划方生成；计划方 + 已指派专家可下载）。
+	business.POST("/expert-inspection-companies/:id/inspection-notice", expertH.GenerateInspectionNotice)
+	business.GET("/expert-inspection-companies/:id/inspection-notice", expertH.DownloadInspectionNotice)
+	// 整改通知单 xlsx 生成 / 下载（计划方 + 已指派专家可生成；受检企业也可下载）。
+	business.POST("/expert-inspection-companies/:id/rectification-sheet", expertH.GenerateRectificationSheet)
+	business.GET("/expert-inspection-companies/:id/rectification-sheet", expertH.DownloadRectificationSheet)
+	// 隐患分类统计 xlsx 导出（仅本企业可导出本企业的统计）。
+	business.GET("/hazard-statistics", expertH.ExportHazardStatistics)
+
+	// 集团专家库（bloc-experts）— 三个权限点：list / create / delete。
+	business.GET("/bloc-experts", middleware.RequirePermission(r.deps.Enforcer, "bloc-experts.list"), blocExpertH.List)
+	business.GET("/bloc-experts-list", middleware.RequirePermission(r.deps.Enforcer, "bloc-experts.list"), blocExpertH.AvailableList)
+	business.GET("/bloc-experts/:id", middleware.RequirePermission(r.deps.Enforcer, "bloc-experts.list"), blocExpertH.Get)
+	business.POST("/bloc-experts", middleware.RequirePermission(r.deps.Enforcer, "bloc-experts.create"), blocExpertH.Create)
+	business.DELETE("/bloc-experts/:id", middleware.RequirePermission(r.deps.Enforcer, "bloc-experts.delete"), blocExpertH.Delete)
+
+	// 待办事项 — 仍是占位实现，Laravel 也尚未接入聚合查询；保持两端契约一致。
+	business.GET("/todos", middleware.RequirePermission(r.deps.Enforcer, "todos.list"), todoH.Index)
+	business.GET("/todos-list-table", middleware.RequirePermission(r.deps.Enforcer, "todos.list"), todoH.ListTable)
+
+	// 隐患信息（hidden_danger_infos）— 专家检查现场登记的隐患三态流转：登记 → 整改 → 复查/归档。
+	// rectify / confirm-rectification / archive 不走权限中间件，由前端按角色控制可见性。
+	business.GET("/hidden-danger-infos", middleware.RequirePermission(r.deps.Enforcer, "hidden-danger-infos.list"), hiddenDangerH.List)
+	business.GET("/hidden-danger-infos/:id", middleware.RequirePermission(r.deps.Enforcer, "hidden-danger-infos.list"), hiddenDangerH.Get)
+	business.POST("/hidden-danger-infos", middleware.RequirePermission(r.deps.Enforcer, "hidden-danger-infos.create"), hiddenDangerH.Create)
+	business.PUT("/hidden-danger-infos/:id", middleware.RequirePermission(r.deps.Enforcer, "hidden-danger-infos.update"), hiddenDangerH.Update)
+	business.DELETE("/hidden-danger-infos/:id", middleware.RequirePermission(r.deps.Enforcer, "hidden-danger-infos.delete"), hiddenDangerH.Delete)
+	business.POST("/hidden-danger-infos/:id/rectify", hiddenDangerH.Rectify)
+	business.POST("/hidden-danger-infos/:id/confirm-rectification", hiddenDangerH.ConfirmRectification)
+	business.POST("/hidden-danger-infos/:id/archive", hiddenDangerH.Archive)
 
 	// Upload (OSS multipart)
 	upload := business.Group("/upload-oss", middleware.RequirePermission(r.deps.Enforcer, "upload.oss"))
