@@ -1114,7 +1114,8 @@ func (s *AssessmentService) ListSystemSubmissions(ctx context.Context, pid int64
 // ComputeSystemCheck — 自动算 v1..v5 并写入 system_checks。
 //
 //   v1 月报覆盖率 = 所辖企业（含本企业）当年覆盖月份数 / 12 * 4
-//                  目前 month_statistics 表尚未迁，固定 0；表迁后只需让该查询活起来。
+//                  覆盖月份 = month_statistics 表中本企业 + 直接下级当年提交过月报的
+//                  distinct 月份数；满覆盖（12 个月）= 4 分。
 //   v2 年报、v3 通知反馈：业务停用，固定 0。
 //   v4 任务反馈率 = 已反馈 OfficeNotifyScope / 总数 * 4
 //   v5 信息稿条数 = min(条数/8, 1) * 2
@@ -1122,7 +1123,27 @@ func (s *AssessmentService) ListSystemSubmissions(ctx context.Context, pid int64
 //   number = round(v1+v2+v3+v4+v5)
 func (s *AssessmentService) ComputeSystemCheck(ctx context.Context, companyID int64, year int, userID int64) (*model.SystemCheck, error) {
 	v1 := 0.0
-	// month_statistics 尚未迁移；保持 v1=0 直到该模块上线。
+	{
+		// 本企业 + 直接下级；按 created_at 月份去重计数。
+		var subs []int64
+		if err := s.db.WithContext(ctx).Model(&model.Company{}).
+			Where("parent_id = ?", companyID).Pluck("id", &subs).Error; err != nil {
+			return nil, err
+		}
+		ids := append([]int64{companyID}, subs...)
+		var distinctMonths int64
+		if err := s.db.WithContext(ctx).Model(&model.MonthStatistic{}).
+			Where("company_id IN ?", ids).
+			Where("EXTRACT(YEAR FROM created_at) = ?", year).
+			Select("COUNT(DISTINCT EXTRACT(MONTH FROM created_at))").
+			Scan(&distinctMonths).Error; err != nil {
+			return nil, err
+		}
+		if distinctMonths > 12 {
+			distinctMonths = 12
+		}
+		v1 = roundFloat(float64(distinctMonths)/12.0*4.0, 2)
+	}
 	v2 := 0.0
 	v3 := 0.0
 

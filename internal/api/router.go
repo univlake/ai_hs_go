@@ -28,6 +28,7 @@ import (
 	roleapi "ai_hs_go/internal/api/role"
 	safetyarchapi "ai_hs_go/internal/api/safetyarchive"
 	safetyapi "ai_hs_go/internal/api/safetyledger"
+	statisticsapi "ai_hs_go/internal/api/statistics"
 	tenantapi "ai_hs_go/internal/api/tenant"
 	thirdpartyapi "ai_hs_go/internal/api/thirdparty"
 	todoapi "ai_hs_go/internal/api/todo"
@@ -144,6 +145,10 @@ func (r *Router) Engine() *gin.Engine {
 	// 落盘根目录 storage/app/check_word/YYYY/MM/<filename>。
 	assessmentSvc := service.NewAssessmentService(r.deps.DB)
 	assessmentH := assessmentapi.NewHandler(assessmentSvc, "./configs/templates", "./storage/app")
+	// 数据统计（集团 月/年度上报 + 月/年度报表汇总 + 通知公告反馈统计）— 集团视图
+	// 跟生产视图共用同一组路由 / 权限；视角差异由前端通过 pid vs company_id 入参表达。
+	statisticsSvc := service.NewStatisticsService(r.deps.DB)
+	statisticsH := statisticsapi.NewHandler(statisticsSvc)
 	uploadH := uploadapi.NewHandler(r.deps.OSS)
 	basedataH := basedataapi.NewHandler(dictSvc, checklistSvc, regLibSvc)
 	safetyArchH := safetyarchapi.NewHandler(safetyarchapi.HandlerDeps{
@@ -757,6 +762,31 @@ func (r *Router) Engine() *gin.Engine {
 	// 考核模板年度管理（年度并集 + 一键拷贝）
 	business.GET("/assessment-templates/years", assessmentH.AssessmentYears)
 	business.POST("/assessment-templates/copy", middleware.RequirePermission(r.deps.Enforcer, "daily-check-templates.create"), assessmentH.CopyAssessmentTemplates)
+
+	// ── 数据统计模块（集团视图 + 生产视图共享） ─────────────────────────
+	//
+	// /statistics/month-statistics 跟 /tasks/monthly-report 共用一组路由 / 权限；
+	// 视角差异仅在前端的 pid vs company_id 入参，service 层据此选择过滤集合。
+	// 静态路由（/stuff /statistics）必须先于 /:id 注册避免 path 冲突。
+	business.GET("/month-statistics/stuff", middleware.RequirePermission(r.deps.Enforcer, "month-statistics.list"), statisticsH.MonthStatisticStuff)
+	business.GET("/month-statistics/statistics", middleware.RequirePermission(r.deps.Enforcer, "month-statistics.list"), statisticsH.MonthStatisticStatistics)
+	business.GET("/month-statistics", middleware.RequirePermission(r.deps.Enforcer, "month-statistics.list"), statisticsH.ListMonthStatistic)
+	business.GET("/month-statistics/:id", middleware.RequirePermission(r.deps.Enforcer, "month-statistics.list"), statisticsH.GetMonthStatistic)
+	business.POST("/month-statistics", middleware.RequirePermission(r.deps.Enforcer, "month-statistics.create"), statisticsH.CreateMonthStatistic)
+	business.PUT("/month-statistics/:id", middleware.RequirePermission(r.deps.Enforcer, "month-statistics.update"), statisticsH.UpdateMonthStatistic)
+	business.DELETE("/month-statistics/:id", middleware.RequirePermission(r.deps.Enforcer, "month-statistics.delete"), statisticsH.DeleteMonthStatistic)
+
+	business.GET("/year-statistics/stuff", middleware.RequirePermission(r.deps.Enforcer, "year-statistics.list"), statisticsH.YearStatisticStuff)
+	business.GET("/year-statistics/statistics", middleware.RequirePermission(r.deps.Enforcer, "year-statistics.list"), statisticsH.YearStatisticStatistics)
+	business.GET("/year-statistics", middleware.RequirePermission(r.deps.Enforcer, "year-statistics.list"), statisticsH.ListYearStatistic)
+	business.GET("/year-statistics/:id", middleware.RequirePermission(r.deps.Enforcer, "year-statistics.list"), statisticsH.GetYearStatistic)
+	business.POST("/year-statistics", middleware.RequirePermission(r.deps.Enforcer, "year-statistics.create"), statisticsH.CreateYearStatistic)
+	business.PUT("/year-statistics/:id", middleware.RequirePermission(r.deps.Enforcer, "year-statistics.update"), statisticsH.UpdateYearStatistic)
+	business.DELETE("/year-statistics/:id", middleware.RequirePermission(r.deps.Enforcer, "year-statistics.delete"), statisticsH.DeleteYearStatistic)
+
+	// 通知公告反馈统计 — 跟 Laravel 一致挂在 office-notifies.list 权限下，避免再造一类权限。
+	business.GET("/notice-stats/summary", middleware.RequirePermission(r.deps.Enforcer, "office-notifies.list"), statisticsH.NoticeStatsSummary)
+	business.GET("/notice-stats/pending", middleware.RequirePermission(r.deps.Enforcer, "office-notifies.list"), statisticsH.NoticeStatsPending)
 
 	// Upload (OSS multipart)
 	upload := business.Group("/upload-oss", middleware.RequirePermission(r.deps.Enforcer, "upload.oss"))
