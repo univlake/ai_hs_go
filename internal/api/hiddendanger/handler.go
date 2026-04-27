@@ -245,9 +245,9 @@ func (h *Handler) Delete(c *gin.Context) {
 // ── Workflow endpoints ──────────────────────────────────────────────
 
 type rectifyReq struct {
-	ReviewDescription string      `json:"review_description"`
-	CorrectDate       *string     `json:"correct_date"`
-	RectifyAnnex      []annexReq  `json:"hiddenRectifyAnnex"`
+	ReviewDescription string     `json:"review_description"`
+	CorrectDate       *string    `json:"correct_date"`
+	RectifyAnnex      []annexReq `json:"hiddenRectifyAnnex"`
 }
 
 func (h *Handler) Rectify(c *gin.Context) {

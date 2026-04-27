@@ -50,10 +50,10 @@ func NewHandler(svc *service.NotificationService) *Handler {
 // ── 公共 kid 请求结构 ────────────────────────────────────────────────
 
 type scopeKidReq struct {
-	CompanyID        flexInt64 `json:"company_id"`
-	CompanyName      *string   `json:"company_name"`
+	CompanyID        flexInt64  `json:"company_id"`
+	CompanyName      *string    `json:"company_name"`
 	CompanyGroupID   *flexInt64 `json:"company_group_id"`
-	CompanyGroupName *string   `json:"company_group_name"`
+	CompanyGroupName *string    `json:"company_group_name"`
 }
 
 func mapScopeKids(items []scopeKidReq) []service.ScopeKid {
@@ -895,7 +895,7 @@ func parseDateTime(p *string) *model.DateTime {
 		return nil
 	}
 	for _, layout := range []string{
-		"2006-01-02T15:04",       // <input type="datetime-local">
+		"2006-01-02T15:04", // <input type="datetime-local">
 		"2006-01-02T15:04:05",
 		"2006-01-02 15:04:05",
 		"2006-01-02 15:04",

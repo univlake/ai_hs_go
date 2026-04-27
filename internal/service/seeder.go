@@ -109,6 +109,16 @@ var CorePermissions = []string{
 	"todos.list",
 	"hidden-danger-infos.list", "hidden-danger-infos.create", "hidden-danger-infos.update", "hidden-danger-infos.delete",
 
+	// 考核评分模块（5 维度 filing/scoring + 模板 + 集团汇总）
+	"daily-checks.list", "daily-checks.create", "daily-checks.update", "daily-checks.delete",
+	"daily-check-templates.list", "daily-check-templates.create", "daily-check-templates.update", "daily-check-templates.delete",
+	"accident-checks.list", "accident-checks.create", "accident-checks.update", "accident-checks.delete",
+	"accident-check-templates.list", "accident-check-templates.create", "accident-check-templates.update", "accident-check-templates.delete",
+	"add-points.list", "add-points.create", "add-points.update", "add-points.delete",
+	"add-points-templates.list", "add-points-templates.create", "add-points-templates.update", "add-points-templates.delete",
+	"system-checks.list", "system-checks.create", "system-checks.update", "system-checks.delete",
+	"norm-checks.list", "norm-checks.create", "norm-checks.update", "norm-checks.delete",
+
 	// File upload
 	"upload.file", "upload.oss",
 }
@@ -186,6 +196,14 @@ var SeededRoles = []SeededRole{
 			"bloc-experts.list", "bloc-experts.create", "bloc-experts.delete",
 			"todos.list",
 			"hidden-danger-infos.list", "hidden-danger-infos.create", "hidden-danger-infos.update", "hidden-danger-infos.delete",
+			"daily-checks.list", "daily-checks.create", "daily-checks.update", "daily-checks.delete",
+			"daily-check-templates.list", "daily-check-templates.create", "daily-check-templates.update", "daily-check-templates.delete",
+			"accident-checks.list", "accident-checks.create", "accident-checks.update", "accident-checks.delete",
+			"accident-check-templates.list", "accident-check-templates.create", "accident-check-templates.update", "accident-check-templates.delete",
+			"add-points.list", "add-points.create", "add-points.update", "add-points.delete",
+			"add-points-templates.list", "add-points-templates.create", "add-points-templates.update", "add-points-templates.delete",
+			"system-checks.list", "system-checks.create", "system-checks.update", "system-checks.delete",
+			"norm-checks.list", "norm-checks.create", "norm-checks.update", "norm-checks.delete",
 			"upload.file", "upload.oss",
 		},
 	},
@@ -216,6 +234,10 @@ var SeededRoles = []SeededRole{
 			"information-drafts.list",
 			"expert-inspections.list", "bloc-experts.list", "todos.list",
 			"hidden-danger-infos.list",
+			"daily-checks.list", "daily-check-templates.list",
+			"accident-checks.list", "accident-check-templates.list",
+			"add-points.list", "add-points-templates.list",
+			"system-checks.list", "norm-checks.list",
 		},
 	},
 }
