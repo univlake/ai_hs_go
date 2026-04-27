@@ -126,6 +126,14 @@ const ManagementAssessmentFiling = lazyPage('management/assessment/filing/Index'
 const ManagementAssessmentScoring = lazyPage('management/assessment/scoring/Index');
 const ManagementAssessmentSummary = lazyPage('management/assessment/summary/Index');
 const SystemAssessmentTemplates = lazyPage('system/assessment-templates/Index');
+// 数据统计模块 — 月/年度数据上报（集团 + 生产视图共用）+ 月/年度报表汇总 + 通知公告反馈统计
+const StatisticsMonthStatistics = lazyPage('statistics/month-statistics/Index');
+const StatisticsYearStatistics = lazyPage('statistics/year-statistics/Index');
+const TasksMonthlyReport = lazyPage('tasks/monthly-report/Index');
+const TasksAnnualReport = lazyPage('tasks/annual-report/Index');
+const ManagementStatisticsMonthlyStats = lazyPage('management/statistics/monthly-stats/Index');
+const ManagementStatisticsAnnualStats = lazyPage('management/statistics/annual-stats/Index');
+const ManagementStatisticsNoticeStats = lazyPage('management/statistics/notice-stats/Index');
 const Placeholder = lazyPage('_placeholder');
 
 export const router = createBrowserRouter([
@@ -242,6 +250,15 @@ export const router = createBrowserRouter([
           { path: '/management/assessment/scoring', element: <LoadingShell><ManagementAssessmentScoring /></LoadingShell> },
           { path: '/management/assessment/summary', element: <LoadingShell><ManagementAssessmentSummary /></LoadingShell> },
           { path: '/system/assessment-templates', element: <LoadingShell><SystemAssessmentTemplates /></LoadingShell> },
+          // 数据统计：集团 月/年度上报（/statistics/*）共用页面、生产视图（/tasks/{monthly,annual}-report）
+          // 是 wrapper（pidMode=false）；月/年度报表汇总（/management/statistics/*-stats）跟通知公告反馈统计。
+          { path: '/statistics/month-statistics', element: <LoadingShell><StatisticsMonthStatistics /></LoadingShell> },
+          { path: '/statistics/year-statistics', element: <LoadingShell><StatisticsYearStatistics /></LoadingShell> },
+          { path: '/tasks/monthly-report', element: <LoadingShell><TasksMonthlyReport /></LoadingShell> },
+          { path: '/tasks/annual-report', element: <LoadingShell><TasksAnnualReport /></LoadingShell> },
+          { path: '/management/statistics/monthly-stats', element: <LoadingShell><ManagementStatisticsMonthlyStats /></LoadingShell> },
+          { path: '/management/statistics/annual-stats', element: <LoadingShell><ManagementStatisticsAnnualStats /></LoadingShell> },
+          { path: '/management/statistics/notice-stats', element: <LoadingShell><ManagementStatisticsNoticeStats /></LoadingShell> },
           // Sidebar 旧 href 兼容（之前指向 /equipment/major-hazardous）
           { path: '/equipment/major-hazardous', element: <LoadingShell><SafetyDangerousEquipment /></LoadingShell> },
           // Catch-all inside AppLayout: shows a friendly "尚未迁移" page

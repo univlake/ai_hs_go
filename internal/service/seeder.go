@@ -119,6 +119,10 @@ var CorePermissions = []string{
 	"system-checks.list", "system-checks.create", "system-checks.update", "system-checks.delete",
 	"norm-checks.list", "norm-checks.create", "norm-checks.update", "norm-checks.delete",
 
+	// 数据统计模块（集团 月/年度上报 + 月/年度报表汇总；通知公告反馈统计走 office-notifies.list）
+	"month-statistics.list", "month-statistics.create", "month-statistics.update", "month-statistics.delete",
+	"year-statistics.list", "year-statistics.create", "year-statistics.update", "year-statistics.delete",
+
 	// File upload
 	"upload.file", "upload.oss",
 }
@@ -204,6 +208,8 @@ var SeededRoles = []SeededRole{
 			"add-points-templates.list", "add-points-templates.create", "add-points-templates.update", "add-points-templates.delete",
 			"system-checks.list", "system-checks.create", "system-checks.update", "system-checks.delete",
 			"norm-checks.list", "norm-checks.create", "norm-checks.update", "norm-checks.delete",
+			"month-statistics.list", "month-statistics.create", "month-statistics.update", "month-statistics.delete",
+			"year-statistics.list", "year-statistics.create", "year-statistics.update", "year-statistics.delete",
 			"upload.file", "upload.oss",
 		},
 	},
@@ -238,6 +244,7 @@ var SeededRoles = []SeededRole{
 			"accident-checks.list", "accident-check-templates.list",
 			"add-points.list", "add-points-templates.list",
 			"system-checks.list", "norm-checks.list",
+			"month-statistics.list", "year-statistics.list",
 		},
 	},
 }
