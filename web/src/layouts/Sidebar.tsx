@@ -254,7 +254,7 @@ const navSections: NavSection[] = [
                     {
                         title: '风险源管理',
                         href: '/risk/hazards',
-                        permission: 'hazards.list',
+                        permission: 'risk-distribution-maps.list',
                     },
                     {
                         title: '隐患管理',

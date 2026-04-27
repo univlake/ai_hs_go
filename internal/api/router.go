@@ -18,6 +18,7 @@ import (
 	permissionapi "ai_hs_go/internal/api/permission"
 	platformapi "ai_hs_go/internal/api/platform"
 	processapi "ai_hs_go/internal/api/process"
+	riskapi "ai_hs_go/internal/api/risk"
 	roleapi "ai_hs_go/internal/api/role"
 	safetyarchapi "ai_hs_go/internal/api/safetyarchive"
 	safetyapi "ai_hs_go/internal/api/safetyledger"
@@ -111,6 +112,8 @@ func (r *Router) Engine() *gin.Engine {
 	meetingTrainingH := meetingtrainingapi.NewHandler(meetingTrainingSvc)
 	healthFireSvc := service.NewHealthFireService(r.deps.DB)
 	healthFireH := healthfireapi.NewHandler(healthFireSvc)
+	riskSvc := service.NewRiskService(r.deps.DB)
+	riskH := riskapi.NewHandler(riskSvc, r.deps.OSS)
 	uploadH := uploadapi.NewHandler(r.deps.OSS)
 	basedataH := basedataapi.NewHandler(dictSvc, checklistSvc, regLibSvc)
 	safetyArchH := safetyarchapi.NewHandler(safetyarchapi.HandlerDeps{
@@ -473,6 +476,36 @@ func (r *Router) Engine() *gin.Engine {
 	business.POST("/fire-facilities", middleware.RequirePermission(r.deps.Enforcer, "fire-facilities.create"), healthFireH.CreateFireFacility)
 	business.PUT("/fire-facilities/:id", middleware.RequirePermission(r.deps.Enforcer, "fire-facilities.update"), healthFireH.UpdateFireFacility)
 	business.DELETE("/fire-facilities/:id", middleware.RequirePermission(r.deps.Enforcer, "fire-facilities.delete"), healthFireH.DeleteFireFacility)
+
+	// 风险管理 — 5 模块共用 RiskService（风险源 / 隐患 / 作业 / 三同时 / 安全评价）。
+	// 风险分布图是 per-company singleton（沿用 health-systems 的 GET/POST/PUT 写法）。
+	business.GET("/risk-distribution-maps", middleware.RequirePermission(r.deps.Enforcer, "risk-distribution-maps.list"), riskH.GetRiskDistributionMap)
+	business.POST("/risk-distribution-maps", middleware.RequirePermission(r.deps.Enforcer, "risk-distribution-maps.create"), riskH.CreateRiskDistributionMap)
+	business.PUT("/risk-distribution-maps/:id", middleware.RequirePermission(r.deps.Enforcer, "risk-distribution-maps.update"), riskH.UpdateRiskDistributionMap)
+
+	business.GET("/monthly-investigations", middleware.RequirePermission(r.deps.Enforcer, "monthly-investigations.list"), riskH.ListMonthlyInvestigation)
+	business.GET("/monthly-investigations/:id", middleware.RequirePermission(r.deps.Enforcer, "monthly-investigations.list"), riskH.GetMonthlyInvestigation)
+	business.POST("/monthly-investigations", middleware.RequirePermission(r.deps.Enforcer, "monthly-investigations.create"), riskH.CreateMonthlyInvestigation)
+	business.PUT("/monthly-investigations/:id", middleware.RequirePermission(r.deps.Enforcer, "monthly-investigations.update"), riskH.UpdateMonthlyInvestigation)
+	business.DELETE("/monthly-investigations/:id", middleware.RequirePermission(r.deps.Enforcer, "monthly-investigations.delete"), riskH.DeleteMonthlyInvestigation)
+
+	business.GET("/job-management", middleware.RequirePermission(r.deps.Enforcer, "job-management.list"), riskH.ListJobManagement)
+	business.GET("/job-management/:id", middleware.RequirePermission(r.deps.Enforcer, "job-management.list"), riskH.GetJobManagement)
+	business.POST("/job-management", middleware.RequirePermission(r.deps.Enforcer, "job-management.create"), riskH.CreateJobManagement)
+	business.PUT("/job-management/:id", middleware.RequirePermission(r.deps.Enforcer, "job-management.update"), riskH.UpdateJobManagement)
+	business.DELETE("/job-management/:id", middleware.RequirePermission(r.deps.Enforcer, "job-management.delete"), riskH.DeleteJobManagement)
+
+	business.GET("/three-togethers", middleware.RequirePermission(r.deps.Enforcer, "three-togethers.list"), riskH.ListThreeTogether)
+	business.GET("/three-togethers/:id", middleware.RequirePermission(r.deps.Enforcer, "three-togethers.list"), riskH.GetThreeTogether)
+	business.POST("/three-togethers", middleware.RequirePermission(r.deps.Enforcer, "three-togethers.create"), riskH.CreateThreeTogether)
+	business.PUT("/three-togethers/:id", middleware.RequirePermission(r.deps.Enforcer, "three-togethers.update"), riskH.UpdateThreeTogether)
+	business.DELETE("/three-togethers/:id", middleware.RequirePermission(r.deps.Enforcer, "three-togethers.delete"), riskH.DeleteThreeTogether)
+
+	business.GET("/assess-detects", middleware.RequirePermission(r.deps.Enforcer, "assess-detects.list"), riskH.ListAssessDetect)
+	business.GET("/assess-detects/:id", middleware.RequirePermission(r.deps.Enforcer, "assess-detects.list"), riskH.GetAssessDetect)
+	business.POST("/assess-detects", middleware.RequirePermission(r.deps.Enforcer, "assess-detects.create"), riskH.CreateAssessDetect)
+	business.PUT("/assess-detects/:id", middleware.RequirePermission(r.deps.Enforcer, "assess-detects.update"), riskH.UpdateAssessDetect)
+	business.DELETE("/assess-detects/:id", middleware.RequirePermission(r.deps.Enforcer, "assess-detects.delete"), riskH.DeleteAssessDetect)
 
 	// Upload (OSS multipart)
 	upload := business.Group("/upload-oss", middleware.RequirePermission(r.deps.Enforcer, "upload.oss"))

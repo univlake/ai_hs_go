@@ -82,6 +82,13 @@ var CorePermissions = []string{
 	"fire-equipment.list", "fire-equipment.create", "fire-equipment.update", "fire-equipment.delete",
 	"fire-facilities.list", "fire-facilities.create", "fire-facilities.update", "fire-facilities.delete",
 
+	// 风险管理（风险源 / 隐患 / 作业 / 三同时 / 安全评价）
+	"risk-distribution-maps.list", "risk-distribution-maps.create", "risk-distribution-maps.update",
+	"monthly-investigations.list", "monthly-investigations.create", "monthly-investigations.update", "monthly-investigations.delete",
+	"job-management.list", "job-management.create", "job-management.update", "job-management.delete",
+	"three-togethers.list", "three-togethers.create", "three-togethers.update", "three-togethers.delete",
+	"assess-detects.list", "assess-detects.create", "assess-detects.update", "assess-detects.delete",
+
 	// File upload
 	"upload.file", "upload.oss",
 }
@@ -140,6 +147,11 @@ var SeededRoles = []SeededRole{
 			"fire-safeties.list", "fire-safeties.create", "fire-safeties.update", "fire-safeties.delete",
 			"fire-equipment.list", "fire-equipment.create", "fire-equipment.update", "fire-equipment.delete",
 			"fire-facilities.list", "fire-facilities.create", "fire-facilities.update", "fire-facilities.delete",
+			"risk-distribution-maps.list", "risk-distribution-maps.create", "risk-distribution-maps.update",
+			"monthly-investigations.list", "monthly-investigations.create", "monthly-investigations.update", "monthly-investigations.delete",
+			"job-management.list", "job-management.create", "job-management.update", "job-management.delete",
+			"three-togethers.list", "three-togethers.create", "three-togethers.update", "three-togethers.delete",
+			"assess-detects.list", "assess-detects.create", "assess-detects.update", "assess-detects.delete",
 			"upload.file", "upload.oss",
 		},
 	},
@@ -162,6 +174,8 @@ var SeededRoles = []SeededRole{
 			"occupational-hazards.list", "health-systems.list",
 			"health-files.list", "health-reports.list", "health-checkups.list", "hygiene-evaluations.list",
 			"fire-safeties.list", "fire-equipment.list", "fire-facilities.list",
+			"risk-distribution-maps.list", "monthly-investigations.list",
+			"job-management.list", "three-togethers.list", "assess-detects.list",
 		},
 	},
 }
