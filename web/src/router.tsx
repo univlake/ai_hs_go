@@ -99,6 +99,11 @@ const ThirdPartyConstructionUnits = lazyPage('third-party/construction-units/Ind
 const ThirdPartyTechnicalServices = lazyPage('third-party/technical-services/Index');
 const MeetingInternalMeetings = lazyPage('meeting/internal-meetings/Index');
 const TrainingEducation = lazyPage('training/education/Index');
+const RiskHazards = lazyPage('risk/hazards/Index');
+const RiskMonthlyInvestigation = lazyPage('risk/monthly-investigation/Index');
+const RiskSafetyAssessment = lazyPage('risk/safety-assessment/Index');
+const SafetyJobManagement = lazyPage('safety/job-management/Index');
+const SpaceWorkThreeTogethers = lazyPage('space-work/three-togethers/Index');
 const Placeholder = lazyPage('_placeholder');
 
 export const router = createBrowserRouter([
@@ -188,6 +193,11 @@ export const router = createBrowserRouter([
           { path: '/third-party/technical-services', element: <LoadingShell><ThirdPartyTechnicalServices /></LoadingShell> },
           { path: '/meeting/internal-meetings', element: <LoadingShell><MeetingInternalMeetings /></LoadingShell> },
           { path: '/training/education', element: <LoadingShell><TrainingEducation /></LoadingShell> },
+          { path: '/risk/hazards', element: <LoadingShell><RiskHazards /></LoadingShell> },
+          { path: '/risk/monthly-investigation', element: <LoadingShell><RiskMonthlyInvestigation /></LoadingShell> },
+          { path: '/risk/safety-assessment', element: <LoadingShell><RiskSafetyAssessment /></LoadingShell> },
+          { path: '/safety/job-management', element: <LoadingShell><SafetyJobManagement /></LoadingShell> },
+          { path: '/space-work/three-togethers', element: <LoadingShell><SpaceWorkThreeTogethers /></LoadingShell> },
           // Sidebar 旧 href 兼容（之前指向 /equipment/major-hazardous）
           { path: '/equipment/major-hazardous', element: <LoadingShell><SafetyDangerousEquipment /></LoadingShell> },
           // Catch-all inside AppLayout: shows a friendly "尚未迁移" page
