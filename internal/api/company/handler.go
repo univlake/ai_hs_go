@@ -175,20 +175,20 @@ func (h *Handler) Create(c *gin.Context) {
 		return
 	}
 	response.Created(c, gin.H{
-		"id":                   c2.ID,
-		"title":                c2.Title,
-		"parent_id":            c2.ParentID,
-		"pid":                  c2.ParentID,
-		"root_id":              c2.RootID,
-		"status":               c2.Status,
-		"is_bloc":              c2.IsBloc,
-		"is_produce":           c2.IsProduce,
-		"enterprise_type_id":   c2.EnterpriseTypeID,
-		"operational_type_id":  c2.OperationalTypeID,
-		"credit_code":          c2.CreditCode,
-		"address":              c2.Address,
-		"created_at":           c2.CreatedAt,
-		"admin_credentials":    creds,
+		"id":                  c2.ID,
+		"title":               c2.Title,
+		"parent_id":           c2.ParentID,
+		"pid":                 c2.ParentID,
+		"root_id":             c2.RootID,
+		"status":              c2.Status,
+		"is_bloc":             c2.IsBloc,
+		"is_produce":          c2.IsProduce,
+		"enterprise_type_id":  c2.EnterpriseTypeID,
+		"operational_type_id": c2.OperationalTypeID,
+		"credit_code":         c2.CreditCode,
+		"address":             c2.Address,
+		"created_at":          c2.CreatedAt,
+		"admin_credentials":   creds,
 	})
 }
 

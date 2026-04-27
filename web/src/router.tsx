@@ -121,6 +121,11 @@ const MeetingMeetingSignUps = lazyPage('meeting/meeting-sign-ups/Index');
 const RiskControlExpertInspection = lazyPage('risk-control/expert-inspection/Index');
 const RiskExpertInspection = lazyPage('risk/expert-inspection/Index');
 const ManagementExperts = lazyPage('management/experts/Index');
+// 考核评分模块 — 集团端填报 / 评分 / 汇总三页 + 系统侧模板管理
+const ManagementAssessmentFiling = lazyPage('management/assessment/filing/Index');
+const ManagementAssessmentScoring = lazyPage('management/assessment/scoring/Index');
+const ManagementAssessmentSummary = lazyPage('management/assessment/summary/Index');
+const SystemAssessmentTemplates = lazyPage('system/assessment-templates/Index');
 const Placeholder = lazyPage('_placeholder');
 
 export const router = createBrowserRouter([
@@ -232,6 +237,11 @@ export const router = createBrowserRouter([
           { path: '/risk-control/expert-inspection', element: <LoadingShell><RiskControlExpertInspection /></LoadingShell> },
           { path: '/risk/expert-inspection', element: <LoadingShell><RiskExpertInspection /></LoadingShell> },
           { path: '/management/experts', element: <LoadingShell><ManagementExperts /></LoadingShell> },
+          // 考核评分：filing（生产视图填报）/ scoring（集团评分）/ summary（集团汇总）+ 模板管理
+          { path: '/management/assessment/filing', element: <LoadingShell><ManagementAssessmentFiling /></LoadingShell> },
+          { path: '/management/assessment/scoring', element: <LoadingShell><ManagementAssessmentScoring /></LoadingShell> },
+          { path: '/management/assessment/summary', element: <LoadingShell><ManagementAssessmentSummary /></LoadingShell> },
+          { path: '/system/assessment-templates', element: <LoadingShell><SystemAssessmentTemplates /></LoadingShell> },
           // Sidebar 旧 href 兼容（之前指向 /equipment/major-hazardous）
           { path: '/equipment/major-hazardous', element: <LoadingShell><SafetyDangerousEquipment /></LoadingShell> },
           // Catch-all inside AppLayout: shows a friendly "尚未迁移" page

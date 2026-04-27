@@ -9,6 +9,7 @@ import (
 	"gorm.io/gorm"
 
 	accidentemergencyapi "ai_hs_go/internal/api/accidentemergency"
+	assessmentapi "ai_hs_go/internal/api/assessment"
 	authapi "ai_hs_go/internal/api/auth"
 	basedataapi "ai_hs_go/internal/api/basedata"
 	blocexpertapi "ai_hs_go/internal/api/blocexpert"
@@ -136,6 +137,13 @@ func (r *Router) Engine() *gin.Engine {
 	todoH := todoapi.NewHandler()
 	hiddenDangerSvc := service.NewHiddenDangerService(r.deps.DB)
 	hiddenDangerH := hiddendangerapi.NewHandler(hiddenDangerSvc)
+	// 考核评分模块 — 模板路径下面的三份 docx 跟 Laravel public/check_*.docx 对齐：
+	//   configs/templates/check_bloc.docx
+	//   configs/templates/check_company.docx
+	//   configs/templates/check_company_new.docx
+	// 落盘根目录 storage/app/check_word/YYYY/MM/<filename>。
+	assessmentSvc := service.NewAssessmentService(r.deps.DB)
+	assessmentH := assessmentapi.NewHandler(assessmentSvc, "./configs/templates", "./storage/app")
 	uploadH := uploadapi.NewHandler(r.deps.OSS)
 	basedataH := basedataapi.NewHandler(dictSvc, checklistSvc, regLibSvc)
 	safetyArchH := safetyarchapi.NewHandler(safetyarchapi.HandlerDeps{
@@ -666,6 +674,89 @@ func (r *Router) Engine() *gin.Engine {
 	business.POST("/hidden-danger-infos/:id/rectify", hiddenDangerH.Rectify)
 	business.POST("/hidden-danger-infos/:id/confirm-rectification", hiddenDangerH.ConfirmRectification)
 	business.POST("/hidden-danger-infos/:id/archive", hiddenDangerH.Archive)
+
+	// ── 考核评分模块（10 个 controller 合并） ──────────────────────────────
+	// 跟 Laravel routes/api/inspections.php 对齐：5 维度 filing/scoring + 模板树 + 集团汇总。
+	// 静态路由（/submissions /start-form /score /...）必须先于 /:id 注册避免 path 冲突。
+
+	// 日常检查模板（CRUD）
+	business.GET("/daily-check-templates", middleware.RequirePermission(r.deps.Enforcer, "daily-check-templates.list"), assessmentH.ListDailyCheckTemplates)
+	business.GET("/daily-check-templates/:id", middleware.RequirePermission(r.deps.Enforcer, "daily-check-templates.list"), assessmentH.GetDailyCheckTemplate)
+	business.POST("/daily-check-templates", middleware.RequirePermission(r.deps.Enforcer, "daily-check-templates.create"), assessmentH.CreateDailyCheckTemplate)
+	business.PUT("/daily-check-templates/:id", middleware.RequirePermission(r.deps.Enforcer, "daily-check-templates.update"), assessmentH.UpdateDailyCheckTemplate)
+	business.DELETE("/daily-check-templates/:id", middleware.RequirePermission(r.deps.Enforcer, "daily-check-templates.delete"), assessmentH.DeleteDailyCheckTemplate)
+
+	// 日常检查（filing：草稿→已提交→已评分）
+	business.GET("/daily-checks/submissions", middleware.RequirePermission(r.deps.Enforcer, "daily-checks.list"), assessmentH.ListDailySubmissions)
+	business.GET("/daily-checks/start-form", middleware.RequirePermission(r.deps.Enforcer, "daily-checks.list"), assessmentH.StartDailyForm)
+	business.GET("/daily-checks/submission", middleware.RequirePermission(r.deps.Enforcer, "daily-checks.list"), assessmentH.ShowDailySubmission)
+	business.POST("/daily-checks/save-draft", middleware.RequirePermission(r.deps.Enforcer, "daily-checks.create"), assessmentH.SaveDailyDraft)
+	business.POST("/daily-checks/complete", middleware.RequirePermission(r.deps.Enforcer, "daily-checks.create"), assessmentH.CompleteDaily)
+	business.POST("/daily-checks/score", middleware.RequirePermission(r.deps.Enforcer, "daily-checks.update"), assessmentH.ScoreDaily)
+	business.DELETE("/daily-checks/destroy-form", middleware.RequirePermission(r.deps.Enforcer, "daily-checks.delete"), assessmentH.DestroyDailyForm)
+	business.GET("/daily-checks", middleware.RequirePermission(r.deps.Enforcer, "daily-checks.list"), assessmentH.ListDailyChecks)
+	business.GET("/daily-checks/:id", middleware.RequirePermission(r.deps.Enforcer, "daily-checks.list"), assessmentH.GetDailyCheck)
+
+	// 系统检查（活动参与及材料上报）
+	business.GET("/system-checks/submissions", middleware.RequirePermission(r.deps.Enforcer, "system-checks.list"), assessmentH.ListSystemSubmissions)
+	business.POST("/system-checks/compute", middleware.RequirePermission(r.deps.Enforcer, "system-checks.create"), assessmentH.ComputeSystemCheck)
+	business.GET("/system-checks", middleware.RequirePermission(r.deps.Enforcer, "system-checks.list"), assessmentH.ListSystemChecks)
+	business.GET("/system-checks/:id", middleware.RequirePermission(r.deps.Enforcer, "system-checks.list"), assessmentH.GetSystemCheck)
+	business.POST("/system-checks", middleware.RequirePermission(r.deps.Enforcer, "system-checks.create"), assessmentH.CreateSystemCheck)
+	business.PUT("/system-checks/:id", middleware.RequirePermission(r.deps.Enforcer, "system-checks.update"), assessmentH.UpdateSystemCheck)
+	business.DELETE("/system-checks/:id", middleware.RequirePermission(r.deps.Enforcer, "system-checks.delete"), assessmentH.DeleteSystemCheck)
+
+	// 标准化检查（大中型企业安全生产标准化）
+	business.GET("/norm-checks/submissions", middleware.RequirePermission(r.deps.Enforcer, "norm-checks.list"), assessmentH.ListNormSubmissions)
+	business.GET("/norm-checks/template-link", middleware.RequirePermission(r.deps.Enforcer, "norm-checks.list"), assessmentH.NormTemplateLink)
+	business.POST("/norm-checks/save-score", middleware.RequirePermission(r.deps.Enforcer, "norm-checks.create"), assessmentH.SaveNormScore)
+	business.GET("/norm-checks", middleware.RequirePermission(r.deps.Enforcer, "norm-checks.list"), assessmentH.ListNormChecks)
+	business.GET("/norm-checks/:id", middleware.RequirePermission(r.deps.Enforcer, "norm-checks.list"), assessmentH.GetNormCheck)
+	business.POST("/norm-checks", middleware.RequirePermission(r.deps.Enforcer, "norm-checks.create"), assessmentH.CreateNormCheck)
+	business.PUT("/norm-checks/:id", middleware.RequirePermission(r.deps.Enforcer, "norm-checks.update"), assessmentH.UpdateNormCheck)
+	business.DELETE("/norm-checks/:id", middleware.RequirePermission(r.deps.Enforcer, "norm-checks.delete"), assessmentH.DeleteNormCheck)
+
+	// 事故检查模板
+	business.GET("/accident-check-templates", middleware.RequirePermission(r.deps.Enforcer, "accident-check-templates.list"), assessmentH.ListAccidentCheckTemplates)
+	business.GET("/accident-check-templates/:id", middleware.RequirePermission(r.deps.Enforcer, "accident-check-templates.list"), assessmentH.GetAccidentCheckTemplate)
+	business.POST("/accident-check-templates", middleware.RequirePermission(r.deps.Enforcer, "accident-check-templates.create"), assessmentH.CreateAccidentCheckTemplate)
+	business.PUT("/accident-check-templates/:id", middleware.RequirePermission(r.deps.Enforcer, "accident-check-templates.update"), assessmentH.UpdateAccidentCheckTemplate)
+	business.DELETE("/accident-check-templates/:id", middleware.RequirePermission(r.deps.Enforcer, "accident-check-templates.delete"), assessmentH.DeleteAccidentCheckTemplate)
+
+	// 事故检查
+	business.GET("/accident-checks/submissions", middleware.RequirePermission(r.deps.Enforcer, "accident-checks.list"), assessmentH.ListAccidentSubmissions)
+	business.GET("/accident-checks/start-form", middleware.RequirePermission(r.deps.Enforcer, "accident-checks.list"), assessmentH.StartAccidentForm)
+	business.POST("/accident-checks/save-score", middleware.RequirePermission(r.deps.Enforcer, "accident-checks.create"), assessmentH.SaveAccidentScore)
+	business.GET("/accident-checks", middleware.RequirePermission(r.deps.Enforcer, "accident-checks.list"), assessmentH.ListAccidentChecks)
+	business.GET("/accident-checks/:id", middleware.RequirePermission(r.deps.Enforcer, "accident-checks.list"), assessmentH.GetAccidentCheck)
+	business.POST("/accident-checks", middleware.RequirePermission(r.deps.Enforcer, "accident-checks.create"), assessmentH.CreateAccidentCheck)
+	business.PUT("/accident-checks/:id", middleware.RequirePermission(r.deps.Enforcer, "accident-checks.update"), assessmentH.UpdateAccidentCheck)
+	business.DELETE("/accident-checks/:id", middleware.RequirePermission(r.deps.Enforcer, "accident-checks.delete"), assessmentH.DeleteAccidentCheck)
+
+	// 加分模板
+	business.GET("/add-points-templates", middleware.RequirePermission(r.deps.Enforcer, "add-points-templates.list"), assessmentH.ListAddPointsTemplates)
+	business.GET("/add-points-templates/:id", middleware.RequirePermission(r.deps.Enforcer, "add-points-templates.list"), assessmentH.GetAddPointsTemplate)
+	business.POST("/add-points-templates", middleware.RequirePermission(r.deps.Enforcer, "add-points-templates.create"), assessmentH.CreateAddPointsTemplate)
+	business.PUT("/add-points-templates/:id", middleware.RequirePermission(r.deps.Enforcer, "add-points-templates.update"), assessmentH.UpdateAddPointsTemplate)
+	business.DELETE("/add-points-templates/:id", middleware.RequirePermission(r.deps.Enforcer, "add-points-templates.delete"), assessmentH.DeleteAddPointsTemplate)
+
+	// 加分项
+	business.GET("/add-points/submissions", middleware.RequirePermission(r.deps.Enforcer, "add-points.list"), assessmentH.ListAddPointsSubmissions)
+	business.GET("/add-points/start-form", middleware.RequirePermission(r.deps.Enforcer, "add-points.list"), assessmentH.StartAddPointsForm)
+	business.POST("/add-points/save-score", middleware.RequirePermission(r.deps.Enforcer, "add-points.create"), assessmentH.SaveAddPointsScore)
+	business.GET("/add-points", middleware.RequirePermission(r.deps.Enforcer, "add-points.list"), assessmentH.ListAddPoints)
+	business.GET("/add-points/:id", middleware.RequirePermission(r.deps.Enforcer, "add-points.list"), assessmentH.GetAddPoint)
+	business.POST("/add-points", middleware.RequirePermission(r.deps.Enforcer, "add-points.create"), assessmentH.CreateAddPoint)
+	business.PUT("/add-points/:id", middleware.RequirePermission(r.deps.Enforcer, "add-points.update"), assessmentH.UpdateAddPoint)
+	business.DELETE("/add-points/:id", middleware.RequirePermission(r.deps.Enforcer, "add-points.delete"), assessmentH.DeleteAddPoint)
+
+	// 考核汇总（6 维度合算）
+	business.GET("/assessment-summary", middleware.RequirePermission(r.deps.Enforcer, "daily-checks.list"), assessmentH.Summary)
+	business.GET("/assessment-summary/export", middleware.RequirePermission(r.deps.Enforcer, "daily-checks.list"), assessmentH.ExportSummary)
+
+	// 考核模板年度管理（年度并集 + 一键拷贝）
+	business.GET("/assessment-templates/years", assessmentH.AssessmentYears)
+	business.POST("/assessment-templates/copy", middleware.RequirePermission(r.deps.Enforcer, "daily-check-templates.create"), assessmentH.CopyAssessmentTemplates)
 
 	// Upload (OSS multipart)
 	upload := business.Group("/upload-oss", middleware.RequirePermission(r.deps.Enforcer, "upload.oss"))
