@@ -25,10 +25,22 @@ const (
 type CompanyService struct {
 	db   *gorm.DB
 	repo *repository.CompanyRepo
+	// rbac 用于在 Create / CreateRoot 后给自动派生的 c{id}_admin 用户分配默认角色：
+	//   CreateRoot → tenant_root_admin（一级企业管理员，全部权限）
+	//   Create     → tenant_admin     （子公司管理员，业务模块权限子集）
+	// 可为 nil — 单元测试 / 命令行工具不需要 RBAC 时使用 NewCompanyService。
+	rbac *RBACService
 }
 
 func NewCompanyService(db *gorm.DB, repo *repository.CompanyRepo) *CompanyService {
 	return &CompanyService{db: db, repo: repo}
+}
+
+// WithRBAC 注入 RBAC service 让 Create / CreateRoot 自动给派生 admin 用户分配角色。
+// router 启动时调用一次。链式 API 让既有调用方（无 RBAC 需求）的构造保持不变。
+func (s *CompanyService) WithRBAC(rbac *RBACService) *CompanyService {
+	s.rbac = rbac
+	return s
 }
 
 type CompanyListParams struct {
@@ -216,6 +228,14 @@ func (s *CompanyService) Create(ctx context.Context, in CreateCompanyInput) (*mo
 	if err != nil {
 		return nil, nil, errs.Wrap(errs.CodeInternal, "创建企业失败", err)
 	}
+	// 给派生的 c{id}_admin 分配 tenant_admin 角色（子公司管理员）。
+	// RBAC 写入失败只记录但不回退企业创建 — 角色可后续在「角色管理」页面手动补救。
+	if s.rbac != nil {
+		var newAdmin model.User
+		if err := s.db.WithContext(ctx).Where("username = ?", creds.Username).First(&newAdmin).Error; err == nil {
+			_ = s.rbac.AssignSingleRoleToUser(ctx, newAdmin.ID, "tenant_admin")
+		}
+	}
 	return company, creds, nil
 }
 
@@ -284,6 +304,11 @@ func (s *CompanyService) CreateRoot(ctx context.Context, in CreateCompanyInput, 
 	})
 	if err != nil {
 		return nil, nil, errs.Wrap(errs.CodeInternal, "创建租户失败", err)
+	}
+	// 给一级企业的 c{id}_admin 分配 tenant_root_admin 角色（全部业务权限）。
+	// 失败不回退（同 Create）— 平台管理员可在角色管理页面补救。
+	if s.rbac != nil && admin != nil {
+		_ = s.rbac.AssignSingleRoleToUser(ctx, admin.ID, "tenant_root_admin")
 	}
 	return company, admin, nil
 }

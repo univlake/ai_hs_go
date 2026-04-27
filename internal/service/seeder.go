@@ -103,6 +103,12 @@ var CorePermissions = []string{
 	"meeting-sign-ups.list", "meeting-sign-ups.create", "meeting-sign-ups.update", "meeting-sign-ups.delete",
 	"information-drafts.list", "information-drafts.create", "information-drafts.update", "information-drafts.delete",
 
+	// 专家检查 + 集团专家库 + 待办事项 + 隐患信息
+	"expert-inspections.list", "expert-inspections.create", "expert-inspections.update", "expert-inspections.delete",
+	"bloc-experts.list", "bloc-experts.create", "bloc-experts.delete",
+	"todos.list",
+	"hidden-danger-infos.list", "hidden-danger-infos.create", "hidden-danger-infos.update", "hidden-danger-infos.delete",
+
 	// File upload
 	"upload.file", "upload.oss",
 }
@@ -176,6 +182,10 @@ var SeededRoles = []SeededRole{
 			"meetings.list", "meetings.create", "meetings.update", "meetings.delete",
 			"meeting-sign-ups.list", "meeting-sign-ups.create", "meeting-sign-ups.update", "meeting-sign-ups.delete",
 			"information-drafts.list", "information-drafts.create", "information-drafts.update", "information-drafts.delete",
+			"expert-inspections.list", "expert-inspections.create", "expert-inspections.update", "expert-inspections.delete",
+			"bloc-experts.list", "bloc-experts.create", "bloc-experts.delete",
+			"todos.list",
+			"hidden-danger-infos.list", "hidden-danger-infos.create", "hidden-danger-infos.update", "hidden-danger-infos.delete",
 			"upload.file", "upload.oss",
 		},
 	},
@@ -204,6 +214,8 @@ var SeededRoles = []SeededRole{
 			"emergency-drills.list", "emergency-supplies.list", "emergency-teams.list",
 			"office-notifies.list", "new-notifies.list", "meetings.list", "meeting-sign-ups.list",
 			"information-drafts.list",
+			"expert-inspections.list", "bloc-experts.list", "todos.list",
+			"hidden-danger-infos.list",
 		},
 	},
 }

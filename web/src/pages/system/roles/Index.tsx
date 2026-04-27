@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import api from '@/lib/api';
 import { API } from '@/lib/api-routes';
 import { Button } from '@/components/ui/button';
+import { ActionBtn } from '@/components/shared/ActionBtn';
 import { FormDialog, FormRow } from '@/components/shared/FormDialog';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/use-auth';
@@ -35,6 +36,14 @@ interface PermissionsResponse {
     permissions: PermissionItem[];
     grouped: Record<string, string[]>;
 }
+
+// 跟 aifix_hs 项目页面（resources/js/pages/system/roles/Index.tsx）的按钮样式对齐：
+//   primaryBtn — 主操作（新增、保存）边框 + 半透明蓝底
+//   ghostBtn   — 次操作（取消、刷新）通透蓝灰边框
+const primaryBtn =
+    'flex items-center gap-2 rounded-lg border border-blue-500/30 bg-blue-600/15 px-4 py-2 text-sm font-medium text-blue-300 transition-all hover:border-blue-400/50 hover:bg-blue-600/25 hover:text-blue-200 active:scale-95';
+const ghostBtn =
+    'flex items-center gap-2 rounded-lg border border-blue-900/40 px-4 py-2 text-sm text-slate-400 transition-colors hover:border-blue-500/40 hover:text-slate-200';
 
 const builtinRoles = new Set([
     'platform_admin',
@@ -90,32 +99,30 @@ export default function SystemRoles() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-start justify-between">
+            <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-100">角色管理</h1>
-                    <p className="mt-1 text-sm text-slate-500">
-                        管理平台与租户的角色 ·
-                        每个角色由一组权限组成，分配给用户后通过 Casbin 校验
+                    <h1 className="text-xl font-bold text-slate-100">角色管理</h1>
+                    <p className="mt-0.5 text-xs text-slate-600">
+                        共{' '}
+                        <span className="font-medium text-slate-400">
+                            {rows.length}
+                        </span>{' '}
+                        个角色
                     </p>
                 </div>
                 <div className="flex gap-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={refresh}
-                        className="border-blue-900/40 bg-[#0d1530]"
-                    >
-                        <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+                    <button onClick={refresh} className={ghostBtn}>
+                        <RefreshCw className="h-4 w-4" />
                         刷新
-                    </Button>
+                    </button>
                     {canCreate && (
-                        <Button
+                        <button
                             onClick={() => setCreating(true)}
-                            className="bg-blue-600 hover:bg-blue-500"
+                            className={primaryBtn}
                         >
-                            <Plus className="mr-1.5 h-3.5 w-3.5" />
-                            新建角色
-                        </Button>
+                            <Plus className="h-4 w-4" />
+                            新增角色
+                        </button>
                     )}
                 </div>
             </div>
@@ -223,17 +230,17 @@ export default function SystemRoles() {
                                             </div>
                                         </td>
                                         <td className="px-5 py-3 text-right">
-                                            <div className="flex justify-end gap-1">
+                                            <div className="flex items-center justify-end gap-0.5">
                                                 {canUpdate && (
-                                                    <button
+                                                    <ActionBtn
                                                         onClick={() =>
                                                             setEditing(r)
                                                         }
                                                         title="编辑"
-                                                        className="rounded-md border border-slate-700/50 bg-slate-800/30 p-1.5 text-slate-400 hover:border-slate-600 hover:text-slate-200"
+                                                        variant="edit"
                                                     >
                                                         <Edit3 className="h-3.5 w-3.5" />
-                                                    </button>
+                                                    </ActionBtn>
                                                 )}
                                                 {canDelete && !isBuiltin && (
                                                     <DeleteButton
@@ -344,13 +351,9 @@ function DeleteButton({
     };
     return (
         <>
-            <button
-                onClick={() => setOpen(true)}
-                title="删除"
-                className="rounded-md border border-rose-500/30 bg-rose-600/10 p-1.5 text-rose-400 hover:border-rose-500/50 hover:bg-rose-600/20"
-            >
+            <ActionBtn onClick={() => setOpen(true)} title="删除" variant="delete">
                 <Trash2 className="h-3.5 w-3.5" />
-            </button>
+            </ActionBtn>
             <FormDialog
                 open={open}
                 onOpenChange={setOpen}

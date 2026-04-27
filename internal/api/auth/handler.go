@@ -77,6 +77,14 @@ func (h *Handler) UserInfo(c *gin.Context) {
 		response.Internal(c, "查询权限失败")
 		return
 	}
+	// 前端 authApi.userInfo 直接对 roles / permissions 调用 .map()，nil 切片会序列化成
+	// JSON null 把前端打挂。统一兜底成 [] 让契约对前端可枚举类型保持一致。
+	if roles == nil {
+		roles = []string{}
+	}
+	if perms == nil {
+		perms = []string{}
+	}
 
 	// Resolve the user's company so the frontend ScopeContext can bootstrap
 	// without a second round-trip. Platform admins legitimately have
