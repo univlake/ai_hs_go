@@ -89,6 +89,13 @@ var CorePermissions = []string{
 	"three-togethers.list", "three-togethers.create", "three-togethers.update", "three-togethers.delete",
 	"assess-detects.list", "assess-detects.create", "assess-detects.update", "assess-detects.delete",
 
+	// 事故应急（生产事故快报 + 集团事故快报 + 应急演练 / 物资 / 队伍）
+	"accident-bulletins.list", "accident-bulletins.create", "accident-bulletins.update", "accident-bulletins.delete",
+	"bloc-accident-bulletins.list",
+	"emergency-drills.list", "emergency-drills.create", "emergency-drills.update", "emergency-drills.delete",
+	"emergency-supplies.list", "emergency-supplies.create", "emergency-supplies.update", "emergency-supplies.delete",
+	"emergency-teams.list", "emergency-teams.create", "emergency-teams.update", "emergency-teams.delete",
+
 	// File upload
 	"upload.file", "upload.oss",
 }
@@ -152,6 +159,11 @@ var SeededRoles = []SeededRole{
 			"job-management.list", "job-management.create", "job-management.update", "job-management.delete",
 			"three-togethers.list", "three-togethers.create", "three-togethers.update", "three-togethers.delete",
 			"assess-detects.list", "assess-detects.create", "assess-detects.update", "assess-detects.delete",
+			"accident-bulletins.list", "accident-bulletins.create", "accident-bulletins.update", "accident-bulletins.delete",
+			"bloc-accident-bulletins.list",
+			"emergency-drills.list", "emergency-drills.create", "emergency-drills.update", "emergency-drills.delete",
+			"emergency-supplies.list", "emergency-supplies.create", "emergency-supplies.update", "emergency-supplies.delete",
+			"emergency-teams.list", "emergency-teams.create", "emergency-teams.update", "emergency-teams.delete",
 			"upload.file", "upload.oss",
 		},
 	},
@@ -176,6 +188,8 @@ var SeededRoles = []SeededRole{
 			"fire-safeties.list", "fire-equipment.list", "fire-facilities.list",
 			"risk-distribution-maps.list", "monthly-investigations.list",
 			"job-management.list", "three-togethers.list", "assess-detects.list",
+			"accident-bulletins.list", "bloc-accident-bulletins.list",
+			"emergency-drills.list", "emergency-supplies.list", "emergency-teams.list",
 		},
 	},
 }

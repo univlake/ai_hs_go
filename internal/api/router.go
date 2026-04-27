@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 
+	accidentemergencyapi "ai_hs_go/internal/api/accidentemergency"
 	authapi "ai_hs_go/internal/api/auth"
 	basedataapi "ai_hs_go/internal/api/basedata"
 	companyapi "ai_hs_go/internal/api/company"
@@ -114,6 +115,8 @@ func (r *Router) Engine() *gin.Engine {
 	healthFireH := healthfireapi.NewHandler(healthFireSvc)
 	riskSvc := service.NewRiskService(r.deps.DB)
 	riskH := riskapi.NewHandler(riskSvc, r.deps.OSS)
+	accidentEmergencySvc := service.NewAccidentEmergencyService(r.deps.DB, companyRepo)
+	accidentEmergencyH := accidentemergencyapi.NewHandler(accidentEmergencySvc)
 	uploadH := uploadapi.NewHandler(r.deps.OSS)
 	basedataH := basedataapi.NewHandler(dictSvc, checklistSvc, regLibSvc)
 	safetyArchH := safetyarchapi.NewHandler(safetyarchapi.HandlerDeps{
@@ -506,6 +509,39 @@ func (r *Router) Engine() *gin.Engine {
 	business.POST("/assess-detects", middleware.RequirePermission(r.deps.Enforcer, "assess-detects.create"), riskH.CreateAssessDetect)
 	business.PUT("/assess-detects/:id", middleware.RequirePermission(r.deps.Enforcer, "assess-detects.update"), riskH.UpdateAssessDetect)
 	business.DELETE("/assess-detects/:id", middleware.RequirePermission(r.deps.Enforcer, "assess-detects.delete"), riskH.DeleteAssessDetect)
+
+	// 事故应急 — 5 模块共用 AccidentEmergencyService。
+	// 集团事故快报（/bloc-accident-bulletins）跟生产视图共用 accident_bulletins 表，
+	// 仅在 service 层按 company subtree 过滤。生产视图的事故上报与集团视图的事故上报
+	// 共用同一份 /accident-bulletins CRUD（前端 management/accidents/report 直接复用 accidentReportConfig）。
+	business.GET("/accident-bulletins", middleware.RequirePermission(r.deps.Enforcer, "accident-bulletins.list"), accidentEmergencyH.ListAccidentBulletin)
+	business.GET("/accident-bulletins/:id", middleware.RequirePermission(r.deps.Enforcer, "accident-bulletins.list"), accidentEmergencyH.GetAccidentBulletin)
+	business.POST("/accident-bulletins", middleware.RequirePermission(r.deps.Enforcer, "accident-bulletins.create"), accidentEmergencyH.CreateAccidentBulletin)
+	business.PUT("/accident-bulletins/:id", middleware.RequirePermission(r.deps.Enforcer, "accident-bulletins.update"), accidentEmergencyH.UpdateAccidentBulletin)
+	business.DELETE("/accident-bulletins/:id", middleware.RequirePermission(r.deps.Enforcer, "accident-bulletins.delete"), accidentEmergencyH.DeleteAccidentBulletin)
+
+	// 集团事故快报：/annual-stats 必须先于 通配的 :id 注册（这里没有 :id 路由，
+	// 但保持习惯）。bloc 路由 GET-only，写操作走 production /accident-bulletins。
+	business.GET("/bloc-accident-bulletins/annual-stats", middleware.RequirePermission(r.deps.Enforcer, "bloc-accident-bulletins.list"), accidentEmergencyH.BlocAccidentAnnualStats)
+	business.GET("/bloc-accident-bulletins", middleware.RequirePermission(r.deps.Enforcer, "bloc-accident-bulletins.list"), accidentEmergencyH.ListBlocAccidentBulletin)
+
+	business.GET("/emergency-drills", middleware.RequirePermission(r.deps.Enforcer, "emergency-drills.list"), accidentEmergencyH.ListEmergencyDrill)
+	business.GET("/emergency-drills/:id", middleware.RequirePermission(r.deps.Enforcer, "emergency-drills.list"), accidentEmergencyH.GetEmergencyDrill)
+	business.POST("/emergency-drills", middleware.RequirePermission(r.deps.Enforcer, "emergency-drills.create"), accidentEmergencyH.CreateEmergencyDrill)
+	business.PUT("/emergency-drills/:id", middleware.RequirePermission(r.deps.Enforcer, "emergency-drills.update"), accidentEmergencyH.UpdateEmergencyDrill)
+	business.DELETE("/emergency-drills/:id", middleware.RequirePermission(r.deps.Enforcer, "emergency-drills.delete"), accidentEmergencyH.DeleteEmergencyDrill)
+
+	business.GET("/emergency-supplies", middleware.RequirePermission(r.deps.Enforcer, "emergency-supplies.list"), accidentEmergencyH.ListEmergencySupplies)
+	business.GET("/emergency-supplies/:id", middleware.RequirePermission(r.deps.Enforcer, "emergency-supplies.list"), accidentEmergencyH.GetEmergencySupplies)
+	business.POST("/emergency-supplies", middleware.RequirePermission(r.deps.Enforcer, "emergency-supplies.create"), accidentEmergencyH.CreateEmergencySupplies)
+	business.PUT("/emergency-supplies/:id", middleware.RequirePermission(r.deps.Enforcer, "emergency-supplies.update"), accidentEmergencyH.UpdateEmergencySupplies)
+	business.DELETE("/emergency-supplies/:id", middleware.RequirePermission(r.deps.Enforcer, "emergency-supplies.delete"), accidentEmergencyH.DeleteEmergencySupplies)
+
+	business.GET("/emergency-teams", middleware.RequirePermission(r.deps.Enforcer, "emergency-teams.list"), accidentEmergencyH.ListEmergencyTeam)
+	business.GET("/emergency-teams/:id", middleware.RequirePermission(r.deps.Enforcer, "emergency-teams.list"), accidentEmergencyH.GetEmergencyTeam)
+	business.POST("/emergency-teams", middleware.RequirePermission(r.deps.Enforcer, "emergency-teams.create"), accidentEmergencyH.CreateEmergencyTeam)
+	business.PUT("/emergency-teams/:id", middleware.RequirePermission(r.deps.Enforcer, "emergency-teams.update"), accidentEmergencyH.UpdateEmergencyTeam)
+	business.DELETE("/emergency-teams/:id", middleware.RequirePermission(r.deps.Enforcer, "emergency-teams.delete"), accidentEmergencyH.DeleteEmergencyTeam)
 
 	// Upload (OSS multipart)
 	upload := business.Group("/upload-oss", middleware.RequirePermission(r.deps.Enforcer, "upload.oss"))
