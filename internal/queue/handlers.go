@@ -4,15 +4,19 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/hibiken/asynq"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+
+	"ai_hs_go/internal/risk"
 )
 
 type Handlers struct {
 	DB     *gorm.DB
 	Logger *zap.Logger
+	TZ     *time.Location
 }
 
 // HandleSendNotification — 历史占位 worker。原实现写入 new_notifies/new_notify_scopes，
@@ -51,7 +55,23 @@ func (h *Handlers) HandleExportExcel(_ context.Context, t *asynq.Task) error {
 	return nil
 }
 
+// HandleCalculateRisk — 每日风险重算任务的入口。
+//
+// 包一层 30 分钟超时，防止某次跑爆（外键漂移 / Postgres 锁）卡住 default 队列。
+// asynq 默认每个 worker goroutine 跑完才能拿下一条，30min 是远高于实际跑时
+// （staging 全量 ~30s）的安全裕度，触发即说明上游挂了，需要人工介入。
+func (h *Handlers) HandleCalculateRisk(ctx context.Context, t *asynq.Task) error {
+	var p CalculateRiskPayload
+	if err := json.Unmarshal(t.Payload(), &p); err != nil {
+		return fmt.Errorf("unmarshal: %w", err)
+	}
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Minute)
+	defer cancel()
+	return risk.NewCalculator(h.DB, h.Logger, h.TZ).Run(ctx, p.Content)
+}
+
 func (h *Handlers) Register(mux *asynq.ServeMux) {
 	mux.HandleFunc(TypeSendNotification, h.HandleSendNotification)
 	mux.HandleFunc(TypeExportExcel, h.HandleExportExcel)
+	mux.HandleFunc(TypeCalculateRisk, h.HandleCalculateRisk)
 }
