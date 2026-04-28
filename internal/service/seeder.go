@@ -123,6 +123,13 @@ var CorePermissions = []string{
 	"month-statistics.list", "month-statistics.create", "month-statistics.update", "month-statistics.delete",
 	"year-statistics.list", "year-statistics.create", "year-statistics.update", "year-statistics.delete",
 
+	// 风险监测栏目（集团视图）— 5 模块共用 RiskMonitorService。
+	// 企业分布图 / 重大危险源分布图 复用 risk-distribution-maps.list / major-hazards.list；
+	// 特种设备数据统计走 special-equipment.list（与生产视图同名权限）。
+	"bloc-risks.list",
+	"online-inspection.list",
+	"focus-companies.list", "focus-companies.create", "focus-companies.delete",
+
 	// File upload
 	"upload.file", "upload.oss",
 }
@@ -210,6 +217,9 @@ var SeededRoles = []SeededRole{
 			"norm-checks.list", "norm-checks.create", "norm-checks.update", "norm-checks.delete",
 			"month-statistics.list", "month-statistics.create", "month-statistics.update", "month-statistics.delete",
 			"year-statistics.list", "year-statistics.create", "year-statistics.update", "year-statistics.delete",
+			"bloc-risks.list",
+			"online-inspection.list",
+			"focus-companies.list", "focus-companies.create", "focus-companies.delete",
 			"upload.file", "upload.oss",
 		},
 	},
@@ -245,6 +255,9 @@ var SeededRoles = []SeededRole{
 			"add-points.list", "add-points-templates.list",
 			"system-checks.list", "norm-checks.list",
 			"month-statistics.list", "year-statistics.list",
+			"bloc-risks.list",
+			"online-inspection.list",
+			"focus-companies.list",
 		},
 	},
 }

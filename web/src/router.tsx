@@ -134,6 +134,12 @@ const TasksAnnualReport = lazyPage('tasks/annual-report/Index');
 const ManagementStatisticsMonthlyStats = lazyPage('management/statistics/monthly-stats/Index');
 const ManagementStatisticsAnnualStats = lazyPage('management/statistics/annual-stats/Index');
 const ManagementStatisticsNoticeStats = lazyPage('management/statistics/notice-stats/Index');
+// 风险监测栏目（集团视图）— 5 模块：企业分布图 / 重大危险源分布图 / 在线巡检 / 风险监控 / 特种设备数据统计
+const RiskMonitoringEnterpriseMap = lazyPage('risk-monitoring/enterprise-map/Index');
+const RiskMonitoringHazardMap = lazyPage('risk-monitoring/hazard-map/Index');
+const RiskMonitoringOnlineInspection = lazyPage('risk-monitoring/online-inspection/Index');
+const RiskMonitoringRiskMonitor = lazyPage('risk-monitoring/risk-monitor/Index');
+const RiskMonitoringSpecialEquipment = lazyPage('risk-monitoring/special-equipment/Index');
 const Placeholder = lazyPage('_placeholder');
 
 export const router = createBrowserRouter([
@@ -259,6 +265,12 @@ export const router = createBrowserRouter([
           { path: '/management/statistics/monthly-stats', element: <LoadingShell><ManagementStatisticsMonthlyStats /></LoadingShell> },
           { path: '/management/statistics/annual-stats', element: <LoadingShell><ManagementStatisticsAnnualStats /></LoadingShell> },
           { path: '/management/statistics/notice-stats', element: <LoadingShell><ManagementStatisticsNoticeStats /></LoadingShell> },
+          // 风险监测栏目（集团视图）— 跟 Sidebar `mode: 'bloc'` 的 5 个 href 一一对应
+          { path: '/risk-monitoring/enterprise-map', element: <LoadingShell><RiskMonitoringEnterpriseMap /></LoadingShell> },
+          { path: '/risk-monitoring/hazard-map', element: <LoadingShell><RiskMonitoringHazardMap /></LoadingShell> },
+          { path: '/risk-monitoring/online-inspection', element: <LoadingShell><RiskMonitoringOnlineInspection /></LoadingShell> },
+          { path: '/risk-monitoring/risk-monitor', element: <LoadingShell><RiskMonitoringRiskMonitor /></LoadingShell> },
+          { path: '/risk-monitoring/special-equipment', element: <LoadingShell><RiskMonitoringSpecialEquipment /></LoadingShell> },
           // Sidebar 旧 href 兼容（之前指向 /equipment/major-hazardous）
           { path: '/equipment/major-hazardous', element: <LoadingShell><SafetyDangerousEquipment /></LoadingShell> },
           // Catch-all inside AppLayout: shows a friendly "尚未迁移" page
