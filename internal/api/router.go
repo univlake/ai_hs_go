@@ -16,6 +16,7 @@ import (
 	companyapi "ai_hs_go/internal/api/company"
 	companygroupapi "ai_hs_go/internal/api/companygroup"
 	expertapi "ai_hs_go/internal/api/expert"
+	extramodulesapi "ai_hs_go/internal/api/extramodules"
 	healthfireapi "ai_hs_go/internal/api/healthfire"
 	hiddendangerapi "ai_hs_go/internal/api/hiddendanger"
 	majorhazardapi "ai_hs_go/internal/api/majorhazard"
@@ -154,6 +155,9 @@ func (r *Router) Engine() *gin.Engine {
 	// 跟生产视图共用同一组路由 / 权限；视角差异由前端通过 pid vs company_id 入参表达。
 	statisticsSvc := service.NewStatisticsService(r.deps.DB)
 	statisticsH := statisticsapi.NewHandler(statisticsSvc)
+	// 剩余 5 模块（变更管理 / 法律法规库 / 培训资料文件&视频 / 风险画像）共用 ExtraModulesService。
+	extraModulesSvc := service.NewExtraModulesService(r.deps.DB)
+	extraModulesH := extramodulesapi.NewHandler(extraModulesSvc, r.deps.OSS)
 	uploadH := uploadapi.NewHandler(r.deps.OSS)
 	basedataH := basedataapi.NewHandler(dictSvc, checklistSvc, regLibSvc)
 	safetyArchH := safetyarchapi.NewHandler(safetyarchapi.HandlerDeps{
@@ -540,6 +544,8 @@ func (r *Router) Engine() *gin.Engine {
 
 	business.GET("/inspection-alerts", middleware.RequirePermission(r.deps.Enforcer, "online-inspection.list"), riskMonitorH.InspectionAlerts)
 	business.GET("/special-equipment-statistics", middleware.RequirePermission(r.deps.Enforcer, "special-equipment.list"), riskMonitorH.SpecialEquipmentStatistics)
+	// 集团端隐患管理：按 company_id 子树聚合 monthly_investigations，沿用 monthly-investigations.list 权限。
+	business.GET("/bloc-monthly-investigations", middleware.RequirePermission(r.deps.Enforcer, "monthly-investigations.list"), riskMonitorH.BlocMonthlyInvestigations)
 
 	business.GET("/monthly-investigations", middleware.RequirePermission(r.deps.Enforcer, "monthly-investigations.list"), riskH.ListMonthlyInvestigation)
 	business.GET("/monthly-investigations/:id", middleware.RequirePermission(r.deps.Enforcer, "monthly-investigations.list"), riskH.GetMonthlyInvestigation)
@@ -810,6 +816,38 @@ func (r *Router) Engine() *gin.Engine {
 	// 通知公告反馈统计 — 跟 Laravel 一致挂在 office-notifies.list 权限下，避免再造一类权限。
 	business.GET("/notice-stats/summary", middleware.RequirePermission(r.deps.Enforcer, "office-notifies.list"), statisticsH.NoticeStatsSummary)
 	business.GET("/notice-stats/pending", middleware.RequirePermission(r.deps.Enforcer, "office-notifies.list"), statisticsH.NoticeStatsPending)
+
+	// 变更管理 / 法律法规库 / 培训资料文件&视频 / 风险画像 — 共用 ExtraModulesService。
+	business.GET("/change-manages", middleware.RequirePermission(r.deps.Enforcer, "change-manages.list"), extraModulesH.ListChangeManage)
+	business.GET("/change-manages/:id", middleware.RequirePermission(r.deps.Enforcer, "change-manages.list"), extraModulesH.GetChangeManage)
+	business.POST("/change-manages", middleware.RequirePermission(r.deps.Enforcer, "change-manages.create"), extraModulesH.CreateChangeManage)
+	business.PUT("/change-manages/:id", middleware.RequirePermission(r.deps.Enforcer, "change-manages.update"), extraModulesH.UpdateChangeManage)
+	business.DELETE("/change-manages/:id", middleware.RequirePermission(r.deps.Enforcer, "change-manages.delete"), extraModulesH.DeleteChangeManage)
+
+	business.GET("/regulation-libraries", middleware.RequirePermission(r.deps.Enforcer, "regulation-libraries.list"), extraModulesH.ListRegulationLibrary)
+	business.GET("/regulation-libraries/:id", middleware.RequirePermission(r.deps.Enforcer, "regulation-libraries.list"), extraModulesH.GetRegulationLibrary)
+	business.POST("/regulation-libraries", middleware.RequirePermission(r.deps.Enforcer, "regulation-libraries.create"), extraModulesH.CreateRegulationLibrary)
+	business.PUT("/regulation-libraries/:id", middleware.RequirePermission(r.deps.Enforcer, "regulation-libraries.update"), extraModulesH.UpdateRegulationLibrary)
+	business.DELETE("/regulation-libraries/:id", middleware.RequirePermission(r.deps.Enforcer, "regulation-libraries.delete"), extraModulesH.DeleteRegulationLibrary)
+
+	business.GET("/training-files", middleware.RequirePermission(r.deps.Enforcer, "training-files.list"), extraModulesH.ListTrainingFile)
+	// /:id 必须在静态后缀之后；本组无静态后缀，按常规顺序即可。Laravel show 接口里
+	// 同步签名 + 自增 + 写流水，前端拿到字符串 URL 后直接打开。
+	business.GET("/training-files/:id", middleware.RequirePermission(r.deps.Enforcer, "training-files.list"), extraModulesH.GetTrainingFile)
+	business.POST("/training-files", middleware.RequirePermission(r.deps.Enforcer, "training-files.create"), extraModulesH.CreateTrainingFile)
+	business.PUT("/training-files/:id", middleware.RequirePermission(r.deps.Enforcer, "training-files.update"), extraModulesH.UpdateTrainingFile)
+	business.DELETE("/training-files/:id", middleware.RequirePermission(r.deps.Enforcer, "training-files.delete"), extraModulesH.DeleteTrainingFile)
+
+	business.GET("/training-videos", middleware.RequirePermission(r.deps.Enforcer, "training-videos.list"), extraModulesH.ListTrainingVideo)
+	business.GET("/training-videos/:id", middleware.RequirePermission(r.deps.Enforcer, "training-videos.list"), extraModulesH.GetTrainingVideo)
+	business.POST("/training-videos", middleware.RequirePermission(r.deps.Enforcer, "training-videos.create"), extraModulesH.CreateTrainingVideo)
+	business.PUT("/training-videos/:id", middleware.RequirePermission(r.deps.Enforcer, "training-videos.update"), extraModulesH.UpdateTrainingVideo)
+	business.DELETE("/training-videos/:id", middleware.RequirePermission(r.deps.Enforcer, "training-videos.delete"), extraModulesH.DeleteTrainingVideo)
+
+	// 风险画像 / 风险日志 — /risks/portrait 是 inherent + float + 最新 risk_log 的组合返回；
+	// /risks/log 是 risk_logs 的 per-company 分页。permission 用 risk-logs.list（跟 Sidebar 链接一致）。
+	business.GET("/risks/portrait", middleware.RequirePermission(r.deps.Enforcer, "risk-logs.list"), extraModulesH.RisksPortrait)
+	business.GET("/risks/log", middleware.RequirePermission(r.deps.Enforcer, "risk-logs.list"), extraModulesH.RisksLog)
 
 	// Upload (OSS multipart)
 	upload := business.Group("/upload-oss", middleware.RequirePermission(r.deps.Enforcer, "upload.oss"))

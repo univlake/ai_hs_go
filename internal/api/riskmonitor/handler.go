@@ -286,3 +286,28 @@ func (h *Handler) SpecialEquipmentStatistics(c *gin.Context) {
 	}
 	response.Success(c, out)
 }
+
+// ─── 集团端隐患管理 ───────────────────────────────────────────────────
+
+// BlocMonthlyInvestigations: GET /bloc-monthly-investigations
+// query: company_id (root) + 可选 type / level / inv_year + 分页。
+func (h *Handler) BlocMonthlyInvestigations(c *gin.Context) {
+	rid := rootCompanyOrFail(c)
+	if rid == 0 {
+		return
+	}
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	year, _ := strconv.Atoi(c.Query("inv_year"))
+	rows, total, err := h.svc.BlocMonthlyInvestigations(c.Request.Context(), service.BlocMonthlyInvestigationParams{
+		Page: page, PerPage: per, RootID: rid,
+		Type:    c.Query("type"),
+		Level:   c.Query("level"),
+		InvYear: year,
+	})
+	if err != nil {
+		writeAppError(c, err)
+		return
+	}
+	response.Page(c, rows, page, per, total)
+}

@@ -126,6 +126,9 @@ const ManagementAssessmentFiling = lazyPage('management/assessment/filing/Index'
 const ManagementAssessmentScoring = lazyPage('management/assessment/scoring/Index');
 const ManagementAssessmentSummary = lazyPage('management/assessment/summary/Index');
 const SystemAssessmentTemplates = lazyPage('system/assessment-templates/Index');
+// 生产视图考核填报（Sidebar /assessment/filing）— 跟集团端 /management/assessment/filing 是不同页面，
+// 子企业用它按年度上传材料给上级评分。后端 /daily-checks/* 6 条接口已就绪。
+const AssessmentFiling = lazyPage('assessment/filing/Index');
 // 数据统计模块 — 月/年度数据上报（集团 + 生产视图共用）+ 月/年度报表汇总 + 通知公告反馈统计
 const StatisticsMonthStatistics = lazyPage('statistics/month-statistics/Index');
 const StatisticsYearStatistics = lazyPage('statistics/year-statistics/Index');
@@ -140,6 +143,22 @@ const RiskMonitoringHazardMap = lazyPage('risk-monitoring/hazard-map/Index');
 const RiskMonitoringOnlineInspection = lazyPage('risk-monitoring/online-inspection/Index');
 const RiskMonitoringRiskMonitor = lazyPage('risk-monitoring/risk-monitor/Index');
 const RiskMonitoringSpecialEquipment = lazyPage('risk-monitoring/special-equipment/Index');
+// 剩余 5 模块（变更管理 / 法律法规库 / 培训资料文件&视频 / 风险预警）— 跟 Sidebar href 一一对应。
+const ChangeManagement = lazyPage('change-management/Index');
+const RegulationLibraries = lazyPage('regulation/libraries/Index');
+const TrainingFiles = lazyPage('training/training-files/Index');
+const TrainingVideos = lazyPage('training/training-videos/Index');
+const RiskRiskWarning = lazyPage('risk/risk-warning/Index');
+// 集团视图 / 教育培训 / 知识管理 / 培训中心 / 系统管理下还差 8 个 Sidebar 链接 — 全部已有 page，
+// 这里把它们补齐到 SPA Router；后端接口 100% 已就绪（详见 router.go）。
+const RiskControlMonthlyInvestigation = lazyPage('risk-control/monthly-investigation/Index');
+const TrainingInternalTrainings = lazyPage('training/internal-trainings/Index');
+const TrainingExternalTrainings = lazyPage('training/external-trainings/Index');
+const ManagementTrainingRelevantParty = lazyPage('management/training/relevant-party/Index');
+const ManagementKnowledgeChecklists = lazyPage('management/knowledge/checklists/Index');
+const ManagementTrainingCenterUploadMaterials = lazyPage('management/training-center/upload-materials/Index');
+const ManagementTrainingCenterUploadVideos = lazyPage('management/training-center/upload-videos/Index');
+const SystemPermissions = lazyPage('system/permissions/Index');
 const Placeholder = lazyPage('_placeholder');
 
 export const router = createBrowserRouter([
@@ -256,6 +275,8 @@ export const router = createBrowserRouter([
           { path: '/management/assessment/scoring', element: <LoadingShell><ManagementAssessmentScoring /></LoadingShell> },
           { path: '/management/assessment/summary', element: <LoadingShell><ManagementAssessmentSummary /></LoadingShell> },
           { path: '/system/assessment-templates', element: <LoadingShell><SystemAssessmentTemplates /></LoadingShell> },
+          // 生产视图考核填报（Sidebar 顶层「年度考核 / 考核填报」）。
+          { path: '/assessment/filing', element: <LoadingShell><AssessmentFiling /></LoadingShell> },
           // 数据统计：集团 月/年度上报（/statistics/*）共用页面、生产视图（/tasks/{monthly,annual}-report）
           // 是 wrapper（pidMode=false）；月/年度报表汇总（/management/statistics/*-stats）跟通知公告反馈统计。
           { path: '/statistics/month-statistics', element: <LoadingShell><StatisticsMonthStatistics /></LoadingShell> },
@@ -271,6 +292,21 @@ export const router = createBrowserRouter([
           { path: '/risk-monitoring/online-inspection', element: <LoadingShell><RiskMonitoringOnlineInspection /></LoadingShell> },
           { path: '/risk-monitoring/risk-monitor', element: <LoadingShell><RiskMonitoringRiskMonitor /></LoadingShell> },
           { path: '/risk-monitoring/special-equipment', element: <LoadingShell><RiskMonitoringSpecialEquipment /></LoadingShell> },
+          // 剩余 5 模块（变更管理 / 法律法规库 / 培训资料文件&视频 / 风险预警）
+          { path: '/change-management', element: <LoadingShell><ChangeManagement /></LoadingShell> },
+          { path: '/regulation/libraries', element: <LoadingShell><RegulationLibraries /></LoadingShell> },
+          { path: '/training/training-files', element: <LoadingShell><TrainingFiles /></LoadingShell> },
+          { path: '/training/training-videos', element: <LoadingShell><TrainingVideos /></LoadingShell> },
+          { path: '/risk/risk-warning', element: <LoadingShell><RiskRiskWarning /></LoadingShell> },
+          // 集团视图隐患管理 / 教育培训 / 知识管理 / 培训中心 / 系统管理 — 后端接口已经就绪。
+          { path: '/risk-control/monthly-investigation', element: <LoadingShell><RiskControlMonthlyInvestigation /></LoadingShell> },
+          { path: '/training/internal-trainings', element: <LoadingShell><TrainingInternalTrainings /></LoadingShell> },
+          { path: '/training/external-trainings', element: <LoadingShell><TrainingExternalTrainings /></LoadingShell> },
+          { path: '/management/training/relevant-party', element: <LoadingShell><ManagementTrainingRelevantParty /></LoadingShell> },
+          { path: '/management/knowledge/checklists', element: <LoadingShell><ManagementKnowledgeChecklists /></LoadingShell> },
+          { path: '/management/training-center/upload-materials', element: <LoadingShell><ManagementTrainingCenterUploadMaterials /></LoadingShell> },
+          { path: '/management/training-center/upload-videos', element: <LoadingShell><ManagementTrainingCenterUploadVideos /></LoadingShell> },
+          { path: '/system/permissions', element: <LoadingShell><SystemPermissions /></LoadingShell> },
           // Sidebar 旧 href 兼容（之前指向 /equipment/major-hazardous）
           { path: '/equipment/major-hazardous', element: <LoadingShell><SafetyDangerousEquipment /></LoadingShell> },
           // Catch-all inside AppLayout: shows a friendly "尚未迁移" page

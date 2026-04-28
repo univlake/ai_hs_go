@@ -130,6 +130,14 @@ var CorePermissions = []string{
 	"online-inspection.list",
 	"focus-companies.list", "focus-companies.create", "focus-companies.delete",
 
+	// 剩余 5 模块（变更管理 / 法律法规库 / 培训资料文件&视频 / 风险画像）
+	// risk-logs.list 同时门禁 /risks/portrait + /risks/log（跟 Sidebar /risk/risk-warning 的 permission 一致）。
+	"change-manages.list", "change-manages.create", "change-manages.update", "change-manages.delete",
+	"regulation-libraries.list", "regulation-libraries.create", "regulation-libraries.update", "regulation-libraries.delete",
+	"training-files.list", "training-files.create", "training-files.update", "training-files.delete",
+	"training-videos.list", "training-videos.create", "training-videos.update", "training-videos.delete",
+	"risk-logs.list",
+
 	// File upload
 	"upload.file", "upload.oss",
 }
@@ -220,6 +228,11 @@ var SeededRoles = []SeededRole{
 			"bloc-risks.list",
 			"online-inspection.list",
 			"focus-companies.list", "focus-companies.create", "focus-companies.delete",
+			"change-manages.list", "change-manages.create", "change-manages.update", "change-manages.delete",
+			"regulation-libraries.list", "regulation-libraries.create", "regulation-libraries.update", "regulation-libraries.delete",
+			"training-files.list", "training-files.create", "training-files.update", "training-files.delete",
+			"training-videos.list", "training-videos.create", "training-videos.update", "training-videos.delete",
+			"risk-logs.list",
 			"upload.file", "upload.oss",
 		},
 	},
@@ -258,6 +271,10 @@ var SeededRoles = []SeededRole{
 			"bloc-risks.list",
 			"online-inspection.list",
 			"focus-companies.list",
+			"change-manages.list",
+			"regulation-libraries.list",
+			"training-files.list", "training-videos.list",
+			"risk-logs.list",
 		},
 	},
 }
