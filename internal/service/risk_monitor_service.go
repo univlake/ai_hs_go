@@ -598,3 +598,63 @@ func (s *RiskMonitorService) SpecialEquipmentStatistics(ctx context.Context, roo
 	}
 	return SpecialEquipmentStatsResult{Types: types, Rows: rows}, nil
 }
+
+// ─── 集团端隐患管理 ───────────────────────────────────────────────────
+
+// BlocMonthlyInvestigationParams — /bloc-monthly-investigations 入参。
+// 跟 Laravel BlocMonthlyInvestigationsController 一致：必传 company_id（root），
+// 服务层负责按 ascTree 展开下属企业 ID 列表，再按可选过滤项分页。
+type BlocMonthlyInvestigationParams struct {
+	Page      int
+	PerPage   int
+	RootID    int64
+	Type      string
+	Level     string
+	InvYear   int    // 0 表示不限
+}
+
+func (s *RiskMonitorService) BlocMonthlyInvestigations(ctx context.Context, p BlocMonthlyInvestigationParams) ([]model.MonthlyInvestigation, int64, error) {
+	if p.RootID == 0 {
+		return nil, 0, errs.New(errs.CodeUnprocessable, "缺少 company_id")
+	}
+	if p.Page <= 0 {
+		p.Page = 1
+	}
+	if p.PerPage <= 0 || p.PerPage > 100 {
+		p.PerPage = 15
+	}
+	descendants, err := s.companyRepo.DescendantIDs(ctx, p.RootID)
+	if err != nil {
+		return nil, 0, err
+	}
+	if len(descendants) == 0 {
+		descendants = []int64{p.RootID}
+	}
+	q := s.db.WithContext(ctx).
+		Model(&model.MonthlyInvestigation{}).
+		Where("company_id IN ?", descendants)
+	if p.Type != "" {
+		q = q.Where("type = ?", p.Type)
+	}
+	if p.Level != "" {
+		q = q.Where("level = ?", p.Level)
+	}
+	if p.InvYear > 0 {
+		q = q.Where("EXTRACT(YEAR FROM inv_time) = ?", p.InvYear)
+	}
+	var total int64
+	if err := q.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	var rows []model.MonthlyInvestigation
+	if err := q.Preload("Company").
+		Preload("Reviews").
+		Preload("Views").
+		Order("inv_time DESC NULLS LAST, id DESC").
+		Offset((p.Page - 1) * p.PerPage).
+		Limit(p.PerPage).
+		Find(&rows).Error; err != nil {
+		return nil, 0, err
+	}
+	return rows, total, nil
+}

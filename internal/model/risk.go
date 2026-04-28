@@ -57,6 +57,10 @@ type MonthlyInvestigation struct {
 	// JSON 键名沿用 Laravel 关系名（驼峰），前端表单读写都用这两个 key。
 	Reviews []MonthlyInvestigationReview `gorm:"foreignKey:MonthlyInvestigationID" json:"monthlyInvestigationReviews,omitempty"`
 	Views   []MonthlyInvestigationView   `gorm:"foreignKey:MonthlyInvestigationID" json:"monthlyInvestigationViews,omitempty"`
+
+	// 集团端 /bloc-monthly-investigations 列表 preload company，单企业 CRUD
+	// 不主动加载 — omitempty 保证不会污染原有响应。
+	Company *Company `gorm:"foreignKey:CompanyID;references:ID" json:"company,omitempty"`
 }
 
 func (MonthlyInvestigation) TableName() string { return "monthly_investigations" }
