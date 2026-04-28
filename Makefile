@@ -1,4 +1,4 @@
-.PHONY: help tidy run dev worker build test fmt vet \
+.PHONY: help tidy run dev worker risk-calc build test fmt vet \
         infra-up infra-down infra-logs \
         migrate-up migrate-down migrate-create migrate-version \
         seed
@@ -13,6 +13,7 @@ help:
 	@echo "make run             # start HTTP server"
 	@echo "make dev             # start HTTP server with air hot-reload"
 	@echo "make worker          # start asynq worker (Phase 7)"
+	@echo "make risk-calc       # enqueue a one-off risk:calculate task"
 	@echo "make build           # compile all binaries"
 	@echo "make test            # go test ./... -race"
 	@echo "make fmt vet         # gofmt + go vet"
@@ -39,6 +40,10 @@ build:
 	$(GO) build -o ./bin/server ./cmd/server
 	$(GO) build -o ./bin/worker ./cmd/worker
 	$(GO) build -o ./bin/migrate ./cmd/migrate
+	$(GO) build -o ./bin/risk-calc ./cmd/risk-calc
+
+risk-calc:
+	$(GO) run ./cmd/risk-calc -config ./configs/config.yaml
 
 test:
 	$(GO) test ./... -race -count=1

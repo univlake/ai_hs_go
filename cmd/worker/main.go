@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/hibiken/asynq"
 	"go.uber.org/zap"
@@ -35,23 +36,43 @@ func main() {
 		logger.Fatal("connect db", zap.Error(err))
 	}
 
-	handlers := &queue.Handlers{DB: db, Logger: logger}
+	loc, err := time.LoadLocation(cfg.Database.TimeZone)
+	if err != nil {
+		logger.Fatal("load scheduler timezone", zap.String("tz", cfg.Database.TimeZone), zap.Error(err))
+	}
+
+	handlers := &queue.Handlers{DB: db, Logger: logger, TZ: loc}
 	mux := asynq.NewServeMux()
 	handlers.Register(mux)
 
-	srv := asynq.NewServer(
-		asynq.RedisClientOpt{Addr: cfg.Redis.Addr, Password: cfg.Redis.Password, DB: cfg.Redis.DB},
-		asynq.Config{
-			Concurrency: 10,
-			Queues: map[string]int{
-				queue.QueueDefault: 6,
-				queue.QueueExports: 4,
-			},
-			Logger: zapAsynqLogger{logger},
-		},
-	)
+	redisOpt := asynq.RedisClientOpt{Addr: cfg.Redis.Addr, Password: cfg.Redis.Password, DB: cfg.Redis.DB}
 
-	logger.Info("worker started")
+	sched := asynq.NewScheduler(redisOpt, &asynq.SchedulerOpts{
+		Logger:   zapAsynqLogger{logger},
+		Location: loc,
+	})
+	riskTask, err := queue.NewCalculateRiskTask(queue.CalculateRiskPayload{Content: "每日定时计算"})
+	if err != nil {
+		logger.Fatal("build risk:calculate task", zap.Error(err))
+	}
+	if _, err := sched.Register("0 2 * * *", riskTask); err != nil {
+		logger.Fatal("register risk:calculate", zap.Error(err))
+	}
+	if err := sched.Start(); err != nil {
+		logger.Fatal("scheduler start", zap.Error(err))
+	}
+	defer sched.Shutdown()
+
+	srv := asynq.NewServer(redisOpt, asynq.Config{
+		Concurrency: 10,
+		Queues: map[string]int{
+			queue.QueueDefault: 6,
+			queue.QueueExports: 4,
+		},
+		Logger: zapAsynqLogger{logger},
+	})
+
+	logger.Info("worker started", zap.String("scheduler_tz", loc.String()))
 	if err := srv.Run(mux); err != nil {
 		logger.Fatal("worker run", zap.Error(err))
 	}
