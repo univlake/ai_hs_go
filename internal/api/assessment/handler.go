@@ -925,6 +925,23 @@ func (h *Handler) DeleteAddPoint(c *gin.Context) {
 	response.Success(c, gin.H{"message": "删除成功"})
 }
 
+// DeleteAddPointsSubmission removes the entire (company, year) submission group —
+// every add_points row for that subordinate company in that year. PointsTab
+// renders one row per (company, year), so this matches the user-visible delete.
+func (h *Handler) DeleteAddPointsSubmission(c *gin.Context) {
+	companyID := int64Query(c, "company_id")
+	year := intQuery(c, "year")
+	if companyID <= 0 || year <= 0 {
+		response.BadRequest(c, "company_id 和 year 必填")
+		return
+	}
+	if err := h.svc.DeleteAddPointsSubmission(c.Request.Context(), companyID, year); err != nil {
+		writeAppError(c, err, "删除失败")
+		return
+	}
+	response.Success(c, gin.H{"message": "删除成功"})
+}
+
 // ── 系统检查 ──────────────────────────────────────────────────────
 
 func (h *Handler) ListSystemChecks(c *gin.Context) {

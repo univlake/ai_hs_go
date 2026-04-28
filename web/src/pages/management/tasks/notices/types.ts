@@ -3,6 +3,8 @@ export type NoticeVariant = 'office' | 'new';
 export interface VariantConfig {
     label: string;
     endpoint: string;
+    /** Permission base, e.g. 'office-notifies' → office-notifies.{create|update|delete}. */
+    permBase: 'office-notifies' | 'new-notifies';
     scopesKey:
         | 'office_notify_scope'
         | 'new_notify_scope'
@@ -20,6 +22,7 @@ export const CONFIG: Record<NoticeVariant, VariantConfig> = {
     office: {
         label: '任务型',
         endpoint: '/office-notifies',
+        permBase: 'office-notifies',
         scopesKey: 'office_notify_scope',
         scopeAltKeys: ['officeNotifyScope'],
         scopeReceiverPath: '/office-notify-scopes',
@@ -31,6 +34,7 @@ export const CONFIG: Record<NoticeVariant, VariantConfig> = {
     new: {
         label: '通知型',
         endpoint: '/new-notifies',
+        permBase: 'new-notifies',
         scopesKey: 'new_notify_scope',
         scopeAltKeys: ['newNotifyScope'],
         scopeReceiverPath: '/new-notify-scopes',

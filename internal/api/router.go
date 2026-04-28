@@ -776,6 +776,7 @@ func (r *Router) Engine() *gin.Engine {
 
 	// 加分项
 	business.GET("/add-points/submissions", middleware.RequirePermission(r.deps.Enforcer, "add-points.list"), assessmentH.ListAddPointsSubmissions)
+	business.DELETE("/add-points/submissions", middleware.RequirePermission(r.deps.Enforcer, "add-points.delete"), assessmentH.DeleteAddPointsSubmission)
 	business.GET("/add-points/start-form", middleware.RequirePermission(r.deps.Enforcer, "add-points.list"), assessmentH.StartAddPointsForm)
 	business.POST("/add-points/save-score", middleware.RequirePermission(r.deps.Enforcer, "add-points.create"), assessmentH.SaveAddPointsScore)
 	business.GET("/add-points", middleware.RequirePermission(r.deps.Enforcer, "add-points.list"), assessmentH.ListAddPoints)

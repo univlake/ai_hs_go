@@ -11,6 +11,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { OssDownloadLink } from '@/components/shared/OssDownloadLink';
 import { useScope } from '@/contexts/ScopeContext';
+import { usePermission } from '@/hooks/use-permission';
 import api from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { ApiResponse, PaginatedData } from '@/types/models';
@@ -39,6 +40,10 @@ export function NoticeTab({ variant, receiveOnly }: NoticeTabProps) {
     const config = CONFIG[variant];
     const { activeCompany } = useScope();
     const companyId = activeCompany?.id;
+    const { canWrite } = usePermission();
+    const canCreate = canWrite(`${config.permBase}.create`);
+    const canUpdate = canWrite(`${config.permBase}.update`);
+    const canDelete = canWrite(`${config.permBase}.delete`);
 
     const [rows, setRows] = useState<NoticeRow[]>([]);
     const [loading, setLoading] = useState(false);
@@ -202,7 +207,7 @@ export function NoticeTab({ variant, receiveOnly }: NoticeTabProps) {
                     onChange={(e) => setSearch(e.target.value)}
                     className={cn(inputCls, 'max-w-xs')}
                 />
-                {!receiveOnly && (
+                {!receiveOnly && canCreate && (
                     <button
                         type="button"
                         onClick={() => setCreateOpen(true)}
@@ -345,30 +350,34 @@ export function NoticeTab({ variant, receiveOnly }: NoticeTabProps) {
                                                     </button>
                                                     {!receiveOnly && (
                                                         <>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() =>
-                                                                    setEditing(
-                                                                        n,
-                                                                    )
-                                                                }
-                                                                title="编辑"
-                                                                className="flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-blue-600/10 hover:text-blue-400"
-                                                            >
-                                                                <Pencil className="h-3.5 w-3.5" />
-                                                            </button>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() =>
-                                                                    setDeleting(
-                                                                        n,
-                                                                    )
-                                                                }
-                                                                title="删除"
-                                                                className="flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-red-600/10 hover:text-red-400"
-                                                            >
-                                                                <Trash2 className="h-3.5 w-3.5" />
-                                                            </button>
+                                                            {canUpdate && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() =>
+                                                                        setEditing(
+                                                                            n,
+                                                                        )
+                                                                    }
+                                                                    title="编辑"
+                                                                    className="flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-blue-600/10 hover:text-blue-400"
+                                                                >
+                                                                    <Pencil className="h-3.5 w-3.5" />
+                                                                </button>
+                                                            )}
+                                                            {canDelete && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() =>
+                                                                        setDeleting(
+                                                                            n,
+                                                                        )
+                                                                    }
+                                                                    title="删除"
+                                                                    className="flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-red-600/10 hover:text-red-400"
+                                                                >
+                                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                                </button>
+                                                            )}
                                                         </>
                                                     )}
                                                 </>
