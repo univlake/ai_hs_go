@@ -34,7 +34,7 @@ interface PaginatedResponse {
 
 export default function EnterpriseApproval() {
     const { canWrite } = usePermission();
-    const canUpdate = canWrite('companies.update');
+    const canReview = canWrite('companies.review');
 
     const [data, setData] = useState<PaginatedResponse | null>(null);
     const [loading, setLoading] = useState(true);
@@ -234,7 +234,7 @@ export default function EnterpriseApproval() {
                                         </td>
                                         <td className="px-5 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
-                                                {canUpdate && (
+                                                {canReview && (
                                                     <>
                                                         <button
                                                             disabled={

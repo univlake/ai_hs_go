@@ -991,6 +991,20 @@ func (s *AssessmentService) DeleteAddPoint(ctx context.Context, id int64) error 
 	return nil
 }
 
+// DeleteAddPointsSubmission removes every add_points row for a subordinate
+// company in a given year — used by PointsTab's row-level delete (one row per
+// company+year aggregate).
+func (s *AssessmentService) DeleteAddPointsSubmission(ctx context.Context, companyID int64, year int) error {
+	res := s.db.WithContext(ctx).Where("company_id = ? AND year = ?", companyID, year).Delete(&model.AddPoint{})
+	if res.Error != nil {
+		return wrapWrite(res.Error)
+	}
+	if res.RowsAffected == 0 {
+		return errs.New(errs.CodeNotFound, "加分项记录不存在")
+	}
+	return nil
+}
+
 // ── 系统检查（活动参与及材料上报） ────────────────────────────────
 
 func (s *AssessmentService) ListSystemChecks(ctx context.Context, page, perPage int, companyID int64, year int) ([]model.SystemCheck, int64, error) {

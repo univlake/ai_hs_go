@@ -89,9 +89,8 @@ var CorePermissions = []string{
 	"three-togethers.list", "three-togethers.create", "three-togethers.update", "three-togethers.delete",
 	"assess-detects.list", "assess-detects.create", "assess-detects.update", "assess-detects.delete",
 
-	// 事故应急（生产事故快报 + 集团事故快报 + 应急演练 / 物资 / 队伍）
+	// 事故应急（生产事故快报 + 应急演练 / 物资 / 队伍）
 	"accident-bulletins.list", "accident-bulletins.create", "accident-bulletins.update", "accident-bulletins.delete",
-	"bloc-accident-bulletins.list",
 	"emergency-drills.list", "emergency-drills.create", "emergency-drills.update", "emergency-drills.delete",
 	"emergency-supplies.list", "emergency-supplies.create", "emergency-supplies.update", "emergency-supplies.delete",
 	"emergency-teams.list", "emergency-teams.create", "emergency-teams.update", "emergency-teams.delete",
@@ -103,11 +102,9 @@ var CorePermissions = []string{
 	"meeting-sign-ups.list", "meeting-sign-ups.create", "meeting-sign-ups.update", "meeting-sign-ups.delete",
 	"information-drafts.list", "information-drafts.create", "information-drafts.update", "information-drafts.delete",
 
-	// 专家检查 + 集团专家库 + 待办事项 + 隐患信息
+	// 专家检查 + 集团专家库
 	"expert-inspections.list", "expert-inspections.create", "expert-inspections.update", "expert-inspections.delete",
 	"bloc-experts.list", "bloc-experts.create", "bloc-experts.delete",
-	"todos.list",
-	"hidden-danger-infos.list", "hidden-danger-infos.create", "hidden-danger-infos.update", "hidden-danger-infos.delete",
 
 	// 考核评分模块（5 维度 filing/scoring + 模板 + 集团汇总）
 	"daily-checks.list", "daily-checks.create", "daily-checks.update", "daily-checks.delete",
@@ -120,14 +117,16 @@ var CorePermissions = []string{
 	"norm-checks.list", "norm-checks.create", "norm-checks.update", "norm-checks.delete",
 
 	// 数据统计模块（集团 月/年度上报 + 月/年度报表汇总；通知公告反馈统计走 office-notifies.list）
-	"month-statistics.list", "month-statistics.create", "month-statistics.update", "month-statistics.delete",
-	"year-statistics.list", "year-statistics.create", "year-statistics.update", "year-statistics.delete",
+	// 月/年度报表前端无删除 UI，故不暴露 .delete 权限。
+	"month-statistics.list", "month-statistics.create", "month-statistics.update",
+	"year-statistics.list", "year-statistics.create", "year-statistics.update",
 
 	// 风险监测栏目（集团视图）— 5 模块共用 RiskMonitorService。
 	// 企业分布图 / 重大危险源分布图 复用 risk-distribution-maps.list / major-hazards.list；
 	// 特种设备数据统计走 special-equipment.list（与生产视图同名权限）。
 	"bloc-risks.list",
 	"online-inspection.list",
+	// 重点关注企业（risk-monitor 页面子功能，CRUD 复用 list/create/delete，update 不需要）
 	"focus-companies.list", "focus-companies.create", "focus-companies.delete",
 
 	// 剩余 5 模块（变更管理 / 法律法规库 / 培训资料文件&视频 / 风险画像）
@@ -202,7 +201,6 @@ var SeededRoles = []SeededRole{
 			"three-togethers.list", "three-togethers.create", "three-togethers.update", "three-togethers.delete",
 			"assess-detects.list", "assess-detects.create", "assess-detects.update", "assess-detects.delete",
 			"accident-bulletins.list", "accident-bulletins.create", "accident-bulletins.update", "accident-bulletins.delete",
-			"bloc-accident-bulletins.list",
 			"emergency-drills.list", "emergency-drills.create", "emergency-drills.update", "emergency-drills.delete",
 			"emergency-supplies.list", "emergency-supplies.create", "emergency-supplies.update", "emergency-supplies.delete",
 			"emergency-teams.list", "emergency-teams.create", "emergency-teams.update", "emergency-teams.delete",
@@ -213,8 +211,6 @@ var SeededRoles = []SeededRole{
 			"information-drafts.list", "information-drafts.create", "information-drafts.update", "information-drafts.delete",
 			"expert-inspections.list", "expert-inspections.create", "expert-inspections.update", "expert-inspections.delete",
 			"bloc-experts.list", "bloc-experts.create", "bloc-experts.delete",
-			"todos.list",
-			"hidden-danger-infos.list", "hidden-danger-infos.create", "hidden-danger-infos.update", "hidden-danger-infos.delete",
 			"daily-checks.list", "daily-checks.create", "daily-checks.update", "daily-checks.delete",
 			"daily-check-templates.list", "daily-check-templates.create", "daily-check-templates.update", "daily-check-templates.delete",
 			"accident-checks.list", "accident-checks.create", "accident-checks.update", "accident-checks.delete",
@@ -223,8 +219,8 @@ var SeededRoles = []SeededRole{
 			"add-points-templates.list", "add-points-templates.create", "add-points-templates.update", "add-points-templates.delete",
 			"system-checks.list", "system-checks.create", "system-checks.update", "system-checks.delete",
 			"norm-checks.list", "norm-checks.create", "norm-checks.update", "norm-checks.delete",
-			"month-statistics.list", "month-statistics.create", "month-statistics.update", "month-statistics.delete",
-			"year-statistics.list", "year-statistics.create", "year-statistics.update", "year-statistics.delete",
+			"month-statistics.list", "month-statistics.create", "month-statistics.update",
+			"year-statistics.list", "year-statistics.create", "year-statistics.update",
 			"bloc-risks.list",
 			"online-inspection.list",
 			"focus-companies.list", "focus-companies.create", "focus-companies.delete",
@@ -257,12 +253,11 @@ var SeededRoles = []SeededRole{
 			"fire-safeties.list", "fire-equipment.list", "fire-facilities.list",
 			"risk-distribution-maps.list", "monthly-investigations.list",
 			"job-management.list", "three-togethers.list", "assess-detects.list",
-			"accident-bulletins.list", "bloc-accident-bulletins.list",
+			"accident-bulletins.list",
 			"emergency-drills.list", "emergency-supplies.list", "emergency-teams.list",
 			"office-notifies.list", "new-notifies.list", "meetings.list", "meeting-sign-ups.list",
 			"information-drafts.list",
-			"expert-inspections.list", "bloc-experts.list", "todos.list",
-			"hidden-danger-infos.list",
+			"expert-inspections.list", "bloc-experts.list",
 			"daily-checks.list", "daily-check-templates.list",
 			"accident-checks.list", "accident-check-templates.list",
 			"add-points.list", "add-points-templates.list",

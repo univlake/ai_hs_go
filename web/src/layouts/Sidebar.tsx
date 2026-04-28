@@ -986,8 +986,6 @@ const extraRoutePermissions: Record<string, string | string[]> = {
     '/inspection/norm-checks': 'norm-checks.list',
     '/inspection/system-checks': 'system-checks.list',
     '/meeting/meeting-sign-ups': 'meeting-sign-ups.list',
-    '/risk/rectification-sheets': 'rectification-sheets.list',
-    '/risk/risk-logs': 'risk-logs.list',
     '/statistics/accident-bulletins': 'accident-bulletins.list',
     '/statistics/expert-inspections': 'expert-inspections.list',
     '/system/companies': 'companies.list',
