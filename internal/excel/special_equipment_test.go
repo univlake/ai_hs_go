@@ -19,9 +19,9 @@ func TestSpecialEquipmentTemplateAndExport(t *testing.T) {
 
 	name := "球磨机"
 	loc := "1号车间"
-	now := time.Date(2026, 4, 1, 0, 0, 0, 0, time.UTC)
+	useTime := model.Date(time.Date(2026, 4, 1, 0, 0, 0, 0, time.UTC))
 	rows := []model.SpecialEquipment{
-		{EquipmentName: &name, UtilizedLocation: &loc, UseTime: &now},
+		{EquipmentName: &name, UtilizedLocation: &loc, UseTime: &useTime},
 	}
 	var out bytes.Buffer
 	if err := SpecialEquipmentExport(&out, rows); err != nil {
@@ -35,7 +35,7 @@ func TestSpecialEquipmentTemplateAndExport(t *testing.T) {
 func TestSpecialEquipmentImportRoundTrip(t *testing.T) {
 	name := "桥式起重机"
 	loc := "1号车间"
-	useTime := time.Date(2025, 1, 15, 0, 0, 0, 0, time.UTC)
+	useTime := model.Date(time.Date(2025, 1, 15, 0, 0, 0, 0, time.UTC))
 	rows := []model.SpecialEquipment{
 		{EquipmentName: &name, UtilizedLocation: &loc, UseTime: &useTime},
 	}
