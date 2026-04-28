@@ -21,7 +21,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -628,41 +627,6 @@ func (h *Handler) ExportHazardStatistics(c *gin.Context) {
 	c.Header("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, filepath.Base(abs)))
 	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 	c.File(abs)
-}
-
-// ── helpers ─────────────────────────────────────────────────────────
-
-func parseDate(p *string) *model.Date {
-	if p == nil || *p == "" {
-		return nil
-	}
-	for _, layout := range []string{"2006-01-02", "2006/01/02", "2006/1/2", "2006-01-02T15:04:05Z07:00"} {
-		if t, err := time.Parse(layout, *p); err == nil {
-			d := model.Date(t)
-			return &d
-		}
-	}
-	return nil
-}
-
-func parseDateTime(p *string) *model.DateTime {
-	if p == nil || *p == "" {
-		return nil
-	}
-	for _, layout := range []string{
-		"2006-01-02T15:04",
-		"2006-01-02T15:04:05",
-		"2006-01-02 15:04:05",
-		"2006-01-02 15:04",
-		"2006-01-02",
-		"2006-01-02T15:04:05Z07:00",
-	} {
-		if t, err := time.Parse(layout, *p); err == nil {
-			dt := model.DateTime(t)
-			return &dt
-		}
-	}
-	return nil
 }
 
 func writeAppError(c *gin.Context, err error, fallback string) {

@@ -346,25 +346,6 @@ func deref(p *string) string {
 	return *p
 }
 
-func parseDate(p *string) *model.Date {
-	if p == nil || *p == "" {
-		return nil
-	}
-	for _, layout := range []string{"2006-01-02", "2006/01/02", "2006/1/2", "2006-01-02T15:04:05Z07:00"} {
-		if t, err := time.Parse(layout, *p); err == nil {
-			d := model.Date(t)
-			return &d
-		}
-	}
-	return nil
-}
-
-func addNullableString(m map[string]any, key string, v *string) {
-	if v != nil {
-		m[key] = v
-	}
-}
-
 func writeAppError(c *gin.Context, err error, fallback string) {
 	if ae, ok := errs.As(err); ok {
 		switch ae.Code {

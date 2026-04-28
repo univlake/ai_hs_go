@@ -14,7 +14,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -649,44 +648,6 @@ func derefTeamKids(p *[]emergencyTeamKidReq) []emergencyTeamKidReq {
 		return nil
 	}
 	return *p
-}
-
-// ── helpers (重复 risk 包里的同名 helpers — 各包私有，避免互相依赖) ──
-
-func parseDate(p *string) *model.Date {
-	if p == nil || *p == "" {
-		return nil
-	}
-	for _, f := range []string{"2006-01-02", "2006/01/02", "2006/1/2", time.RFC3339} {
-		if t, err := time.Parse(f, *p); err == nil {
-			d := model.Date(t)
-			return &d
-		}
-	}
-	return nil
-}
-
-func addNullableString(m map[string]any, key string, v *string) {
-	if v != nil {
-		m[key] = v
-	}
-}
-
-func firstNonEmpty(values ...string) string {
-	for _, v := range values {
-		if v != "" {
-			return v
-		}
-	}
-	return ""
-}
-
-func scopeCompanyOrFail(c *gin.Context) int64 {
-	if cid, ok := middleware.ScopeCompanyID(c); ok {
-		return cid
-	}
-	response.BadRequest(c, "缺少 company_id")
-	return 0
 }
 
 // flexInt32 — 容忍前端 <input type=number> 把数字以字符串形式提交。

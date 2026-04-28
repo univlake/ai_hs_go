@@ -392,30 +392,6 @@ func defaultIfZero(v, def int16) int16 {
 	return v
 }
 
-func addNullable(m map[string]any, key string, v *string) {
-	if v != nil {
-		m[key] = v
-	}
-}
-
-func firstNonEmpty(values ...string) string {
-	for _, v := range values {
-		if v != "" {
-			return v
-		}
-	}
-	return ""
-}
-
-func scopeCompanyOrFail(c *gin.Context) int64 {
-	cid, ok := middleware.ScopeCompanyID(c)
-	if !ok || cid == 0 {
-		response.BadRequest(c, "缺少 X-Scope-Company-Id 或 company_id")
-		return 0
-	}
-	return cid
-}
-
 func writeAppError(c *gin.Context, err error) {
 	if ae, ok := errs.As(err); ok {
 		switch ae.Code {

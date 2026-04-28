@@ -8,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"ai_hs_go/internal/errs"
-	"ai_hs_go/internal/middleware"
 	"ai_hs_go/internal/response"
 	"ai_hs_go/internal/service"
 	"ai_hs_go/internal/storage"
@@ -72,22 +71,6 @@ func NewHandler(d HandlerDeps) *Handler {
 		elimCtrlStaffSvc:     d.EliminationCtrlStaff,
 		oss:                  d.OSS,
 	}
-}
-
-// scopeOrCompanyID picks a company id for the request. Frontend usually
-// sends `company_id` as a query param (legacy Laravel habit); we fall
-// back to the resolved scope so handlers don't 422 when the param is
-// omitted.
-func scopeOrCompanyID(c *gin.Context) int64 {
-	if v := c.Query("company_id"); v != "" {
-		if id, err := strconv.ParseInt(v, 10, 64); err == nil {
-			return id
-		}
-	}
-	if cid, ok := middleware.ScopeCompanyID(c); ok {
-		return cid
-	}
-	return 0
 }
 
 // flexInt64 unmarshals JSON numbers, JSON strings, null, and empty

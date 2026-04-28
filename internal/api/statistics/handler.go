@@ -26,7 +26,6 @@ package statistics
 import (
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -437,37 +436,6 @@ func writeAppError(c *gin.Context, err error, fallback string) {
 		return
 	}
 	response.Internal(c, fallback)
-}
-
-func parseDate(p *string) *model.Date {
-	if p == nil || *p == "" {
-		return nil
-	}
-	for _, layout := range []string{"2006-01-02", "2006/01/02", "2006/1/2", "2006-01-02T15:04:05Z07:00"} {
-		if t, err := time.Parse(layout, *p); err == nil {
-			d := model.Date(t)
-			return &d
-		}
-	}
-	return nil
-}
-
-func parseDateTime(p *string) *model.DateTime {
-	if p == nil || *p == "" {
-		return nil
-	}
-	for _, layout := range []string{
-		"2006-01-02 15:04:05",
-		"2006-01-02T15:04:05Z07:00",
-		"2006-01-02T15:04:05",
-		"2006-01-02",
-	} {
-		if t, err := time.Parse(layout, *p); err == nil {
-			dt := model.DateTime(t)
-			return &dt
-		}
-	}
-	return nil
 }
 
 func applyMonthStatisticReq(rec *model.MonthStatistic, req monthStatisticReq) {

@@ -248,15 +248,6 @@ func buildSpecialUpdates(req specialEquipmentReq, uid int64) map[string]any {
 	return u
 }
 
-func scopeCompanyOrFail(c *gin.Context) int64 {
-	cid, ok := middleware.ScopeCompanyID(c)
-	if !ok || cid == 0 {
-		response.BadRequest(c, "缺少 X-Scope-Company-Id 或 company_id")
-		return 0
-	}
-	return cid
-}
-
 func writeAppError(c *gin.Context, err error) {
 	if ae, ok := errs.As(err); ok {
 		switch ae.Code {

@@ -602,45 +602,6 @@ func (h *Handler) signedOrRaw(key *string) string {
 	return signed
 }
 
-func parseDate(p *string) *model.Date {
-	if p == nil || *p == "" {
-		return nil
-	}
-	for _, f := range []string{"2006-01-02", "2006/01/02", "2006/1/2", time.RFC3339} {
-		if t, err := time.Parse(f, *p); err == nil {
-			d := model.Date(t)
-			return &d
-		}
-	}
-	return nil
-}
-
-func addNullableString(m map[string]any, key string, v *string) {
-	if v != nil {
-		m[key] = v
-	}
-}
-
-func scopeCompanyOrFail(c *gin.Context) int64 {
-	if cid, ok := middleware.ScopeCompanyID(c); ok {
-		return cid
-	}
-	response.BadRequest(c, "缺少 company_id")
-	return 0
-}
-
-func scopeOrCompanyID(c *gin.Context) int64 {
-	if v := c.Query("company_id"); v != "" {
-		if id, err := strconv.ParseInt(v, 10, 64); err == nil {
-			return id
-		}
-	}
-	if cid, ok := middleware.ScopeCompanyID(c); ok {
-		return cid
-	}
-	return 0
-}
-
 // flexInt64 — 容忍前端 <select> 把数字以字符串提交：""/null 当作未传值。
 type flexInt64 int64
 

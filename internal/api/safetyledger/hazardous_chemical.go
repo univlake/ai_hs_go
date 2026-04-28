@@ -183,9 +183,3 @@ func mapIngredients(items []ingredientReq, uid int64) []model.ChemicalIngredient
 	}
 	return out
 }
-
-func addNullable(m map[string]any, key string, v *string) {
-	if v != nil {
-		m[key] = v
-	}
-}

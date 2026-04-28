@@ -12,7 +12,6 @@ package meetingtraining
 import (
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -580,58 +579,6 @@ func mapInternalMeetingKids(items []internalMeetingKidReq, uid int64) []model.In
 		out[i].LastUserID = uid
 	}
 	return out
-}
-
-// parseDate 接受 "YYYY-MM-DD" / "YYYY/MM/DD" / RFC3339；空串或 nil → nil。
-func parseDate(p *string) *model.Date {
-	if p == nil || *p == "" {
-		return nil
-	}
-	for _, f := range []string{"2006-01-02", "2006/01/02", "2006/1/2", time.RFC3339} {
-		if t, err := time.Parse(f, *p); err == nil {
-			d := model.Date(t)
-			return &d
-		}
-	}
-	return nil
-}
-
-// parseDateTime 接受常见日期时间格式；空串或 nil → nil。
-func parseDateTime(p *string) *model.DateTime {
-	if p == nil || *p == "" {
-		return nil
-	}
-	for _, f := range []string{"2006-01-02 15:04:05", time.RFC3339, time.RFC3339Nano, "2006-01-02T15:04", "2006-01-02"} {
-		if t, err := time.Parse(f, *p); err == nil {
-			dt := model.DateTime(t)
-			return &dt
-		}
-	}
-	return nil
-}
-
-func addNullableString(m map[string]any, key string, v *string) {
-	if v != nil {
-		m[key] = v
-	}
-}
-
-func firstNonEmpty(values ...string) string {
-	for _, v := range values {
-		if v != "" {
-			return v
-		}
-	}
-	return ""
-}
-
-func scopeCompanyOrFail(c *gin.Context) int64 {
-	cid, ok := middleware.ScopeCompanyID(c)
-	if !ok || cid == 0 {
-		response.BadRequest(c, "缺少 X-Scope-Company-Id 或 company_id")
-		return 0
-	}
-	return cid
 }
 
 func writeAppError(c *gin.Context, err error) {

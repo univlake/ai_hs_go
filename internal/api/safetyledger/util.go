@@ -3,26 +3,9 @@ package safetyledger
 import (
 	"fmt"
 	"net/url"
-	"time"
 
 	"github.com/gin-gonic/gin"
-
-	"ai_hs_go/internal/model"
 )
-
-func parseDate(p *string) *model.Date {
-	if p == nil || *p == "" {
-		return nil
-	}
-	formats := []string{"2006-01-02", "2006/01/02", "2006/1/2", time.RFC3339}
-	for _, f := range formats {
-		if t, err := time.Parse(f, *p); err == nil {
-			d := model.Date(t)
-			return &d
-		}
-	}
-	return nil
-}
 
 // setXlsxAttachment writes Content-Type + RFC 5987-encoded Content-Disposition
 // so curl / direct browser hits get a Chinese filename. The frontend's

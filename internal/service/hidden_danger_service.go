@@ -102,13 +102,10 @@ func (s *HiddenDangerService) Get(ctx context.Context, id int64) (*model.HiddenD
 		First(&m, id).Error; err != nil {
 		return nil, mapNotFound(err)
 	}
-	if err := s.attachAnnexes(ctx, []model.HiddenDangerInfo{m}); err != nil {
+	rows := []model.HiddenDangerInfo{m}
+	if err := s.attachAnnexes(ctx, rows); err != nil {
 		return nil, err
 	}
-	// 上面的 attachAnnexes 把附件写到本地切片副本，需要拷回。
-	rows := make([]model.HiddenDangerInfo, 1)
-	rows[0] = m
-	_ = s.attachAnnexes(ctx, rows)
 	return &rows[0], nil
 }
 
