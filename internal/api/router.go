@@ -25,6 +25,7 @@ import (
 	platformapi "ai_hs_go/internal/api/platform"
 	processapi "ai_hs_go/internal/api/process"
 	riskapi "ai_hs_go/internal/api/risk"
+	riskmonitorapi "ai_hs_go/internal/api/riskmonitor"
 	roleapi "ai_hs_go/internal/api/role"
 	safetyarchapi "ai_hs_go/internal/api/safetyarchive"
 	safetyapi "ai_hs_go/internal/api/safetyledger"
@@ -124,6 +125,10 @@ func (r *Router) Engine() *gin.Engine {
 	healthFireH := healthfireapi.NewHandler(healthFireSvc)
 	riskSvc := service.NewRiskService(r.deps.DB)
 	riskH := riskapi.NewHandler(riskSvc, r.deps.OSS)
+	// 风险监测栏目（集团视图）— bloc-risks-* + focus-companies + inspection-alerts +
+	// special-equipment-statistics 共用同一个 service，全部按 query.company_id 聚合。
+	riskMonitorSvc := service.NewRiskMonitorService(r.deps.DB, companyRepo)
+	riskMonitorH := riskmonitorapi.NewHandler(riskMonitorSvc)
 	accidentEmergencySvc := service.NewAccidentEmergencyService(r.deps.DB, companyRepo)
 	accidentEmergencyH := accidentemergencyapi.NewHandler(accidentEmergencySvc)
 	notificationSvc := service.NewNotificationService(r.deps.DB, companyRepo)
@@ -517,6 +522,24 @@ func (r *Router) Engine() *gin.Engine {
 	business.GET("/risk-distribution-maps", middleware.RequirePermission(r.deps.Enforcer, "risk-distribution-maps.list"), riskH.GetRiskDistributionMap)
 	business.POST("/risk-distribution-maps", middleware.RequirePermission(r.deps.Enforcer, "risk-distribution-maps.create"), riskH.CreateRiskDistributionMap)
 	business.PUT("/risk-distribution-maps/:id", middleware.RequirePermission(r.deps.Enforcer, "risk-distribution-maps.update"), riskH.UpdateRiskDistributionMap)
+
+	// 风险监测栏目（集团视图） — 5 模块共用聚合接口。
+	// 企业分布图 / 重大危险源分布图 复用 /companies + /major-hazards，无需新路由。
+	// 风险监控（bloc-risks-*）+ 重点关注企业（focus-companies）+ 在线巡检（inspection-alerts）
+	// + 特种设备数据统计（special-equipment-statistics）走以下 11 条接口。
+	business.GET("/bloc-risks-inherent", middleware.RequirePermission(r.deps.Enforcer, "bloc-risks.list"), riskMonitorH.InherentRiskNum)
+	business.GET("/bloc-risks-float", middleware.RequirePermission(r.deps.Enforcer, "bloc-risks.list"), riskMonitorH.FloatRiskNum)
+	business.GET("/bloc-risks-inherent-statistics", middleware.RequirePermission(r.deps.Enforcer, "bloc-risks.list"), riskMonitorH.InherentRiskStatistics)
+	business.GET("/bloc-risks-float-statistics", middleware.RequirePermission(r.deps.Enforcer, "bloc-risks.list"), riskMonitorH.FloatRiskStatistics)
+	business.GET("/bloc-risks-log", middleware.RequirePermission(r.deps.Enforcer, "bloc-risks.list"), riskMonitorH.RiskLog)
+	business.GET("/bloc-hidden-danger-sort", middleware.RequirePermission(r.deps.Enforcer, "bloc-risks.list"), riskMonitorH.HiddenDangerSort)
+
+	business.GET("/focus-companies", middleware.RequirePermission(r.deps.Enforcer, "focus-companies.list"), riskMonitorH.ListFocusCompanies)
+	business.POST("/focus-companies", middleware.RequirePermission(r.deps.Enforcer, "focus-companies.create"), riskMonitorH.CreateFocusCompany)
+	business.DELETE("/focus-companies/:id", middleware.RequirePermission(r.deps.Enforcer, "focus-companies.delete"), riskMonitorH.DeleteFocusCompany)
+
+	business.GET("/inspection-alerts", middleware.RequirePermission(r.deps.Enforcer, "online-inspection.list"), riskMonitorH.InspectionAlerts)
+	business.GET("/special-equipment-statistics", middleware.RequirePermission(r.deps.Enforcer, "special-equipment.list"), riskMonitorH.SpecialEquipmentStatistics)
 
 	business.GET("/monthly-investigations", middleware.RequirePermission(r.deps.Enforcer, "monthly-investigations.list"), riskH.ListMonthlyInvestigation)
 	business.GET("/monthly-investigations/:id", middleware.RequirePermission(r.deps.Enforcer, "monthly-investigations.list"), riskH.GetMonthlyInvestigation)
