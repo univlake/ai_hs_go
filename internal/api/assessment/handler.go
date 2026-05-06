@@ -31,6 +31,7 @@ import (
 	"ai_hs_go/internal/model"
 	"ai_hs_go/internal/response"
 	"ai_hs_go/internal/service"
+	"ai_hs_go/internal/api/apiutil"
 )
 
 // Handler 持有 service + 模板/落盘根目录。
@@ -374,8 +375,7 @@ func (h *Handler) DestroyDailyForm(c *gin.Context) {
 }
 
 func (h *Handler) ListDailyChecks(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	rows, total, err := h.svc.ListDailyChecks(c.Request.Context(), page, per, int64Query(c, "company_id"), intQuery(c, "year"))
 	if err != nil {
 		response.Internal(c, "查询失败")
@@ -549,8 +549,7 @@ func (h *Handler) SaveAccidentScore(c *gin.Context) {
 }
 
 func (h *Handler) ListAccidentChecks(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	rows, total, err := h.svc.ListAccidentChecks(c.Request.Context(), page, per, int64Query(c, "company_id"), intQuery(c, "year"))
 	if err != nil {
 		response.Internal(c, "查询失败")
@@ -813,8 +812,7 @@ func (h *Handler) SaveAddPointsScore(c *gin.Context) {
 }
 
 func (h *Handler) ListAddPoints(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	rows, total, err := h.svc.ListAddPoints(c.Request.Context(), page, per, int64Query(c, "company_id"), intQuery(c, "year"))
 	if err != nil {
 		response.Internal(c, "查询失败")
@@ -945,8 +943,7 @@ func (h *Handler) DeleteAddPointsSubmission(c *gin.Context) {
 // ── 系统检查 ──────────────────────────────────────────────────────
 
 func (h *Handler) ListSystemChecks(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	rows, total, err := h.svc.ListSystemChecks(c.Request.Context(), page, per, int64Query(c, "company_id"), intQuery(c, "year"))
 	if err != nil {
 		response.Internal(c, "查询失败")
@@ -1113,8 +1110,7 @@ func (h *Handler) ComputeSystemCheck(c *gin.Context) {
 // ── 标准化检查 ────────────────────────────────────────────────────
 
 func (h *Handler) ListNormChecks(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	rows, total, err := h.svc.ListNormChecks(c.Request.Context(), page, per, int64Query(c, "company_id"), intQuery(c, "year"), c.Query("type"))
 	if err != nil {
 		response.Internal(c, "查询失败")

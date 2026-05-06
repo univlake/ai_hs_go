@@ -30,6 +30,7 @@ import (
 	"ai_hs_go/internal/model"
 	"ai_hs_go/internal/response"
 	"ai_hs_go/internal/service"
+	"ai_hs_go/internal/api/apiutil"
 )
 
 type Handler struct {
@@ -194,8 +195,7 @@ func (h *Handler) HiddenDangerSort(c *gin.Context) {
 
 // ListFocusCompanies: GET /focus-companies
 func (h *Handler) ListFocusCompanies(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	companyID, _ := strconv.ParseInt(c.Query("company_id"), 10, 64)
 	focusID, _ := strconv.ParseInt(c.Query("focus_id"), 10, 64)
 	rows, total, err := h.svc.ListFocusCompanies(c.Request.Context(), service.FocusCompanyListParams{
@@ -296,8 +296,7 @@ func (h *Handler) BlocMonthlyInvestigations(c *gin.Context) {
 	if rid == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	year, _ := strconv.Atoi(c.Query("inv_year"))
 	rows, total, err := h.svc.BlocMonthlyInvestigations(c.Request.Context(), service.BlocMonthlyInvestigationParams{
 		Page: page, PerPage: per, RootID: rid,

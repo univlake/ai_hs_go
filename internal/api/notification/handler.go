@@ -36,6 +36,7 @@ import (
 	"ai_hs_go/internal/model"
 	"ai_hs_go/internal/response"
 	"ai_hs_go/internal/service"
+	"ai_hs_go/internal/api/apiutil"
 )
 
 type Handler struct {
@@ -92,8 +93,7 @@ type officeNotifyReq struct {
 }
 
 func (h *Handler) ListOfficeNotify(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	cid := companyFromQueryOrScope(c)
 	notifyCID, _ := strconv.ParseInt(c.Query("notify_company_id"), 10, 64)
 	rows, total, err := h.svc.ListOfficeNotify(c.Request.Context(), service.OfficeNotifyListParams{
@@ -246,8 +246,7 @@ type newNotifyReq struct {
 }
 
 func (h *Handler) ListNewNotify(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	cid := companyFromQueryOrScope(c)
 	notifyCID, _ := strconv.ParseInt(c.Query("notify_company_id"), 10, 64)
 	rows, total, err := h.svc.ListNewNotify(c.Request.Context(), service.NewNotifyListParams{
@@ -394,8 +393,7 @@ type meetingReq struct {
 }
 
 func (h *Handler) ListMeeting(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	cid := companyFromQueryOrScope(c)
 	notifyCID, _ := strconv.ParseInt(c.Query("notify_company_id"), 10, 64)
 	rows, total, err := h.svc.ListMeeting(c.Request.Context(), service.MeetingListParams{
@@ -577,8 +575,7 @@ type meetingSignUpReq struct {
 }
 
 func (h *Handler) ListMeetingSignUp(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	mid, _ := strconv.ParseInt(c.Query("meeting_id"), 10, 64)
 	cid, _ := strconv.ParseInt(c.Query("company_id"), 10, 64)
 	rows, total, err := h.svc.ListMeetingSignUp(c.Request.Context(), service.MeetingSignUpListParams{
@@ -691,8 +688,7 @@ type informationDraftReq struct {
 }
 
 func (h *Handler) ListInformationDraft(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	cid := companyFromQueryOrScope(c)
 	rows, total, err := h.svc.ListInformationDraft(c.Request.Context(), service.InformationDraftListParams{
 		Page: page, PerPage: per, CompanyID: cid,

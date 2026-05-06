@@ -34,6 +34,7 @@ import (
 	"ai_hs_go/internal/model"
 	"ai_hs_go/internal/response"
 	"ai_hs_go/internal/service"
+	"ai_hs_go/internal/api/apiutil"
 )
 
 type Handler struct {
@@ -49,8 +50,7 @@ func NewHandler(svc *service.StatisticsService) *Handler {
 // ════════════════════════════════════════════════════════════════════
 
 func (h *Handler) ListMonthStatistic(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	cid, _ := strconv.ParseInt(c.Query("company_id"), 10, 64)
 	pid, _ := strconv.ParseInt(c.Query("pid"), 10, 64)
 	includePid := boolQuery(c, "include_pid")
@@ -236,8 +236,7 @@ func (h *Handler) DeleteMonthStatistic(c *gin.Context) {
 // ════════════════════════════════════════════════════════════════════
 
 func (h *Handler) ListYearStatistic(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	cid, _ := strconv.ParseInt(c.Query("company_id"), 10, 64)
 	pid, _ := strconv.ParseInt(c.Query("pid"), 10, 64)
 	includePid := boolQuery(c, "include_pid")

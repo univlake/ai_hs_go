@@ -26,6 +26,7 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/air-verse/air v1.65.1 // indirect
 	github.com/andybalholm/brotli v1.2.0 // indirect
+	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bep/godartsass/v2 v2.5.0 // indirect
 	github.com/bep/golibsass v1.2.0 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.9.1 // indirect
@@ -71,9 +72,14 @@ require (
 	github.com/microsoft/go-mssqldb v1.9.5 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
+	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
+	github.com/prometheus/client_golang v1.23.2 // indirect
+	github.com/prometheus/client_model v0.6.2 // indirect
+	github.com/prometheus/common v0.66.1 // indirect
+	github.com/prometheus/procfs v0.16.1 // indirect
 	github.com/redis/go-redis/v9 v9.14.1 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/richardlehane/mscfb v1.0.6 // indirect
@@ -94,6 +100,7 @@ require (
 	github.com/xuri/nfp v0.0.2-0.20250530014748-2ddeb826f9a9 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
+	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/arch v0.12.0 // indirect
 	golang.org/x/exp v0.0.0-20251219203646-944ab1f22d93 // indirect
 	golang.org/x/net v0.50.0 // indirect

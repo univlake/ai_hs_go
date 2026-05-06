@@ -20,6 +20,7 @@ import (
 	"ai_hs_go/internal/model"
 	"ai_hs_go/internal/response"
 	"ai_hs_go/internal/service"
+	"ai_hs_go/internal/api/apiutil"
 )
 
 type Handler struct {
@@ -31,8 +32,7 @@ func NewHandler(svc *service.ExpertService) *Handler {
 }
 
 func (h *Handler) List(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	cid, _ := strconv.ParseInt(c.Query("company_id"), 10, 64)
 	if cid == 0 {
 		response.BadRequest(c, "company_id 不能为空")

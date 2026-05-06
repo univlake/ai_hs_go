@@ -9,6 +9,7 @@ import (
 	"ai_hs_go/internal/middleware"
 	"ai_hs_go/internal/response"
 	"ai_hs_go/internal/service"
+	"ai_hs_go/internal/api/apiutil"
 )
 
 // ── Safety architecture ─────────────────────────────────────────
@@ -110,8 +111,7 @@ type filingReq struct {
 }
 
 func (h *Handler) FilingList(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.filingSvc.List(c.Request.Context(), service.FilingPermissionListParams{
 		Page: page, PerPage: per, CompanyID: scopeOrCompanyID(c),
 	})
@@ -201,8 +201,7 @@ type buildingReq struct {
 }
 
 func (h *Handler) BuildingList(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.buildingSvc.List(c.Request.Context(), service.BuildingListParams{
 		Page: page, PerPage: per,
 		CompanyID: scopeOrCompanyID(c),
@@ -290,8 +289,7 @@ type investmentReq struct {
 }
 
 func (h *Handler) InvestmentList(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.investmentSvc.List(c.Request.Context(), service.SecurityInvestmentListParams{
 		Page: page, PerPage: per,
 		CompanyID: scopeOrCompanyID(c),
@@ -387,8 +385,7 @@ type personnelReq struct {
 }
 
 func (h *Handler) PersonnelList(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.personnelSvc.List(c.Request.Context(), service.PersonnelListParams{
 		Page: page, PerPage: per, CompanyID: scopeOrCompanyID(c),
 	})

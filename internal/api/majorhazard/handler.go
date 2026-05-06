@@ -18,6 +18,7 @@ import (
 	"ai_hs_go/internal/model"
 	"ai_hs_go/internal/response"
 	"ai_hs_go/internal/service"
+	"ai_hs_go/internal/api/apiutil"
 )
 
 // flexInt64 接受 JSON 里的数字或字符串形式的整数，方便前端 <select> 直接把
@@ -88,8 +89,7 @@ func (h *Handler) List(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.svc.List(c.Request.Context(), service.MajorHazardListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		// 前端搜索字段是 name（见 major-hazards/Index.tsx onSearchChange）；

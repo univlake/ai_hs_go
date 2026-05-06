@@ -18,6 +18,7 @@ import (
 	"ai_hs_go/internal/model"
 	"ai_hs_go/internal/response"
 	"ai_hs_go/internal/service"
+	"ai_hs_go/internal/api/apiutil"
 )
 
 type Handler struct {
@@ -43,8 +44,7 @@ func (h *Handler) ListDesignUnit(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.svc.ListDesignUnit(c.Request.Context(), service.DesignUnitListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		Name: firstNonEmpty(c.Query("name"), c.Query("keyword")),
@@ -144,8 +144,7 @@ func (h *Handler) ListEvaluationUnit(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.svc.ListEvaluationUnit(c.Request.Context(), service.EvaluationUnitListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		Name: firstNonEmpty(c.Query("name"), c.Query("keyword")),
@@ -276,8 +275,7 @@ func (h *Handler) ListSkillUnit(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.svc.ListSkillUnit(c.Request.Context(), service.SkillUnitListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		Name: firstNonEmpty(c.Query("name"), c.Query("keyword")),

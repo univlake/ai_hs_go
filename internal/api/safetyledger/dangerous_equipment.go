@@ -10,6 +10,7 @@ import (
 	"ai_hs_go/internal/model"
 	"ai_hs_go/internal/response"
 	"ai_hs_go/internal/service"
+	"ai_hs_go/internal/api/apiutil"
 )
 
 // ListDangerousEquipment: GET /api/v1/dangerous-equipment
@@ -18,8 +19,7 @@ func (h *Handler) ListDangerousEquipment(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.svc.ListDangerousEquipment(c.Request.Context(), service.ListParams{
 		Page: page, PerPage: per, CompanyID: companyID, Keyword: c.Query("keyword"),
 	})

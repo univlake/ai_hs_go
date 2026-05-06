@@ -139,7 +139,36 @@ func Load(configPath string) (*Config, error) {
 	if err := v.Unmarshal(&cfg); err != nil {
 		return nil, fmt.Errorf("unmarshal config: %w", err)
 	}
+	if err := cfg.Validate(); err != nil {
+		return nil, err
+	}
 	return &cfg, nil
+}
+
+// jwtSecretPlaceholders are the values shipped in config.example.yaml /
+// .env.example. Refusing to boot when any of these slip into a non-local env
+// stops the most common deploy mistake: forgetting to rotate the secret and
+// running prod with a token-forging key everyone can read on GitHub.
+var jwtSecretPlaceholders = map[string]struct{}{
+	"":                                                    {},
+	"please-change-me-to-a-32+byte-random-string":         {},
+	"dev-secret-change-me-32+bytes-please":                {},
+}
+
+// Validate enforces production-only invariants. Local/dev runs (app.env=local)
+// are deliberately lax so the example secret keeps working in `make run`.
+func (c *Config) Validate() error {
+	env := strings.ToLower(strings.TrimSpace(c.App.Env))
+	if env == "" || env == "local" || env == "dev" || env == "development" {
+		return nil
+	}
+	if _, isPlaceholder := jwtSecretPlaceholders[c.JWT.Secret]; isPlaceholder {
+		return fmt.Errorf("jwt.secret is the example placeholder; rotate to a 32+ byte random string before booting env=%q", c.App.Env)
+	}
+	if len(c.JWT.Secret) < 32 {
+		return fmt.Errorf("jwt.secret must be ≥ 32 bytes (got %d) for env=%q", len(c.JWT.Secret), c.App.Env)
+	}
+	return nil
 }
 
 func bindEnvAliases(v *viper.Viper) {

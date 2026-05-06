@@ -96,10 +96,24 @@ func main() {
 		OSS:      ossClient,
 	})
 
+	engine := router.Engine()
+	// Cap the in-memory parse buffer for multipart/form-data; bytes beyond this
+	// spill to a temp file. Keeps a single 32MB Excel import from pinning ~32MB
+	// in RAM per concurrent request. OSS multipart uploads bypass Gin entirely.
+	engine.MaxMultipartMemory = 16 << 20 // 16 MiB
+
 	srv := &http.Server{
-		Addr:              fmt.Sprintf(":%d", cfg.App.Port),
-		Handler:           router.Engine(),
+		Addr:    fmt.Sprintf(":%d", cfg.App.Port),
+		Handler: engine,
+		// ReadHeaderTimeout guards against Slowloris (slow header senders).
+		// ReadTimeout / WriteTimeout bound full-body and full-response time —
+		// WriteTimeout is generous because /export endpoints stream xlsx that
+		// can take a few seconds to assemble for large tenants. IdleTimeout
+		// reclaims keep-alive sockets the SPA leaves open between page loads.
 		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      120 * time.Second,
+		IdleTimeout:       120 * time.Second,
 	}
 
 	go func() {

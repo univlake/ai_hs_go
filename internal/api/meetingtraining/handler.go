@@ -20,6 +20,7 @@ import (
 	"ai_hs_go/internal/model"
 	"ai_hs_go/internal/response"
 	"ai_hs_go/internal/service"
+	"ai_hs_go/internal/api/apiutil"
 )
 
 type Handler struct {
@@ -56,8 +57,7 @@ func (h *Handler) ListInternalMeeting(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.svc.ListInternalMeeting(c.Request.Context(), service.InternalMeetingListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		Name: firstNonEmpty(c.Query("name"), c.Query("keyword")),
@@ -195,8 +195,7 @@ func (h *Handler) ListInternalTraining(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.svc.ListInternalTraining(c.Request.Context(), service.TrainingListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		Name: firstNonEmpty(c.Query("name"), c.Query("keyword")),
@@ -328,8 +327,7 @@ func (h *Handler) ListExternalTraining(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.svc.ListExternalTraining(c.Request.Context(), service.TrainingListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		Name: firstNonEmpty(c.Query("name"), c.Query("keyword")),
@@ -459,8 +457,7 @@ func (h *Handler) ListOtherTraining(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.svc.ListOtherTraining(c.Request.Context(), service.TrainingListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		Name: firstNonEmpty(c.Query("name"), c.Query("keyword")),

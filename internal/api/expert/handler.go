@@ -29,6 +29,7 @@ import (
 	"ai_hs_go/internal/model"
 	"ai_hs_go/internal/response"
 	"ai_hs_go/internal/service"
+	"ai_hs_go/internal/api/apiutil"
 )
 
 // osRemove 别名 — 单独抽出来便于测试 mock；仅 ExportHazardStatistics 使用 deferred cleanup。
@@ -55,8 +56,7 @@ type expertInspectionReq struct {
 }
 
 func (h *Handler) ListInspection(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	cid, _ := strconv.ParseInt(c.Query("company_id"), 10, 64)
 	uid, _ := strconv.ParseInt(c.Query("expert_user_id"), 10, 64)
 	rows, total, err := h.svc.ListExpertInspection(c.Request.Context(), service.ExpertInspectionListParams{
@@ -181,8 +181,7 @@ type expertCompanyReq struct {
 }
 
 func (h *Handler) ListCompany(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	insID, _ := strconv.ParseInt(c.Query("expert_inspection_id"), 10, 64)
 	rows, total, err := h.svc.ListExpertCompany(c.Request.Context(), service.ExpertCompanyListParams{
 		Page: page, PerPage: per, ExpertInspectionID: insID,
@@ -304,8 +303,7 @@ type expertInspectionUserReq struct {
 }
 
 func (h *Handler) ListUser(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	ecID, _ := strconv.ParseInt(c.Query("expert_company_id"), 10, 64)
 	if ecID == 0 {
 		response.BadRequest(c, "expert_company_id 不能为空")
@@ -442,8 +440,7 @@ func (h *Handler) ExpertNotifications(c *gin.Context) {
 }
 
 func (h *Handler) MyCheckInspections(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "50"))
+	page, per := apiutil.ParsePagination(c, 50)
 	cid, _ := strconv.ParseInt(c.Query("company_id"), 10, 64)
 	if cid == 0 {
 		response.BadRequest(c, "company_id 不能为空")
@@ -464,8 +461,7 @@ func (h *Handler) MyCheckInspections(c *gin.Context) {
 }
 
 func (h *Handler) MyExpertAssignments(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "50"))
+	page, per := apiutil.ParsePagination(c, 50)
 	uid, _ := strconv.ParseInt(c.Query("expert_user_id"), 10, 64)
 	if uid == 0 {
 		uid = middleware.CurrentUserID(c)

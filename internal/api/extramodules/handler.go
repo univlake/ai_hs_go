@@ -25,6 +25,7 @@ import (
 	"ai_hs_go/internal/response"
 	"ai_hs_go/internal/service"
 	"ai_hs_go/internal/storage"
+	"ai_hs_go/internal/api/apiutil"
 )
 
 type Handler struct {
@@ -59,8 +60,7 @@ func (h *Handler) ListChangeManage(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	rows, total, err := h.svc.ListChangeManage(c.Request.Context(), service.ChangeManageListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 	})
@@ -194,8 +194,7 @@ type regulationLibraryReq struct {
 }
 
 func (h *Handler) ListRegulationLibrary(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	params := service.RegulationLibraryListParams{
 		Page: page, PerPage: per,
 		Title: c.Query("title"),
@@ -334,8 +333,7 @@ func (h *Handler) ListTrainingFile(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	parent, _ := strconv.ParseInt(c.Query("parent_company_id"), 10, 64)
 	rows, total, err := h.svc.ListTrainingFile(c.Request.Context(), service.TrainingFileListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
@@ -446,8 +444,7 @@ func (h *Handler) ListTrainingVideo(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	parent, _ := strconv.ParseInt(c.Query("parent_company_id"), 10, 64)
 	rows, total, err := h.svc.ListTrainingVideo(c.Request.Context(), service.TrainingVideoListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
@@ -574,8 +571,7 @@ func (h *Handler) RisksLog(c *gin.Context) {
 		response.BadRequest(c, "缺少 company_id")
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	rows, total, err := h.svc.ListCompanyRiskLogs(c.Request.Context(), service.RiskLogListParams{
 		Page: page, PerPage: per, CompanyID: cid,
 	})

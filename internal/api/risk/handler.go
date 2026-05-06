@@ -23,6 +23,7 @@ import (
 	"ai_hs_go/internal/response"
 	"ai_hs_go/internal/service"
 	"ai_hs_go/internal/storage"
+	"ai_hs_go/internal/api/apiutil"
 )
 
 // 子表替换语义：在 monthlyInvestigationReq 里 Reviews/Views 都是 *[]investigationAnnexReq —
@@ -147,8 +148,7 @@ func (h *Handler) ListMonthlyInvestigation(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.svc.ListMonthlyInvestigation(c.Request.Context(), service.MonthlyInvestigationListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		Type: c.Query("type"),
@@ -345,8 +345,7 @@ func (h *Handler) ListJobManagement(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.svc.ListJobManagement(c.Request.Context(), service.JobManagementListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		Type:          c.Query("type"),
@@ -488,8 +487,7 @@ func (h *Handler) ListThreeTogether(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.svc.ListThreeTogether(c.Request.Context(), service.ThreeTogetherListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		Name: firstNonEmpty(c.Query("name"), c.Query("keyword")),
@@ -622,8 +620,7 @@ func (h *Handler) ListAssessDetect(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.svc.ListAssessDetect(c.Request.Context(), service.AssessDetectListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		Name: firstNonEmpty(c.Query("name"), c.Query("keyword")),

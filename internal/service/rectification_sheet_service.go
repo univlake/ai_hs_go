@@ -19,7 +19,6 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -28,6 +27,7 @@ import (
 	"time"
 
 	"github.com/xuri/excelize/v2"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 
 	"ai_hs_go/internal/errs"
@@ -40,10 +40,14 @@ type RectificationSheetService struct {
 	db          *gorm.DB
 	oss         *storage.Client // 可为 nil；nil 时图片直接跳过
 	storageRoot string          // <root>/rectification-sheets/YYYY/MM/<file>
+	logger      *zap.Logger     // nil falls back to a no-op logger
 }
 
-func NewRectificationSheetService(db *gorm.DB, oss *storage.Client, storageRoot string) *RectificationSheetService {
-	return &RectificationSheetService{db: db, oss: oss, storageRoot: storageRoot}
+func NewRectificationSheetService(db *gorm.DB, oss *storage.Client, storageRoot string, logger *zap.Logger) *RectificationSheetService {
+	if logger == nil {
+		logger = zap.NewNop()
+	}
+	return &RectificationSheetService{db: db, oss: oss, storageRoot: storageRoot, logger: logger}
 }
 
 // 隐患七大类别 — 跟 Laravel 的 HIDDEN_TYPES 常量保持一致。
@@ -104,7 +108,7 @@ func (s *RectificationSheetService) GenerateRectificationSheet(ctx context.Conte
 		return nil, errs.Wrap(errs.CodeInternal, "创建工作表失败", err)
 	}
 	f.SetActiveSheet(idx)
-	logXlsxErr(f.DeleteSheet("Sheet1"), "DeleteSheet")
+	s.logXlsxErr(f.DeleteSheet("Sheet1"), "DeleteSheet")
 
 	s.applyBaseStyle(f, sheet)
 
@@ -115,43 +119,43 @@ func (s *RectificationSheetService) GenerateRectificationSheet(ctx context.Conte
 	}
 	s.applyOuterBorder(f, sheet, "A1", fmt.Sprintf("H%d", totalRows))
 
-	logXlsxErr(f.MergeCell(sheet, "A1", "H1"), "MergeCell")
-	logXlsxErr(f.MergeCell(sheet, "A2", "H2"), "MergeCell")
-	logXlsxErr(f.SetRowHeight(sheet, 1, 40), "SetRowHeight")
-	logXlsxErr(f.SetRowHeight(sheet, 2, 26), "SetRowHeight")
-	logXlsxErr(f.SetRowHeight(sheet, 3, 36), "SetRowHeight")
+	s.logXlsxErr(f.MergeCell(sheet, "A1", "H1"), "MergeCell")
+	s.logXlsxErr(f.MergeCell(sheet, "A2", "H2"), "MergeCell")
+	s.logXlsxErr(f.SetRowHeight(sheet, 1, 40), "SetRowHeight")
+	s.logXlsxErr(f.SetRowHeight(sheet, 2, 26), "SetRowHeight")
+	s.logXlsxErr(f.SetRowHeight(sheet, 3, 36), "SetRowHeight")
 
 	titleStyle, _ := f.NewStyle(&excelize.Style{
 		Font:      &excelize.Font{Family: "宋体", Size: 20, Bold: true},
 		Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center", WrapText: true},
 	})
-	logXlsxErr(f.SetCellStyle(sheet, "A1", "A1", titleStyle), "SetCellStyle")
+	s.logXlsxErr(f.SetCellStyle(sheet, "A1", "A1", titleStyle), "SetCellStyle")
 	subtitleStyle, _ := f.NewStyle(&excelize.Style{
 		Font:      &excelize.Font{Family: "宋体", Size: 11},
 		Alignment: &excelize.Alignment{Horizontal: "left", Vertical: "center", WrapText: true},
 	})
-	logXlsxErr(f.SetCellStyle(sheet, "A2", "A2", subtitleStyle), "SetCellStyle")
+	s.logXlsxErr(f.SetCellStyle(sheet, "A2", "A2", subtitleStyle), "SetCellStyle")
 
-	logXlsxErr(f.SetCellValue(sheet, "A1", "现场隐患描述及整改反馈表（整改期限15个工作日）"), "SetCellValue")
-	logXlsxErr(f.SetCellValue(sheet, "A2", fmt.Sprintf(
+	s.logXlsxErr(f.SetCellValue(sheet, "A1", "现场隐患描述及整改反馈表（整改期限15个工作日）"), "SetCellValue")
+	s.logXlsxErr(f.SetCellValue(sheet, "A2", fmt.Sprintf(
 		"企业名称：%s        联系人：%s        联系方式：%s        检查时间：%s",
 		checkCompanyName, supervisor, supervisorTel, checkTime,
 	)), "SetCellValue")
 	headers := []string{"序号", "不符合项描述", "整改前图片", "整改依据", "整改建议", "隐患类别", "整改后图片", "整改情况说明"}
 	for i, h := range headers {
 		col, _ := excelize.CoordinatesToCellName(i+1, 3)
-		logXlsxErr(f.SetCellValue(sheet, col, h), "SetCellValue")
+		s.logXlsxErr(f.SetCellValue(sheet, col, h), "SetCellValue")
 	}
 
 	for i, d := range dangers {
 		row := i + 4
-		logXlsxErr(f.SetRowHeight(sheet, row, 70), "SetRowHeight")
-		logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("A%d", row), i+1), "SetCellValue")
-		logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("B%d", row), strings.TrimSpace(d.Area+":"+d.Description)), "SetCellValue")
-		logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("D%d", row), derefString(d.Legalises)), "SetCellValue")
-		logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("E%d", row), derefString(d.Proposal)), "SetCellValue")
-		logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("F%d", row), d.HiddenType+"/"+d.HiddenLevel), "SetCellValue")
-		logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("H%d", row), derefString(d.ReviewDescription)), "SetCellValue")
+		s.logXlsxErr(f.SetRowHeight(sheet, row, 70), "SetRowHeight")
+		s.logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("A%d", row), i+1), "SetCellValue")
+		s.logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("B%d", row), strings.TrimSpace(d.Area+":"+d.Description)), "SetCellValue")
+		s.logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("D%d", row), derefString(d.Legalises)), "SetCellValue")
+		s.logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("E%d", row), derefString(d.Proposal)), "SetCellValue")
+		s.logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("F%d", row), d.HiddenType+"/"+d.HiddenLevel), "SetCellValue")
+		s.logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("H%d", row), derefString(d.ReviewDescription)), "SetCellValue")
 
 		s.embedFirstAnnex(f, sheet, fmt.Sprintf("C%d", row), d.HiddenExamineAnnex)
 		s.embedFirstAnnex(f, sheet, fmt.Sprintf("G%d", row), d.HiddenRectifyAnnex)
@@ -161,19 +165,19 @@ func (s *RectificationSheetService) GenerateRectificationSheet(ctx context.Conte
 	if auditRow < 5 {
 		auditRow = 5
 	}
-	logXlsxErr(f.MergeCell(sheet, fmt.Sprintf("A%d", auditRow), fmt.Sprintf("H%d", auditRow)), "MergeCell")
-	logXlsxErr(f.MergeCell(sheet, fmt.Sprintf("A%d", auditRow+1), fmt.Sprintf("H%d", auditRow+1)), "MergeCell")
-	logXlsxErr(f.SetRowHeight(sheet, auditRow, 180), "SetRowHeight")
+	s.logXlsxErr(f.MergeCell(sheet, fmt.Sprintf("A%d", auditRow), fmt.Sprintf("H%d", auditRow)), "MergeCell")
+	s.logXlsxErr(f.MergeCell(sheet, fmt.Sprintf("A%d", auditRow+1), fmt.Sprintf("H%d", auditRow+1)), "MergeCell")
+	s.logXlsxErr(f.SetRowHeight(sheet, auditRow, 180), "SetRowHeight")
 	auditStyle, _ := f.NewStyle(&excelize.Style{
 		Font:      &excelize.Font{Family: "宋体", Size: 11},
 		Alignment: &excelize.Alignment{Horizontal: "left", Vertical: "center", WrapText: true},
 	})
-	logXlsxErr(f.SetCellStyle(sheet, fmt.Sprintf("A%d", auditRow), fmt.Sprintf("A%d", auditRow+1), auditStyle), "SetCellStyle")
+	s.logXlsxErr(f.SetCellStyle(sheet, fmt.Sprintf("A%d", auditRow), fmt.Sprintf("A%d", auditRow+1), auditStyle), "SetCellStyle")
 
 	planCompanyTitle := s.fetchCompanyTitle(ctx, ec.ExpertInspection)
 	narrative := s.buildAuditNarrative(&ec, dangers, planCompanyTitle, checkCompanyName)
-	logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("A%d", auditRow), narrative), "SetCellValue")
-	logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("A%d", auditRow+1), "备注：隐患分七类（危化品、电气、机械、安全设施、消防、职业健康、其他）。"), "SetCellValue")
+	s.logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("A%d", auditRow), narrative), "SetCellValue")
+	s.logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("A%d", auditRow+1), "备注：隐患分七类（危化品、电气、机械、安全设施、消防、职业健康、其他）。"), "SetCellValue")
 
 	relPath, err := s.saveAs(f, "整改通知单-"+checkCompanyName)
 	if err != nil {
@@ -278,7 +282,7 @@ func (s *RectificationSheetService) GenerateHazardStatistics(ctx context.Context
 		return "", errs.Wrap(errs.CodeInternal, "创建工作表失败", err)
 	}
 	f.SetActiveSheet(idx)
-	logXlsxErr(f.DeleteSheet("Sheet1"), "DeleteSheet")
+	s.logXlsxErr(f.DeleteSheet("Sheet1"), "DeleteSheet")
 
 	s.applyBaseStyle(f, sheet)
 
@@ -287,33 +291,33 @@ func (s *RectificationSheetService) GenerateHazardStatistics(ctx context.Context
 		s.applyOuterBorder(f, sheet, "A1", fmt.Sprintf("H%d", totalRows))
 	}
 
-	logXlsxErr(f.MergeCell(sheet, "A1", "H1"), "MergeCell")
-	logXlsxErr(f.MergeCell(sheet, "A2", "H2"), "MergeCell")
-	logXlsxErr(f.SetRowHeight(sheet, 1, 40), "SetRowHeight")
-	logXlsxErr(f.SetRowHeight(sheet, 2, 26), "SetRowHeight")
-	logXlsxErr(f.SetRowHeight(sheet, 3, 36), "SetRowHeight")
+	s.logXlsxErr(f.MergeCell(sheet, "A1", "H1"), "MergeCell")
+	s.logXlsxErr(f.MergeCell(sheet, "A2", "H2"), "MergeCell")
+	s.logXlsxErr(f.SetRowHeight(sheet, 1, 40), "SetRowHeight")
+	s.logXlsxErr(f.SetRowHeight(sheet, 2, 26), "SetRowHeight")
+	s.logXlsxErr(f.SetRowHeight(sheet, 3, 36), "SetRowHeight")
 
 	titleStyle, _ := f.NewStyle(&excelize.Style{
 		Font:      &excelize.Font{Family: "宋体", Size: 20, Bold: true},
 		Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center", WrapText: true},
 	})
-	logXlsxErr(f.SetCellStyle(sheet, "A1", "A1", titleStyle), "SetCellStyle")
+	s.logXlsxErr(f.SetCellStyle(sheet, "A1", "A1", titleStyle), "SetCellStyle")
 	subtitleStyle, _ := f.NewStyle(&excelize.Style{
 		Alignment: &excelize.Alignment{Horizontal: "left", Vertical: "center", WrapText: true},
 	})
-	logXlsxErr(f.SetCellStyle(sheet, "A2", "A2", subtitleStyle), "SetCellStyle")
+	s.logXlsxErr(f.SetCellStyle(sheet, "A2", "A2", subtitleStyle), "SetCellStyle")
 
-	logXlsxErr(f.SetCellValue(sheet, "A1", "隐患排查分类统计表 · "+companyTitle), "SetCellValue")
+	s.logXlsxErr(f.SetCellValue(sheet, "A1", "隐患排查分类统计表 · "+companyTitle), "SetCellValue")
 	subtitle := fmt.Sprintf("统计时间：%s ~ %s", emptyDash(p.StartTime), emptyDash(p.EndTime))
 	if t := strings.TrimSpace(p.Type); t != "" && t != "all" {
 		subtitle += "　|　类别：" + t
 	}
-	logXlsxErr(f.SetCellValue(sheet, "A2", subtitle), "SetCellValue")
+	s.logXlsxErr(f.SetCellValue(sheet, "A2", subtitle), "SetCellValue")
 
 	headers := []string{"序号", "不符合项描述", "整改前图片", "整改依据", "整改建议", "隐患类别", "整改后图片", "整改情况说明"}
 	for i, h := range headers {
 		col, _ := excelize.CoordinatesToCellName(i+1, 3)
-		logXlsxErr(f.SetCellValue(sheet, col, h), "SetCellValue")
+		s.logXlsxErr(f.SetCellValue(sheet, col, h), "SetCellValue")
 	}
 
 	row := 4
@@ -322,19 +326,19 @@ func (s *RectificationSheetService) GenerateHazardStatistics(ctx context.Context
 		if len(bucket) == 0 {
 			continue
 		}
-		logXlsxErr(f.MergeCell(sheet, fmt.Sprintf("A%d", row), fmt.Sprintf("H%d", row)), "MergeCell")
-		logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("A%d", row), t+"类隐患"), "SetCellValue")
-		logXlsxErr(f.SetRowHeight(sheet, row, 36), "SetRowHeight")
+		s.logXlsxErr(f.MergeCell(sheet, fmt.Sprintf("A%d", row), fmt.Sprintf("H%d", row)), "MergeCell")
+		s.logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("A%d", row), t+"类隐患"), "SetCellValue")
+		s.logXlsxErr(f.SetRowHeight(sheet, row, 36), "SetRowHeight")
 		row++
 
 		for i, d := range bucket {
-			logXlsxErr(f.SetRowHeight(sheet, row, 70), "SetRowHeight")
-			logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("A%d", row), i+1), "SetCellValue")
-			logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("B%d", row), strings.TrimSpace(d.Area+":"+d.Description)), "SetCellValue")
-			logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("D%d", row), derefString(d.Legalises)), "SetCellValue")
-			logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("E%d", row), derefString(d.Proposal)), "SetCellValue")
-			logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("F%d", row), d.HiddenType+"/"+d.HiddenLevel), "SetCellValue")
-			logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("H%d", row), derefString(d.ReviewDescription)), "SetCellValue")
+			s.logXlsxErr(f.SetRowHeight(sheet, row, 70), "SetRowHeight")
+			s.logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("A%d", row), i+1), "SetCellValue")
+			s.logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("B%d", row), strings.TrimSpace(d.Area+":"+d.Description)), "SetCellValue")
+			s.logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("D%d", row), derefString(d.Legalises)), "SetCellValue")
+			s.logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("E%d", row), derefString(d.Proposal)), "SetCellValue")
+			s.logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("F%d", row), d.HiddenType+"/"+d.HiddenLevel), "SetCellValue")
+			s.logXlsxErr(f.SetCellValue(sheet, fmt.Sprintf("H%d", row), derefString(d.ReviewDescription)), "SetCellValue")
 			s.embedFirstAnnex(f, sheet, fmt.Sprintf("C%d", row), d.HiddenExamineAnnex)
 			s.embedFirstAnnex(f, sheet, fmt.Sprintf("G%d", row), d.HiddenRectifyAnnex)
 			row++
@@ -352,15 +356,15 @@ func (s *RectificationSheetService) GenerateHazardStatistics(ctx context.Context
 
 func (s *RectificationSheetService) applyBaseStyle(f *excelize.File, sheet string) {
 	// 列宽贴 PhpSpreadsheet 数值（PhpSpreadsheet 列宽单位 ≈ 字符宽，excelize 一致）。
-	logXlsxErr(f.SetColWidth(sheet, "A", "A", 9.08), "SetColWidth")
-	logXlsxErr(f.SetColWidth(sheet, "B", "B", 32.08), "SetColWidth")
-	logXlsxErr(f.SetColWidth(sheet, "C", "C", 24.08), "SetColWidth")
-	logXlsxErr(f.SetColWidth(sheet, "D", "D", 28.08), "SetColWidth")
-	logXlsxErr(f.SetColWidth(sheet, "E", "E", 28.08), "SetColWidth")
-	logXlsxErr(f.SetColWidth(sheet, "F", "F", 20.08), "SetColWidth")
-	logXlsxErr(f.SetColWidth(sheet, "G", "G", 24.08), "SetColWidth")
-	logXlsxErr(f.SetColWidth(sheet, "H", "H", 24.08), "SetColWidth")
-	logXlsxErr(f.SetPageLayout(sheet, &excelize.PageLayoutOptions{
+	s.logXlsxErr(f.SetColWidth(sheet, "A", "A", 9.08), "SetColWidth")
+	s.logXlsxErr(f.SetColWidth(sheet, "B", "B", 32.08), "SetColWidth")
+	s.logXlsxErr(f.SetColWidth(sheet, "C", "C", 24.08), "SetColWidth")
+	s.logXlsxErr(f.SetColWidth(sheet, "D", "D", 28.08), "SetColWidth")
+	s.logXlsxErr(f.SetColWidth(sheet, "E", "E", 28.08), "SetColWidth")
+	s.logXlsxErr(f.SetColWidth(sheet, "F", "F", 20.08), "SetColWidth")
+	s.logXlsxErr(f.SetColWidth(sheet, "G", "G", 24.08), "SetColWidth")
+	s.logXlsxErr(f.SetColWidth(sheet, "H", "H", 24.08), "SetColWidth")
+	s.logXlsxErr(f.SetPageLayout(sheet, &excelize.PageLayoutOptions{
 		Orientation: stringPtr("portrait"),
 		Size:        intPtr(9), // A4
 	}), "SetPageLayout")
@@ -377,7 +381,7 @@ func (s *RectificationSheetService) applyOuterBorder(f *excelize.File, sheet, fr
 		Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center", WrapText: true},
 		Font:      &excelize.Font{Family: "宋体", Size: 11},
 	})
-	logXlsxErr(f.SetCellStyle(sheet, from, to, border), "SetCellStyle")
+	s.logXlsxErr(f.SetCellStyle(sheet, from, to, border), "SetCellStyle")
 }
 
 // embedFirstAnnex — 取附件列表第一项嵌入到目标单元格。
@@ -407,7 +411,7 @@ func (s *RectificationSheetService) embedFirstAnnex(f *excelize.File, sheet, cel
 	scaleX := targetW / float64(cfg.Width)
 	scaleY := targetH / float64(cfg.Height)
 	ext := guessImageExt(raw)
-	logXlsxErr(f.AddPictureFromBytes(sheet, cell, &excelize.Picture{
+	s.logXlsxErr(f.AddPictureFromBytes(sheet, cell, &excelize.Picture{
 		Extension: ext,
 		File:      buf,
 		Format: &excelize.GraphicOptions{
@@ -684,8 +688,11 @@ func intPtr(v int) *int          { return &v }
 // user — but silently swallowing every error hid genuine SetCellValue
 // failures that lost data. Genuine fatal points (NewSheet, Write) still
 // propagate via err returns.
-func logXlsxErr(err error, where string) {
+func (s *RectificationSheetService) logXlsxErr(err error, where string) {
 	if err != nil {
-		log.Printf("rectification_sheet: %s: %v", where, err)
+		s.logger.Warn("rectification_sheet xlsx",
+			zap.String("where", where),
+			zap.Error(err),
+		)
 	}
 }

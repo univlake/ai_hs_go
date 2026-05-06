@@ -27,6 +27,7 @@ import (
 	"ai_hs_go/internal/model"
 	"ai_hs_go/internal/response"
 	"ai_hs_go/internal/service"
+	"ai_hs_go/internal/api/apiutil"
 )
 
 type Handler struct {
@@ -52,8 +53,7 @@ func (h *Handler) ListOccupationalHazard(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.svc.ListOccupationalHazard(c.Request.Context(), service.OccupationalHazardListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		Name:      firstNonEmpty(c.Query("name"), c.Query("keyword")),
@@ -297,8 +297,7 @@ func (h *Handler) ListHealthFile(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.svc.ListHealthFile(c.Request.Context(), service.HealthFileListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		Name: firstNonEmpty(c.Query("name"), c.Query("keyword")),
@@ -478,8 +477,7 @@ func (h *Handler) ListHealthReport(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.svc.ListHealthReport(c.Request.Context(), service.HealthReportListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		Name: firstNonEmpty(c.Query("name"), c.Query("keyword")),
@@ -601,8 +599,7 @@ func (h *Handler) ListHealthCheckup(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.svc.ListHealthCheckup(c.Request.Context(), service.HealthCheckupListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		Type: firstNonEmpty(c.Query("type"), c.Query("keyword")),
@@ -719,8 +716,7 @@ func (h *Handler) ListHygieneEvaluation(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.svc.ListHygieneEvaluation(c.Request.Context(), service.HygieneEvaluationListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		Name: firstNonEmpty(c.Query("name"), c.Query("keyword")),
@@ -837,8 +833,7 @@ func (h *Handler) ListFireSafety(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.svc.ListFireSafety(c.Request.Context(), service.FireSafetyListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		Name: firstNonEmpty(c.Query("name"), c.Query("keyword")),
@@ -954,8 +949,7 @@ func (h *Handler) ListFireEquipment(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.svc.ListFireEquipment(c.Request.Context(), service.FireEquipmentListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		EquipmentName: firstNonEmpty(c.Query("equipment_name"), c.Query("keyword")),
@@ -1082,8 +1076,7 @@ func (h *Handler) ListFireFacility(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.svc.ListFireFacility(c.Request.Context(), service.FireFacilityListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		EquipmentName: firstNonEmpty(c.Query("equipment_name"), c.Query("keyword")),

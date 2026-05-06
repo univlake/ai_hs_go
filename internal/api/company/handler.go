@@ -11,6 +11,7 @@ import (
 	"ai_hs_go/internal/middleware"
 	"ai_hs_go/internal/response"
 	"ai_hs_go/internal/service"
+	"ai_hs_go/internal/api/apiutil"
 )
 
 type Handler struct {
@@ -38,8 +39,7 @@ func (h *Handler) PublicList(c *gin.Context) {
 //   - keyword (preferred) or title → fuzzy match against title / credit_code
 //   - page, per_page → standard pagination
 func (h *Handler) List(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 
 	var parent *int64
 	parentRaw := c.Query("parent_id")
@@ -85,8 +85,7 @@ func (h *Handler) List(c *gin.Context) {
 // impersonated tenant, so 集团一's queue stays out of 集团二's, and only
 // when no scope is set does a platform admin see the unfiltered queue.
 func (h *Handler) ReviewList(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	params := service.ReviewListParams{
 		Page:    page,
 		PerPage: per,

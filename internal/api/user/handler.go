@@ -11,6 +11,7 @@ import (
 	"ai_hs_go/internal/model"
 	"ai_hs_go/internal/response"
 	"ai_hs_go/internal/service"
+	"ai_hs_go/internal/api/apiutil"
 )
 
 type Handler struct {
@@ -32,8 +33,7 @@ func NewHandler(users *service.UserService, rbac *service.RBACService) *Handler 
 //	status                     filter by status (1 enabled / 2 disabled)
 //	role                       filter by role name (e.g. "tenant_admin")
 func (h *Handler) List(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 
 	// Default company filter to the active scope unless an explicit
 	// company_id query param is supplied. Scope resolution already enforces

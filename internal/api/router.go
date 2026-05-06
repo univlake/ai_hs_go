@@ -5,6 +5,7 @@ import (
 
 	"github.com/casbin/casbin/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 
@@ -73,10 +74,18 @@ func (r *Router) Engine() *gin.Engine {
 	engine.Use(middleware.Recovery(r.deps.Logger))
 	engine.Use(middleware.Logger(r.deps.Logger))
 	engine.Use(middleware.CORS(r.deps.Config.CORS.AllowedOrigins))
+	engine.Use(middleware.Metrics())
 
 	engine.GET("/healthz", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
+
+	// Prometheus scrape endpoint. Mounted before the SPA / API groups so it
+	// never inherits auth or rate-limit middleware. Lock down via reverse-proxy
+	// ACL (e.g. only allow internal Prom scraper IPs to reach /metrics) — Go
+	// itself doesn't gate it, on purpose, so kube probes / sidecar scrapers
+	// keep working without baking credentials in.
+	engine.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	r.mountSPA(engine)
 
@@ -138,7 +147,7 @@ func (r *Router) Engine() *gin.Engine {
 	//   templates: configs/templates/enterprise_export.docx (随项目分发)
 	//   storage : storage/app/inspection-notices/YYYY/MM/   (运行时自动建)
 	expertSvc := service.NewExpertService(r.deps.DB, "./configs/templates/enterprise_export.docx", "./storage/app")
-	rectifySvc := service.NewRectificationSheetService(r.deps.DB, r.deps.OSS, "./storage/app")
+	rectifySvc := service.NewRectificationSheetService(r.deps.DB, r.deps.OSS, "./storage/app", r.deps.Logger)
 	expertH := expertapi.NewHandler(expertSvc, rectifySvc)
 	blocExpertH := blocexpertapi.NewHandler(expertSvc)
 	todoH := todoapi.NewHandler()

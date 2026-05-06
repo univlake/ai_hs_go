@@ -24,6 +24,7 @@ import (
 	"ai_hs_go/internal/model"
 	"ai_hs_go/internal/response"
 	"ai_hs_go/internal/service"
+	"ai_hs_go/internal/api/apiutil"
 )
 
 type Handler struct {
@@ -37,8 +38,7 @@ func NewHandler(svc *service.HiddenDangerService) *Handler {
 // ── List / Get ───────────────────────────────────────────────────────
 
 func (h *Handler) List(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	insID, _ := strconv.ParseInt(c.Query("expert_inspection_id"), 10, 64)
 	ecID, _ := strconv.ParseInt(c.Query("expert_company_id"), 10, 64)
 	chkID, _ := strconv.ParseInt(c.Query("check_company_id"), 10, 64)

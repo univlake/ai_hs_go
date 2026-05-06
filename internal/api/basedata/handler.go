@@ -11,6 +11,7 @@ import (
 	"ai_hs_go/internal/middleware"
 	"ai_hs_go/internal/response"
 	"ai_hs_go/internal/service"
+	"ai_hs_go/internal/api/apiutil"
 )
 
 // flexInt64 unmarshals both JSON numbers (`5`) and JSON strings (`"5"`)
@@ -81,8 +82,7 @@ func (h *Handler) DictList(slug string) gin.HandlerFunc {
 			response.NotFound(c, "未知字典")
 			return
 		}
-		page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-		per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+		page, per := apiutil.ParsePagination(c, 20)
 		rows, total, err := h.dictSvc.List(c.Request.Context(), slug, service.DictListParams{
 			Page: page, PerPage: per, Title: c.Query("title"),
 		})
@@ -182,8 +182,7 @@ type regLibTypeReq struct {
 // return everything paginated; the frontend filters / displays via
 // `all_name` and the parent picker.
 func (h *Handler) RegLibTypeList(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "200"))
+	page, per := apiutil.ParsePagination(c, 200)
 	params := service.RegLibTypeListParams{
 		Page:    page,
 		PerPage: per,
@@ -269,8 +268,7 @@ type checklistReq struct {
 
 // ChecklistList: GET /api/v1/checklist-libraries
 func (h *Handler) ChecklistList(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	cid, _ := middleware.ScopeCompanyID(c)
 	rows, total, err := h.checklistSvc.List(c.Request.Context(), service.ChecklistLibraryListParams{
 		Page:      page,

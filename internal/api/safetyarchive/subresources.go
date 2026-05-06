@@ -13,6 +13,7 @@ import (
 	"ai_hs_go/internal/middleware"
 	"ai_hs_go/internal/response"
 	"ai_hs_go/internal/service"
+	"ai_hs_go/internal/api/apiutil"
 )
 
 // writeXlsxTemplate is the shared response helper for the 3 staff
@@ -48,8 +49,7 @@ type certStatusReq struct {
 }
 
 func (h *Handler) CertStatusList(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	params := service.CertificateStatusListParams{
 		Page:      page,
 		PerPage:   per,
@@ -281,8 +281,7 @@ type fundingExecReq struct {
 }
 
 func (h *Handler) FundingExecList(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	rows, total, err := h.fundingExecSvc.List(c.Request.Context(), service.FundingExecutionListParams{
 		Page: page, PerPage: per,
 		CompanyID: scopeOrCompanyID(c),
@@ -374,8 +373,7 @@ type safetyMgmtStaffReq struct {
 }
 
 func (h *Handler) SafetyMgmtStaffList(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	params := service.SafetyManagementStaffListParams{
 		Page: page, PerPage: per, CompanyID: scopeOrCompanyID(c),
 	}
@@ -467,8 +465,7 @@ type specialEquipStaffReq struct {
 }
 
 func (h *Handler) SpecialEquipStaffList(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	rows, total, err := h.specialEquipStaffSvc.List(c.Request.Context(), service.SpecialEquipmentStaffListParams{
 		Page: page, PerPage: per, CompanyID: scopeOrCompanyID(c),
 	})
@@ -548,8 +545,7 @@ type elimCtrlStaffReq struct {
 }
 
 func (h *Handler) ElimCtrlStaffList(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
+	page, per := apiutil.ParsePagination(c, 20)
 	params := service.EliminationControlStaffListParams{
 		Page: page, PerPage: per, CompanyID: scopeOrCompanyID(c),
 	}

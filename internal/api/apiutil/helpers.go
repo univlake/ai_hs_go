@@ -102,3 +102,33 @@ func ScopeOrCompanyID(c *gin.Context) int64 {
 	}
 	return 0
 }
+
+const (
+	DefaultPerPage = 15
+	MaxPerPage     = 500
+)
+
+// ParsePagination reads page / per_page from the query string with bounds.
+// Negative or unparseable page falls to 1; per_page falls to defaultPer when
+// missing/invalid and is capped at MaxPerPage so per_page=99999 can't tip the
+// server into a heavy scan. Pass defaultPer=0 to use DefaultPerPage.
+func ParsePagination(c *gin.Context, defaultPer int) (page, perPage int) {
+	if defaultPer <= 0 {
+		defaultPer = DefaultPerPage
+	}
+	if defaultPer > MaxPerPage {
+		defaultPer = MaxPerPage
+	}
+	page, _ = strconv.Atoi(c.DefaultQuery("page", "1"))
+	if page < 1 {
+		page = 1
+	}
+	perPage, _ = strconv.Atoi(c.DefaultQuery("per_page", strconv.Itoa(defaultPer)))
+	if perPage < 1 {
+		perPage = defaultPer
+	}
+	if perPage > MaxPerPage {
+		perPage = MaxPerPage
+	}
+	return page, perPage
+}

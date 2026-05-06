@@ -22,6 +22,7 @@ import (
 	"ai_hs_go/internal/model"
 	"ai_hs_go/internal/response"
 	"ai_hs_go/internal/service"
+	"ai_hs_go/internal/api/apiutil"
 )
 
 type Handler struct {
@@ -73,8 +74,7 @@ func (h *Handler) ListAccidentBulletin(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	rows, total, err := h.svc.ListAccidentBulletin(c.Request.Context(), service.AccidentBulletinListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		Type:          c.Query("type"),
@@ -242,8 +242,7 @@ func (h *Handler) ListBlocAccidentBulletin(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	rows, total, err := h.svc.ListBlocAccidentBulletin(c.Request.Context(), service.BlocAccidentBulletinListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		Type:          c.Query("type"),
@@ -291,8 +290,7 @@ func (h *Handler) ListEmergencyDrill(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	rows, total, err := h.svc.ListEmergencyDrill(c.Request.Context(), service.EmergencyDrillListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		Name: firstNonEmpty(c.Query("name"), c.Query("keyword")),
@@ -414,8 +412,7 @@ func (h *Handler) ListEmergencySupplies(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	rows, total, err := h.svc.ListEmergencySupplies(c.Request.Context(), service.EmergencySuppliesListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		Name: firstNonEmpty(c.Query("name"), c.Query("keyword")),
@@ -530,8 +527,7 @@ func (h *Handler) ListEmergencyTeam(c *gin.Context) {
 	if companyID == 0 {
 		return
 	}
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	per, _ := strconv.Atoi(c.DefaultQuery("per_page", "15"))
+	page, per := apiutil.ParsePagination(c, 15)
 	rows, total, err := h.svc.ListEmergencyTeam(c.Request.Context(), service.EmergencyTeamListParams{
 		Page: page, PerPage: per, CompanyID: companyID,
 		Name: firstNonEmpty(c.Query("name"), c.Query("keyword")),
