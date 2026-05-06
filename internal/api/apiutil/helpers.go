@@ -105,7 +105,12 @@ func ScopeOrCompanyID(c *gin.Context) int64 {
 
 const (
 	DefaultPerPage = 15
-	MaxPerPage     = 500
+	// MaxPerPage caps any client-supplied per_page so a malicious
+	// per_page=99999 can't drag the server into a heavy scan. Set just above
+	// the largest legitimate default in the codebase (basedata's regulation
+	// tree at 200) so existing pages keep working without surprise truncation.
+	// Service layers may impose tighter caps of their own.
+	MaxPerPage = 200
 )
 
 // ParsePagination reads page / per_page from the query string with bounds.

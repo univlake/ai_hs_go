@@ -601,6 +601,14 @@ const navSections: NavSection[] = [
         mode: 'bloc',
         items: [
             {
+                title: '安全风险看板',
+                href: '/safety-dashboard',
+                icon: LayoutDashboard,
+                // No permission gate yet — the dashboard fetch falls back to
+                // empty cells for fields the caller can't read, and platform
+                // admins / 集团 viewers should always see this top-level board.
+            },
+            {
                 title: '企业分布图',
                 href: '/risk-monitoring/enterprise-map',
                 icon: Map,

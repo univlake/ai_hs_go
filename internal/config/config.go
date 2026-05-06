@@ -155,11 +155,13 @@ var jwtSecretPlaceholders = map[string]struct{}{
 	"dev-secret-change-me-32+bytes-please":                {},
 }
 
-// Validate enforces production-only invariants. Local/dev runs (app.env=local)
-// are deliberately lax so the example secret keeps working in `make run`.
+// Validate enforces production-only invariants. Non-production envs (local,
+// dev, test, ci) are deliberately lax so the example secret keeps working in
+// `make run` and CI integration tests that load the example config.
 func (c *Config) Validate() error {
 	env := strings.ToLower(strings.TrimSpace(c.App.Env))
-	if env == "" || env == "local" || env == "dev" || env == "development" {
+	switch env {
+	case "", "local", "dev", "development", "test", "ci":
 		return nil
 	}
 	if _, isPlaceholder := jwtSecretPlaceholders[c.JWT.Secret]; isPlaceholder {
