@@ -29,6 +29,7 @@ import (
 	riskapi "ai_hs_go/internal/api/risk"
 	riskmonitorapi "ai_hs_go/internal/api/riskmonitor"
 	roleapi "ai_hs_go/internal/api/role"
+	safetydashboardapi "ai_hs_go/internal/api/safetydashboard"
 	safetyarchapi "ai_hs_go/internal/api/safetyarchive"
 	safetyapi "ai_hs_go/internal/api/safetyledger"
 	statisticsapi "ai_hs_go/internal/api/statistics"
@@ -164,6 +165,9 @@ func (r *Router) Engine() *gin.Engine {
 	// 跟生产视图共用同一组路由 / 权限；视角差异由前端通过 pid vs company_id 入参表达。
 	statisticsSvc := service.NewStatisticsService(r.deps.DB)
 	statisticsH := statisticsapi.NewHandler(statisticsSvc)
+	// 集团安全风险看板 — 单接口聚合 ~10 张表的子树视图
+	safetyDashboardSvc := service.NewSafetyDashboardService(r.deps.DB, companyRepo)
+	safetyDashboardH := safetydashboardapi.NewHandler(safetyDashboardSvc)
 	// 剩余 5 模块（变更管理 / 法律法规库 / 培训资料文件&视频 / 风险画像）共用 ExtraModulesService。
 	extraModulesSvc := service.NewExtraModulesService(r.deps.DB)
 	extraModulesH := extramodulesapi.NewHandler(extraModulesSvc, r.deps.OSS)
@@ -801,6 +805,10 @@ func (r *Router) Engine() *gin.Engine {
 	// 考核模板年度管理（年度并集 + 一键拷贝）
 	business.GET("/assessment-templates/years", assessmentH.AssessmentYears)
 	business.POST("/assessment-templates/copy", middleware.RequirePermission(r.deps.Enforcer, "daily-check-templates.create"), assessmentH.CopyAssessmentTemplates)
+
+	// 集团安全风险看板 — 集团视图聚合接口（personnels / hidden_danger_infos / drills 等 10 张表）。
+	// 不挂权限：聚合源都已经各自鉴权，无权限的字段会回零值。
+	business.GET("/safety-dashboard/overview", safetyDashboardH.Overview)
 
 	// ── 数据统计模块（集团视图 + 生产视图共享） ─────────────────────────
 	//

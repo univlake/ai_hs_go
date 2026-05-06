@@ -228,12 +228,19 @@ func (s *ThirdPartyService) DeleteSkillUnit(ctx context.Context, id int64) error
 
 // ── helpers ─────────────────────────────────────────────────────────────
 
+// normalizePage applies service-tier defaults / caps. The HTTP layer
+// (apiutil.ParsePagination) already bounds per_page; this is the second
+// fence: invalid values fall to 20, oversized values cap at 100 (not reset)
+// so response.Page() reports the size actually used, not a placeholder.
 func normalizePage(page, per int) (int, int) {
 	if page <= 0 {
 		page = 1
 	}
-	if per <= 0 || per > 100 {
+	if per <= 0 {
 		per = 20
+	}
+	if per > 100 {
+		per = 100
 	}
 	return page, per
 }

@@ -159,6 +159,9 @@ const ManagementKnowledgeChecklists = lazyPage('management/knowledge/checklists/
 const ManagementTrainingCenterUploadMaterials = lazyPage('management/training-center/upload-materials/Index');
 const ManagementTrainingCenterUploadVideos = lazyPage('management/training-center/upload-videos/Index');
 const SystemPermissions = lazyPage('system/permissions/Index');
+// 安全风险看板 — full-screen 大屏 page, mounted outside AppLayout so the
+// sidebar / header don't eat the 1600+ px viewport.
+const SafetyDashboard = lazyPage('safety-dashboard/Index');
 const Placeholder = lazyPage('_placeholder');
 
 export const router = createBrowserRouter([
@@ -194,6 +197,15 @@ export const router = createBrowserRouter([
         element: (
           <LoadingShell>
             <FirstLoginSetup />
+          </LoadingShell>
+        ),
+      },
+      {
+        // Sibling of AppLayout: auth-gated but full-screen, no sidebar/header.
+        path: '/safety-dashboard',
+        element: (
+          <LoadingShell>
+            <SafetyDashboard />
           </LoadingShell>
         ),
       },
