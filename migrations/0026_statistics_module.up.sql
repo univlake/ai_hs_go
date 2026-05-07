@@ -136,3 +136,8 @@ CREATE TABLE year_statistic_kids (
 );
 CREATE INDEX idx_year_statistic_kids_parent  ON year_statistic_kids (year_statistic_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_year_statistic_kids_company ON year_statistic_kids (company_id)        WHERE deleted_at IS NULL;
+
+-- 快照列：插入时拷贝，不跟随 companies 后续改名/换地区/换企业类型。
+COMMENT ON COLUMN year_statistics.company_name    IS 'Snapshot at row creation; does not track later companies.title renames.';
+COMMENT ON COLUMN year_statistics.base_area       IS 'Snapshot at row creation; does not track later companies.area_id changes.';
+COMMENT ON COLUMN year_statistics.enterprise_type IS 'Snapshot at row creation; does not track later companies.enterprise_type_id changes.';

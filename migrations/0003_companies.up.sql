@@ -40,9 +40,9 @@ CREATE INDEX idx_operational_types_title ON operational_types (title);
 CREATE TABLE companies (
     id                    BIGSERIAL PRIMARY KEY,
     title                 VARCHAR(255) NOT NULL,
-    enterprise_type_id    BIGINT,
-    operational_type_id   BIGINT NOT NULL DEFAULT 1,
-    area_id               BIGINT,
+    enterprise_type_id    BIGINT REFERENCES enterprise_types(id) ON DELETE SET NULL,
+    operational_type_id   BIGINT NOT NULL DEFAULT 1 REFERENCES operational_types(id) ON DELETE RESTRICT,
+    area_id               BIGINT REFERENCES base_areas(area_id) ON DELETE SET NULL,
     address               TEXT,
     established           DATE,
     credit_code           VARCHAR(64),

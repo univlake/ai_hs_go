@@ -84,7 +84,7 @@ CREATE TABLE checklist_libraries (
     status            SMALLINT NOT NULL DEFAULT 1,
     preview_annex_url TEXT,
     annex_url         TEXT,
-    company_id        BIGINT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    company_id        BIGINT NOT NULL REFERENCES companies(id) ON DELETE RESTRICT,
     user_id           BIGINT NOT NULL DEFAULT 0,
     last_user_id      BIGINT NOT NULL DEFAULT 0,
     created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),

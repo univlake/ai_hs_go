@@ -51,7 +51,7 @@ CREATE TABLE office_notify_scopes (
     office_notify_id    BIGINT NOT NULL REFERENCES office_notifies(id) ON DELETE CASCADE,
     company_id          BIGINT NOT NULL REFERENCES companies(id) ON DELETE RESTRICT,
     company_group_name  VARCHAR(255),
-    company_group_id    BIGINT,
+    company_group_id    BIGINT REFERENCES company_groups(id) ON DELETE SET NULL,
     user_id             BIGINT NOT NULL DEFAULT 0,
     last_user_id        BIGINT NOT NULL DEFAULT 0,
     created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -88,7 +88,7 @@ CREATE TABLE new_notify_scopes (
     new_notify_id       BIGINT NOT NULL REFERENCES new_notifies(id) ON DELETE CASCADE,
     company_id          BIGINT NOT NULL REFERENCES companies(id) ON DELETE RESTRICT,
     company_group_name  VARCHAR(255),
-    company_group_id    BIGINT,
+    company_group_id    BIGINT REFERENCES company_groups(id) ON DELETE SET NULL,
     user_id             BIGINT NOT NULL DEFAULT 0,
     last_user_id        BIGINT NOT NULL DEFAULT 0,
     created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -98,6 +98,10 @@ CREATE TABLE new_notify_scopes (
 CREATE INDEX idx_new_notify_scopes_parent  ON new_notify_scopes (new_notify_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_new_notify_scopes_company ON new_notify_scopes (company_id)    WHERE deleted_at IS NULL;
 CREATE INDEX idx_new_notify_scopes_pending ON new_notify_scopes (company_id, read_status) WHERE deleted_at IS NULL;
+-- partial unique 让 (notify, user) 软删后能重新添加；普通 UNIQUE 会永久卡住
+CREATE UNIQUE INDEX uniq_new_notify_scope
+    ON new_notify_scopes (new_notify_id, user_id)
+    WHERE deleted_at IS NULL;
 
 -- ── 会议通知（meetings + meeting_notices + meeting_sign_ups）─────────
 
@@ -132,7 +136,7 @@ CREATE TABLE meeting_notices (
     company_name        VARCHAR(255),
     meeting_id          BIGINT NOT NULL REFERENCES meetings(id) ON DELETE CASCADE,
     company_id          BIGINT NOT NULL REFERENCES companies(id) ON DELETE RESTRICT,
-    company_group_id    BIGINT,
+    company_group_id    BIGINT REFERENCES company_groups(id) ON DELETE SET NULL,
     company_group_name  VARCHAR(255),
     notify_time         TIMESTAMPTZ,
     confirm_time        TIMESTAMPTZ,
@@ -176,7 +180,7 @@ CREATE TABLE information_drafts (
     draft_others      VARCHAR(255),
     "comment"         TEXT,
     annex_url         VARCHAR(512),
-    next_reviewer     BIGINT,
+    next_reviewer     BIGINT REFERENCES users(id) ON DELETE SET NULL,
     "status"          INTEGER NOT NULL DEFAULT 0,
     is_top            INTEGER NOT NULL DEFAULT 0,
     company_id        BIGINT NOT NULL REFERENCES companies(id) ON DELETE RESTRICT,
@@ -190,3 +194,13 @@ CREATE INDEX idx_information_drafts_company       ON information_drafts (company
 CREATE INDEX idx_information_drafts_next_reviewer ON information_drafts (next_reviewer) WHERE deleted_at IS NULL;
 CREATE INDEX idx_information_drafts_status        ON information_drafts ("status")      WHERE deleted_at IS NULL;
 CREATE INDEX idx_information_drafts_name          ON information_drafts ("name")        WHERE deleted_at IS NULL;
+
+-- 快照列：插入时拷贝，不跟随 companies / company_groups 后续改名。
+COMMENT ON COLUMN office_notify_scopes.company_name       IS 'Snapshot at row creation; for display when notification was issued.';
+COMMENT ON COLUMN office_notify_scopes.company_group_name IS 'Snapshot at row creation; for display when notification was issued.';
+COMMENT ON COLUMN new_notify_scopes.company_name          IS 'Snapshot at row creation; for display when notification was issued.';
+COMMENT ON COLUMN new_notify_scopes.company_group_name    IS 'Snapshot at row creation; for display when notification was issued.';
+COMMENT ON COLUMN meeting_notices.company_name            IS 'Snapshot at row creation; for display in meeting recipient list.';
+COMMENT ON COLUMN meeting_notices.company_group_name      IS 'Snapshot at row creation; for display in meeting recipient list.';
+COMMENT ON COLUMN meeting_sign_ups.company_name           IS 'Snapshot at sign-up; for historical sign-up sheet display.';
+COMMENT ON COLUMN information_drafts.company_name         IS 'Snapshot at row creation; does not track later companies.title renames.';

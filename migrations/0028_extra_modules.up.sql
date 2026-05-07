@@ -40,7 +40,7 @@ CREATE INDEX idx_change_manages_company ON change_manages (company_id) WHERE del
 CREATE TABLE regulation_libraries (
     id                           BIGSERIAL PRIMARY KEY,
     title                        VARCHAR(255) NOT NULL,
-    regulation_library_type_id   BIGINT,
+    regulation_library_type_id   BIGINT REFERENCES regulation_library_types(id) ON DELETE SET NULL,
     established_date             DATE,
     effective_date               DATE,
     promulgating_department      VARCHAR(255),
@@ -48,7 +48,7 @@ CREATE TABLE regulation_libraries (
     identify_date                DATE,
     status                       VARCHAR(64),
     annex_url                    TEXT,
-    company_id                   BIGINT NOT NULL DEFAULT 0,
+    company_id                   BIGINT NOT NULL REFERENCES companies(id) ON DELETE RESTRICT,
     user_id                      BIGINT NOT NULL DEFAULT 0,
     last_user_id                 BIGINT NOT NULL DEFAULT 0,
     created_at                   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -74,8 +74,8 @@ CREATE INDEX idx_training_files_company ON training_files (company_id) WHERE del
 
 CREATE TABLE training_file_logs (
     id                BIGSERIAL PRIMARY KEY,
-    training_file_id  BIGINT NOT NULL,
-    company_id        BIGINT NOT NULL,
+    training_file_id  BIGINT NOT NULL REFERENCES training_files(id) ON DELETE CASCADE,
+    company_id        BIGINT NOT NULL REFERENCES companies(id) ON DELETE RESTRICT,
     user_id           BIGINT NOT NULL DEFAULT 0,
     last_user_id      BIGINT NOT NULL DEFAULT 0,
     created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -105,8 +105,8 @@ CREATE INDEX idx_training_videos_company ON training_videos (company_id) WHERE d
 
 CREATE TABLE training_video_logs (
     id                 BIGSERIAL PRIMARY KEY,
-    training_video_id  BIGINT NOT NULL,
-    company_id         BIGINT NOT NULL,
+    training_video_id  BIGINT NOT NULL REFERENCES training_videos(id) ON DELETE CASCADE,
+    company_id         BIGINT NOT NULL REFERENCES companies(id) ON DELETE RESTRICT,
     user_id            BIGINT NOT NULL DEFAULT 0,
     last_user_id       BIGINT NOT NULL DEFAULT 0,
     created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -140,7 +140,7 @@ CREATE TABLE inherent_risk_logs (
     hazardous_chemical_scale            NUMERIC(10, 4) NOT NULL DEFAULT 0,
     hazardous_chemicals_number_scale    NUMERIC(10, 4) NOT NULL DEFAULT 0,
     major_hazard_scale                  NUMERIC(10, 4) NOT NULL DEFAULT 0,
-    company_id                          BIGINT NOT NULL DEFAULT 0,
+    company_id                          BIGINT NOT NULL REFERENCES companies(id) ON DELETE RESTRICT,
     user_id                             BIGINT NOT NULL DEFAULT 0,
     last_user_id                        BIGINT NOT NULL DEFAULT 0,
     created_at                          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -169,7 +169,7 @@ CREATE TABLE float_risk_logs (
     health_checkup_people_scale       NUMERIC(10, 4) NOT NULL DEFAULT 0,
     health_checkup_scale              NUMERIC(10, 4) NOT NULL DEFAULT 0,
     health_report_scale               NUMERIC(10, 4) NOT NULL DEFAULT 0,
-    company_id                        BIGINT NOT NULL DEFAULT 0,
+    company_id                        BIGINT NOT NULL REFERENCES companies(id) ON DELETE RESTRICT,
     user_id                           BIGINT NOT NULL DEFAULT 0,
     last_user_id                      BIGINT NOT NULL DEFAULT 0,
     created_at                        TIMESTAMPTZ NOT NULL DEFAULT NOW(),

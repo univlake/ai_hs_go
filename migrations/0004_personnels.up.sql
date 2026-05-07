@@ -10,7 +10,7 @@ CREATE TABLE personnels (
     safety_engineering_major    INTEGER NOT NULL DEFAULT 0,
     fire_engineer               INTEGER NOT NULL DEFAULT 0,
     other                       INTEGER NOT NULL DEFAULT 0,
-    company_id                  BIGINT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    company_id                  BIGINT NOT NULL REFERENCES companies(id) ON DELETE RESTRICT,
     user_id                     BIGINT NOT NULL DEFAULT 0,
     last_user_id                BIGINT NOT NULL DEFAULT 0,
     created_at                  TIMESTAMPTZ NOT NULL DEFAULT NOW(),

@@ -33,7 +33,7 @@ CREATE INDEX idx_internal_meetings_company ON internal_meetings (company_id) WHE
 
 CREATE TABLE internal_meeting_kids (
     id                   BIGSERIAL PRIMARY KEY,
-    internal_meeting_id  BIGINT NOT NULL,
+    internal_meeting_id  BIGINT NOT NULL REFERENCES internal_meetings(id) ON DELETE CASCADE,
     join_user_id         BIGINT REFERENCES users(id) ON DELETE SET NULL,
     company_id           BIGINT NOT NULL REFERENCES companies(id) ON DELETE RESTRICT,
     user_id              BIGINT NOT NULL DEFAULT 0,

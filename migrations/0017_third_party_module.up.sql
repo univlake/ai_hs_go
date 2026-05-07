@@ -67,7 +67,7 @@ CREATE TABLE skill_unit_kids (
     id                       BIGSERIAL PRIMARY KEY,
     qualification_name       VARCHAR(255),
     qualification_annex_url  TEXT,
-    skill_unit_id            BIGINT NOT NULL,
+    skill_unit_id            BIGINT NOT NULL REFERENCES skill_units(id) ON DELETE CASCADE,
     company_id               BIGINT NOT NULL REFERENCES companies(id) ON DELETE RESTRICT,
     user_id                  BIGINT NOT NULL DEFAULT 0,
     last_user_id             BIGINT NOT NULL DEFAULT 0,

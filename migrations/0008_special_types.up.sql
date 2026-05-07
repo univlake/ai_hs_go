@@ -9,3 +9,8 @@ CREATE TABLE special_types (
     deleted_at  TIMESTAMPTZ
 );
 CREATE INDEX idx_special_types_title ON special_types (title);
+
+-- 0006 创建 special_equipment 时该表还没建，FK 在此回填。
+ALTER TABLE special_equipment
+    ADD CONSTRAINT special_equipment_special_type_id_fkey
+    FOREIGN KEY (special_type_id) REFERENCES special_types(id) ON DELETE SET NULL;
