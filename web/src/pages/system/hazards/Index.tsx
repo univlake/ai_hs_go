@@ -5,7 +5,6 @@ const config: CrudPageConfig = {
     title: '危险有害因素',
     endpoint: '/hazards',
     columns: [
-        { key: 'id', header: 'ID', width: 60 },
         { key: 'title', header: '名称' },
         { key: 'sort', header: '排序', width: 80 },
     ],

@@ -5,7 +5,6 @@ const config: CrudPageConfig = {
     title: '评价单位管理',
     endpoint: '/evaluation-units',
     columns: [
-        { key: 'id', header: 'ID', width: 60 },
         { key: 'title', header: '单位名称' },
         { key: 'contact', header: '联系人' },
         { key: 'phone', header: '电话' },

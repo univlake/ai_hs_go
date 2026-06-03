@@ -5,7 +5,6 @@ const config: CrudPageConfig = {
     title: '特种设备人员管理',
     endpoint: '/special-equipment-staff',
     columns: [
-        { key: 'id', header: 'ID', width: 60 },
         { key: 'name', header: '姓名' },
         { key: 'certificate_no', header: '证书编号' },
     ],

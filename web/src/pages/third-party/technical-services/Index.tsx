@@ -222,6 +222,13 @@ export default function TechnicalServicesIndex() {
     };
 
     const columns: ColumnDef<TechServiceRow>[] = [
+        {
+            id: '__seq',
+            header: 'ID',
+            size: 60,
+            cell: ({ row }) =>
+                (current_page - 1) * per_page + row.index + 1,
+        },
         { accessorKey: 'name', header: '单位名称' },
         {
             accessorKey: 'serving_type',

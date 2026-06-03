@@ -285,6 +285,13 @@ export default function KeyHazardousProcessIndex() {
 
     const columns: ColumnDef<ProcessRow>[] = [
         {
+            id: '__seq',
+            header: 'ID',
+            size: 60,
+            cell: ({ row }) =>
+                (current_page - 1) * per_page + row.index + 1,
+        },
+        {
             accessorKey: 'name',
             header: '工艺名称',
             cell: ({ row }) => (

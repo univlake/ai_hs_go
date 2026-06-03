@@ -5,7 +5,6 @@ const config: CrudPageConfig = {
     title: '建筑物及构筑物',
     endpoint: '/buildings',
     columns: [
-        { key: 'id', header: 'ID', width: 60 },
         { key: 'title', header: '名称' },
         { key: 'structure', header: '结构类型' },
         { key: 'area', header: '面积' },

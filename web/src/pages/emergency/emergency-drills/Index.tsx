@@ -5,7 +5,6 @@ const config: CrudPageConfig = {
     title: '应急演练',
     endpoint: '/emergency-drills',
     columns: [
-        { key: 'id', header: 'ID', width: 80 },
         { key: 'title', header: '标题' },
         { key: 'drill_date', header: '演练日期' },
     ],

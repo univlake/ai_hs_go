@@ -5,7 +5,6 @@ const config: CrudPageConfig = {
     title: '消防安全',
     endpoint: '/fire-safeties',
     columns: [
-        { key: 'id', header: 'ID', width: 80 },
         { key: 'title', header: '标题' },
         { key: 'location', header: '位置' },
     ],

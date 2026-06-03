@@ -8,7 +8,6 @@ const config: CrudPageConfig = {
     labelKey: 'name',
     enableDetail: true,
     columns: [
-        { key: 'id', header: 'ID', width: 60 },
         { key: 'name', header: '培训名称' },
         {
             key: 'training_date',

@@ -255,6 +255,13 @@ function InvestmentPlansTab({ companyId }: { companyId: number }) {
 
     const columns: ColumnDef<SecurityInvestment>[] = [
         {
+            id: '__seq',
+            header: 'ID',
+            size: 60,
+            cell: ({ row }) =>
+                (current_page - 1) * per_page + row.index + 1,
+        },
+        {
             accessorKey: 'year',
             header: '年份',
             size: 70,

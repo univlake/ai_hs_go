@@ -24,7 +24,7 @@ func TestSpecialEquipmentTemplateAndExport(t *testing.T) {
 		{EquipmentName: &name, UtilizedLocation: &loc, UseTime: &useTime},
 	}
 	var out bytes.Buffer
-	if err := SpecialEquipmentExport(&out, rows); err != nil {
+	if err := SpecialEquipmentExport(&out, rows, nil); err != nil {
 		t.Fatalf("export: %v", err)
 	}
 	if out.Len() == 0 {
@@ -36,15 +36,18 @@ func TestSpecialEquipmentImportRoundTrip(t *testing.T) {
 	name := "桥式起重机"
 	loc := "1号车间"
 	useTime := model.Date(time.Date(2025, 1, 15, 0, 0, 0, 0, time.UTC))
+	craneID := int64(5)
 	rows := []model.SpecialEquipment{
-		{EquipmentName: &name, UtilizedLocation: &loc, UseTime: &useTime},
+		{EquipmentName: &name, SpecialTypeID: &craneID, UtilizedLocation: &loc, UseTime: &useTime},
 	}
 	var out bytes.Buffer
-	if err := SpecialEquipmentExport(&out, rows); err != nil {
+	typeTitleByID := map[int64]string{5: "起重机械"}
+	if err := SpecialEquipmentExport(&out, rows, typeTitleByID); err != nil {
 		t.Fatalf("export: %v", err)
 	}
 
-	parsed, err := SpecialEquipmentImport(bytes.NewReader(out.Bytes()))
+	typesByTitle := map[string]int64{"起重机械": 5}
+	parsed, err := SpecialEquipmentImport(bytes.NewReader(out.Bytes()), typesByTitle)
 	if err != nil {
 		t.Fatalf("import: %v", err)
 	}
@@ -57,5 +60,8 @@ func TestSpecialEquipmentImportRoundTrip(t *testing.T) {
 	}
 	if got.UtilizedLocation == nil || *got.UtilizedLocation != loc {
 		t.Fatalf("location mismatch: %+v", got.UtilizedLocation)
+	}
+	if got.SpecialTypeID == nil || *got.SpecialTypeID != craneID {
+		t.Fatalf("special_type_id mismatch: %+v", got.SpecialTypeID)
 	}
 }

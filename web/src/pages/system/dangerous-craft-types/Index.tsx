@@ -5,7 +5,6 @@ const config: CrudPageConfig = {
     title: '危险工艺类型',
     endpoint: '/dangerous-craft-types',
     columns: [
-        { key: 'id', header: 'ID', width: 60 },
         { key: 'title', header: '标题' },
         { key: 'sort', header: '排序', width: 80 },
     ],

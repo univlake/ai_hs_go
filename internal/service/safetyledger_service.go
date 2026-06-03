@@ -35,6 +35,16 @@ func paginate(p *ListParams) {
 	}
 }
 
+// ListSpecialTypes returns the full special_types dictionary (small, ~6 rows
+// from the seeder) for use as a title↔id lookup in import / export flows.
+func (s *SafetyLedgerService) ListSpecialTypes(ctx context.Context) ([]model.SpecialType, error) {
+	var rows []model.SpecialType
+	if err := s.db.WithContext(ctx).Order("sort, id").Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	return rows, nil
+}
+
 // ----- SpecialEquipment -----
 
 func (s *SafetyLedgerService) ListSpecialEquipment(ctx context.Context, p ListParams) ([]model.SpecialEquipment, int64, error) {

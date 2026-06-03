@@ -738,8 +738,19 @@ export function CrudPage({ config }: { config: CrudPageConfig }) {
         ),
     };
 
+    // Sequence-number column (continuous across pages). Uses per_page * (page-1)
+    // + visible row index so the numbering keeps growing as the user pages.
+    const rowNumberColumn: ColumnDef<Record<string, unknown>> = {
+        id: '__seq',
+        header: 'ID',
+        size: 60,
+        cell: ({ row }: { row: { index: number } }) =>
+            (current_page - 1) * per_page + row.index + 1,
+    };
+
     const tableColumns: ColumnDef<Record<string, unknown>>[] = [
         ...(copyEndpoint && canCreate ? [checkboxColumn] : []),
+        rowNumberColumn,
         ...colDefs.map((col) => ({
             accessorKey: col.key,
             header: col.header,

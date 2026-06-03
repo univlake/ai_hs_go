@@ -202,6 +202,13 @@ export default function MajorHazardsIndex() {
 
     const columns = [
         {
+            id: '__seq',
+            header: 'ID',
+            size: 60,
+            cell: ({ row }: any) =>
+                (current_page - 1) * per_page + row.index + 1,
+        },
+        {
             accessorKey: 'name',
             header: '危险源名称',
             cell: ({ row }: any) => (

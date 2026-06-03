@@ -446,6 +446,13 @@ export default function MonthlyInvestigationIndex() {
 
     const columns: ColumnDef<Investigation>[] = [
         {
+            id: '__seq',
+            header: 'ID',
+            size: 60,
+            cell: ({ row }) =>
+                (current_page - 1) * per_page + row.index + 1,
+        },
+        {
             accessorKey: 'inv_time',
             header: '排查时间',
             size: 110,
@@ -681,12 +688,6 @@ export default function MonthlyInvestigationIndex() {
                 data={detailData as Record<string, unknown> | null}
                 onClose={detail.close}
                 hiddenKeys={[
-                    'govern_title',
-                    'govern_supplies',
-                    'govern_user',
-                    'govern_date',
-                    'govern_text',
-                    'govern_money',
                     'monthlyInvestigationViews',
                     'monthlyInvestigationReviews',
                 ]}

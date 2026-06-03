@@ -5,7 +5,6 @@ const config: CrudPageConfig = {
     title: '企业类型',
     endpoint: '/enterprise-types',
     columns: [
-        { key: 'id', header: 'ID', width: 60 },
         { key: 'title', header: '标题' },
         { key: 'sort', header: '排序', width: 80 },
     ],

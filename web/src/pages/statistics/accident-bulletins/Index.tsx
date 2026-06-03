@@ -5,7 +5,6 @@ const config: CrudPageConfig = {
     title: '事故通报',
     endpoint: '/accident-bulletins',
     columns: [
-        { key: 'id', header: 'ID', width: 60 },
         { key: 'title', header: '标题' },
         { key: 'accident_date', header: '事故日期' },
     ],

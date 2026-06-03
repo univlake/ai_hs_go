@@ -5,7 +5,6 @@ const config: CrudPageConfig = {
     title: '应急队伍',
     endpoint: '/emergency-teams',
     columns: [
-        { key: 'id', header: 'ID', width: 80 },
         { key: 'title', header: '队伍名称' },
         { key: 'leader', header: '负责人' },
     ],

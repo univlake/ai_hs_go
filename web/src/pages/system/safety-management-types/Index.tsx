@@ -5,7 +5,6 @@ const config: CrudPageConfig = {
     title: '安全管理人员类型',
     endpoint: '/safety-management-types',
     columns: [
-        { key: 'id', header: 'ID', width: 60 },
         { key: 'title', header: '标题' },
         { key: 'sort', header: '排序', width: 80 },
     ],

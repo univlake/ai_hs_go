@@ -5,7 +5,6 @@ const config: CrudPageConfig = {
     title: '日常检查',
     endpoint: '/daily-checks',
     columns: [
-        { key: 'id', header: 'ID', width: 80 },
         { key: 'title', header: '标题' },
     ],
     formFields: [

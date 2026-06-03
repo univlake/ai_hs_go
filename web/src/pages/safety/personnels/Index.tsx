@@ -13,6 +13,10 @@ import {
     HardHat,
     Download,
     Upload,
+    ChevronLeft,
+    ChevronRight,
+    ChevronsLeft,
+    ChevronsRight,
 } from 'lucide-react';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { DatePicker } from '@/components/shared/DatePicker';
@@ -721,18 +725,25 @@ function StaffSubModulesSection({
                         safety_management_type: '人员类型',
                     }}
                     columns={[
-                        { key: 'name', header: '姓名' },
+                        { key: '__seq', header: 'ID', width: '80px' },
+                        { key: 'name', header: '姓名', width: '120px' },
                         {
                             key: 'safety_management_type_id',
                             header: '人员类型',
+                            width: '160px',
                             valueGetter: (row) =>
                                 (row.safety_management_type as any)?.title,
                         },
                         { key: 'cert_title', header: '证书名称' },
-                        { key: 'cert_number', header: '证书编号' },
+                        {
+                            key: 'cert_number',
+                            header: '证书编号',
+                            width: '200px',
+                        },
                         {
                             key: 'valid_period',
                             header: '有效期',
+                            width: '130px',
                             format: (v) => (v ? String(v).slice(0, 10) : ''),
                         },
                     ]}
@@ -757,12 +768,18 @@ function StaffSubModulesSection({
                     endpoint="/special-equipment-staff"
                     companyId={companyId}
                     columns={[
-                        { key: 'name', header: '姓名' },
+                        { key: '__seq', header: 'ID', width: '80px' },
+                        { key: 'name', header: '姓名', width: '140px' },
                         { key: 'cert_title', header: '证书名称' },
-                        { key: 'cert_number', header: '证书编号' },
+                        {
+                            key: 'cert_number',
+                            header: '证书编号',
+                            width: '220px',
+                        },
                         {
                             key: 'valid_period',
                             header: '有效期',
+                            width: '130px',
                             format: (v) => (v ? String(v).slice(0, 10) : ''),
                         },
                     ]}
@@ -780,12 +797,18 @@ function StaffSubModulesSection({
                     endpoint="/elimination-control-staff"
                     companyId={companyId}
                     columns={[
-                        { key: 'name', header: '姓名' },
+                        { key: '__seq', header: 'ID', width: '80px' },
+                        { key: 'name', header: '姓名', width: '140px' },
                         { key: 'cert_title', header: '证书名称' },
-                        { key: 'cert_number', header: '证书编号' },
+                        {
+                            key: 'cert_number',
+                            header: '证书编号',
+                            width: '220px',
+                        },
                         {
                             key: 'valid_period',
                             header: '有效期',
+                            width: '130px',
                             format: (v) => (v ? String(v).slice(0, 10) : ''),
                         },
                     ]}
@@ -806,6 +829,7 @@ function StaffSubModulesSection({
 interface TableColumn {
     key: string;
     header: string;
+    width?: string;
     format?: (value: unknown) => string;
     valueGetter?: (row: Record<string, unknown>) => unknown;
 }
@@ -839,9 +863,16 @@ function StaffTable({
      *  relation objects like `safety_management_type`. */
     detailLabels?: Record<string, string>;
 }) {
-    const { data, loading, reload, total } = useApiList<
-        Record<string, unknown>
-    >({
+    const {
+        data,
+        loading,
+        reload,
+        total,
+        current_page,
+        last_page,
+        per_page,
+        goToPage,
+    } = useApiList<Record<string, unknown>>({
         endpoint,
         defaultParams: companyId ? { company_id: companyId } : {},
         enabled: !!companyId,
@@ -1053,93 +1084,230 @@ function StaffTable({
                     暂无数据
                 </div>
             ) : (
-                <div className="overflow-x-auto rounded-lg border border-blue-900/20 bg-[#070d1f]">
-                    <table className="w-full text-sm">
-                        <thead>
-                            <tr className="border-b border-blue-900/20">
-                                {columns.map((col) => (
+                <div className="overflow-hidden rounded-lg border border-blue-900/20 bg-[#070d1f]">
+                    <div className="overflow-x-auto">
+                        <table className="w-full table-fixed text-sm">
+                            <thead>
+                                <tr className="border-b border-blue-900/20">
+                                    {columns.map((col) => (
+                                        <th
+                                            key={col.key}
+                                            style={
+                                                col.width
+                                                    ? { width: col.width }
+                                                    : undefined
+                                            }
+                                            className="px-4 py-2.5 text-left text-xs font-medium tracking-wide text-slate-500 uppercase"
+                                        >
+                                            {col.header}
+                                        </th>
+                                    ))}
                                     <th
-                                        key={col.key}
+                                        style={{ width: '180px' }}
                                         className="px-4 py-2.5 text-left text-xs font-medium tracking-wide text-slate-500 uppercase"
                                     >
-                                        {col.header}
+                                        操作
                                     </th>
-                                ))}
-                                <th className="px-4 py-2.5 text-left text-xs font-medium tracking-wide text-slate-500 uppercase">
-                                    操作
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {data.map((row) => (
-                                <tr
-                                    key={row.id as number}
-                                    className="border-b border-blue-900/10 last:border-0"
-                                >
-                                    {columns.map((col) => (
-                                        <td
-                                            key={col.key}
-                                            className="px-4 py-3 text-slate-300"
-                                        >
-                                            {col.format
-                                                ? col.format(
-                                                      col.valueGetter
-                                                          ? col.valueGetter(row)
-                                                          : row[col.key],
-                                                  ) || <Dash />
-                                                : (() => {
-                                                      const v = col.valueGetter
-                                                          ? col.valueGetter(row)
-                                                          : row[col.key];
-
-                                                      return v != null ? (
-                                                          String(v)
-                                                      ) : (
-                                                          <Dash />
-                                                      );
-                                                  })()}
-                                        </td>
-                                    ))}
-                                    <td className="px-4 py-3">
-                                        <div className="flex items-center gap-0.5">
-                                            <DetailButton
-                                                row={row}
-                                                onOpen={detail.openDetail}
-                                            />
-                                            {canUpdate && (
-                                                <button
-                                                    onClick={() =>
-                                                        openEdit(row)
-                                                    }
-                                                    className="flex h-7 w-7 items-center justify-center rounded-md text-slate-600 hover:bg-blue-600/10 hover:text-blue-400"
-                                                >
-                                                    <Pencil className="h-3.5 w-3.5" />
-                                                </button>
-                                            )}
-                                            {canDelete && (
-                                                <button
-                                                    onClick={() => {
-                                                        setDeleteId(
-                                                            row.id as number,
-                                                        );
-                                                        setDeleteName(
-                                                            String(
-                                                                row.name ??
-                                                                    row.id,
-                                                            ),
-                                                        );
-                                                    }}
-                                                    className="flex h-7 w-7 items-center justify-center rounded-md text-slate-600 hover:bg-red-600/10 hover:text-red-400"
-                                                >
-                                                    <Trash2 className="h-3.5 w-3.5" />
-                                                </button>
-                                            )}
-                                        </div>
-                                    </td>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {data.map((row, rowIdx) => (
+                                    <tr
+                                        key={row.id as number}
+                                        className="border-b border-blue-900/10 last:border-0"
+                                    >
+                                        {columns.map((col) => {
+                                            // '__seq' is the synthetic
+                                            // sequence column — show
+                                            // continuous numbering across
+                                            // pages, not the row's DB id.
+                                            if (col.key === '__seq') {
+                                                return (
+                                                    <td
+                                                        key={col.key}
+                                                        className="px-4 py-3 text-slate-300"
+                                                    >
+                                                        {(current_page - 1) *
+                                                            per_page +
+                                                            rowIdx +
+                                                            1}
+                                                    </td>
+                                                );
+                                            }
+
+                                            return (
+                                                <td
+                                                    key={col.key}
+                                                    className="truncate px-4 py-3 text-slate-300"
+                                                    title={
+                                                        typeof (col.valueGetter
+                                                            ? col.valueGetter(
+                                                                  row,
+                                                              )
+                                                            : row[col.key]) ===
+                                                        'string'
+                                                            ? String(
+                                                                  col.valueGetter
+                                                                      ? col.valueGetter(
+                                                                            row,
+                                                                        )
+                                                                      : row[
+                                                                            col
+                                                                                .key
+                                                                        ],
+                                                              )
+                                                            : undefined
+                                                    }
+                                                >
+                                                    {col.format
+                                                        ? col.format(
+                                                              col.valueGetter
+                                                                  ? col.valueGetter(
+                                                                        row,
+                                                                    )
+                                                                  : row[
+                                                                        col.key
+                                                                    ],
+                                                          ) || <Dash />
+                                                        : (() => {
+                                                              const v =
+                                                                  col.valueGetter
+                                                                      ? col.valueGetter(
+                                                                            row,
+                                                                        )
+                                                                      : row[
+                                                                            col
+                                                                                .key
+                                                                        ];
+
+                                                              return v !=
+                                                                  null ? (
+                                                                  String(v)
+                                                              ) : (
+                                                                  <Dash />
+                                                              );
+                                                          })()}
+                                                </td>
+                                            );
+                                        })}
+                                        <td className="px-4 py-3">
+                                            <div className="flex items-center gap-0.5">
+                                                <DetailButton
+                                                    row={row}
+                                                    onOpen={detail.openDetail}
+                                                />
+                                                {canUpdate && (
+                                                    <button
+                                                        onClick={() =>
+                                                            openEdit(row)
+                                                        }
+                                                        className="flex h-7 w-7 items-center justify-center rounded-md text-slate-600 hover:bg-blue-600/10 hover:text-blue-400"
+                                                    >
+                                                        <Pencil className="h-3.5 w-3.5" />
+                                                    </button>
+                                                )}
+                                                {canDelete && (
+                                                    <button
+                                                        onClick={() => {
+                                                            setDeleteId(
+                                                                row.id as number,
+                                                            );
+                                                            setDeleteName(
+                                                                String(
+                                                                    row.name ??
+                                                                        row.id,
+                                                                ),
+                                                            );
+                                                        }}
+                                                        className="flex h-7 w-7 items-center justify-center rounded-md text-slate-600 hover:bg-red-600/10 hover:text-red-400"
+                                                    >
+                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    {last_page > 1 && (
+                        <div className="flex items-center justify-between border-t border-blue-900/20 px-4 py-2.5">
+                            <p className="text-xs text-slate-600">
+                                第{' '}
+                                <span className="font-medium text-slate-400">
+                                    {current_page}
+                                </span>{' '}
+                                <span className="text-slate-700">/</span>{' '}
+                                <span className="font-medium text-slate-400">
+                                    {last_page}
+                                </span>{' '}
+                                页
+                            </p>
+                            <div className="flex items-center gap-1">
+                                <PagerBtn
+                                    onClick={() => goToPage(1)}
+                                    disabled={current_page <= 1}
+                                    title="第一页"
+                                >
+                                    <ChevronsLeft className="h-3.5 w-3.5" />
+                                </PagerBtn>
+                                <PagerBtn
+                                    onClick={() =>
+                                        goToPage(current_page - 1)
+                                    }
+                                    disabled={current_page <= 1}
+                                    title="上一页"
+                                >
+                                    <ChevronLeft className="h-3.5 w-3.5" />
+                                </PagerBtn>
+                                {buildPageNumbers(
+                                    current_page,
+                                    last_page,
+                                ).map((p, i) =>
+                                    p === '…' ? (
+                                        <span
+                                            key={`ellipsis-${i}`}
+                                            className="px-1 text-xs text-slate-700"
+                                        >
+                                            …
+                                        </span>
+                                    ) : (
+                                        <button
+                                            key={p}
+                                            onClick={() =>
+                                                goToPage(p as number)
+                                            }
+                                            className={cn(
+                                                'flex h-7 min-w-7 items-center justify-center rounded-md px-1.5 text-xs font-medium transition-colors',
+                                                p === current_page
+                                                    ? 'border border-blue-500/30 bg-blue-600/20 text-blue-300'
+                                                    : 'text-slate-600 hover:bg-white/5 hover:text-slate-300',
+                                            )}
+                                        >
+                                            {p}
+                                        </button>
+                                    ),
+                                )}
+                                <PagerBtn
+                                    onClick={() =>
+                                        goToPage(current_page + 1)
+                                    }
+                                    disabled={current_page >= last_page}
+                                    title="下一页"
+                                >
+                                    <ChevronRight className="h-3.5 w-3.5" />
+                                </PagerBtn>
+                                <PagerBtn
+                                    onClick={() => goToPage(last_page)}
+                                    disabled={current_page >= last_page}
+                                    title="最后一页"
+                                >
+                                    <ChevronsRight className="h-3.5 w-3.5" />
+                                </PagerBtn>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -1448,6 +1616,57 @@ function LoadingRow() {
 
 function Dash() {
     return <span className="text-slate-700">—</span>;
+}
+
+function PagerBtn({
+    children,
+    onClick,
+    disabled,
+    title,
+}: {
+    children: React.ReactNode;
+    onClick: () => void;
+    disabled: boolean;
+    title?: string;
+}) {
+    return (
+        <button
+            onClick={onClick}
+            disabled={disabled}
+            title={title}
+            className="flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-white/5 hover:text-slate-300 disabled:pointer-events-none disabled:opacity-30"
+        >
+            {children}
+        </button>
+    );
+}
+
+function buildPageNumbers(current: number, last: number): (number | '…')[] {
+    if (last <= 7) {
+        return Array.from({ length: last }, (_, i) => i + 1);
+    }
+
+    const pages: (number | '…')[] = [1];
+
+    if (current > 3) {
+        pages.push('…');
+    }
+
+    for (
+        let p = Math.max(2, current - 1);
+        p <= Math.min(last - 1, current + 1);
+        p++
+    ) {
+        pages.push(p);
+    }
+
+    if (current < last - 2) {
+        pages.push('…');
+    }
+
+    pages.push(last);
+
+    return pages;
 }
 
 /**
