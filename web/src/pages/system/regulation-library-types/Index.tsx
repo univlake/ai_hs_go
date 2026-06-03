@@ -8,7 +8,6 @@ const config: CrudPageConfig = {
     title: '法规库类型',
     endpoint: '/regulation-library-types',
     columns: [
-        { key: 'id', header: 'ID', width: 60 },
         { key: 'title', header: '标题', width: 180 },
         { key: 'all_name', header: '完整路径' },
         { key: 'sort', header: '排序', width: 80 },

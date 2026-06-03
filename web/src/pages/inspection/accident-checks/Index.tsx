@@ -5,7 +5,6 @@ const config: CrudPageConfig = {
     title: '事故检查',
     endpoint: '/accident-checks',
     columns: [
-        { key: 'id', header: 'ID', width: 80 },
         { key: 'title', header: '标题' },
     ],
     formFields: [

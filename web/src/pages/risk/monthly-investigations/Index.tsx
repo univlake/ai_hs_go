@@ -5,7 +5,6 @@ const config: CrudPageConfig = {
     title: '月度排查',
     endpoint: '/monthly-investigations',
     columns: [
-        { key: 'id', header: 'ID', width: 80 },
         { key: 'title', header: '标题' },
     ],
     formFields: [

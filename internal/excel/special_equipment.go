@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"strings"
 	"time"
 
 	"github.com/xuri/excelize/v2"
@@ -12,7 +13,8 @@ import (
 )
 
 var specialEquipmentHeaders = []string{
-	"设备名称", "使用位置", "规格型号1", "规格型号2", "规格型号3", "规格型号4",
+	"设备名称", "设备类型", "使用位置",
+	"规格型号1", "规格型号2", "规格型号3", "规格型号4",
 	"使用证编号", "投用时间", "有效期", "检验单位", "维护情况", "备注",
 }
 
@@ -21,10 +23,14 @@ var specialEquipmentHeaders = []string{
 // The trailing comment cell flags the row as something to delete before
 // import — the importer doesn't auto-skip it because we still want the
 // row to appear if the user keeps it.
+//
+// 设备类型 must match a row in special_types.title — "压力容器(含气瓶)"
+// is one of the seeded categories whose 规格型号1..3 map to
+// 设计压力 / 容积 / 盛放介质 in the UI's SPEC_CONFIGS.
 var specialEquipmentExample = []any{
-	"桥式起重机", "1号车间",
-	"10吨", "跨度22.5m", "起升高度18m", "",
-	"SC-2024-001", "2024-03-15", "2026-03-14",
+	"储气罐", "压力容器(含气瓶)", "1号车间",
+	"1.6 (设计压力 MPa)", "5 (容积 m³)", "压缩空气 (盛放介质)", "",
+	"PV-2024-001", "2024-03-15", "2026-03-14",
 	"省特种设备检验研究院", "每季度保养",
 	"示例数据 — 导入前请删除本行",
 }
@@ -46,8 +52,10 @@ func SpecialEquipmentTemplate(w io.Writer) error {
 	return err
 }
 
-// SpecialEquipmentExport writes existing rows.
-func SpecialEquipmentExport(w io.Writer, rows []model.SpecialEquipment) error {
+// SpecialEquipmentExport writes existing rows. typeTitleByID resolves
+// special_type_id → title so the 设备类型 column stays readable; pass nil
+// to leave it blank.
+func SpecialEquipmentExport(w io.Writer, rows []model.SpecialEquipment, typeTitleByID map[int64]string) error {
 	f := excelize.NewFile()
 	defer f.Close()
 	sheet := "特种设备"
@@ -57,8 +65,12 @@ func SpecialEquipmentExport(w io.Writer, rows []model.SpecialEquipment) error {
 	}
 	for i, r := range rows {
 		row := i + 2
+		typeTitle := ""
+		if r.SpecialTypeID != nil && typeTitleByID != nil {
+			typeTitle = typeTitleByID[*r.SpecialTypeID]
+		}
 		values := []any{
-			deref(r.EquipmentName), deref(r.UtilizedLocation),
+			deref(r.EquipmentName), typeTitle, deref(r.UtilizedLocation),
 			deref(r.NormModel1), deref(r.NormModel2), deref(r.NormModel3), deref(r.NormModel4),
 			deref(r.SerialNumber),
 			derefDate(r.UseTime), derefDate(r.ValidPeriod),
@@ -75,7 +87,9 @@ func SpecialEquipmentExport(w io.Writer, rows []model.SpecialEquipment) error {
 
 // SpecialEquipmentImport parses uploaded Excel file (skipping header row) into
 // model rows. Caller is responsible for assigning company_id / created_by.
-func SpecialEquipmentImport(r io.Reader) ([]model.SpecialEquipment, error) {
+// typesByTitle maps the 设备类型 cell to special_type_id; pass nil to skip
+// the lookup (rows will have a nil SpecialTypeID).
+func SpecialEquipmentImport(r io.Reader, typesByTitle map[string]int64) ([]model.SpecialEquipment, error) {
 	buf, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
@@ -109,21 +123,39 @@ func SpecialEquipmentImport(r io.Reader) ([]model.SpecialEquipment, error) {
 		}
 		row := model.SpecialEquipment{
 			EquipmentName:    optStr(cells, 0),
-			UtilizedLocation: optStr(cells, 1),
-			NormModel1:       optStr(cells, 2),
-			NormModel2:       optStr(cells, 3),
-			NormModel3:       optStr(cells, 4),
-			NormModel4:       optStr(cells, 5),
-			SerialNumber:     optStr(cells, 6),
-			UseTime:          optDate(cells, 7),
-			ValidPeriod:      optDate(cells, 8),
-			InspectUnit:      optStr(cells, 9),
-			MaintainInfo:     optStr(cells, 10),
-			Comment:          optStr(cells, 11),
+			SpecialTypeID:    lookupTypeID(cells, 1, typesByTitle),
+			UtilizedLocation: optStr(cells, 2),
+			NormModel1:       optStr(cells, 3),
+			NormModel2:       optStr(cells, 4),
+			NormModel3:       optStr(cells, 5),
+			NormModel4:       optStr(cells, 6),
+			SerialNumber:     optStr(cells, 7),
+			UseTime:          optDate(cells, 8),
+			ValidPeriod:      optDate(cells, 9),
+			InspectUnit:      optStr(cells, 10),
+			MaintainInfo:     optStr(cells, 11),
+			Comment:          optStr(cells, 12),
 		}
 		rows = append(rows, row)
 	}
 	return rows, nil
+}
+
+// lookupTypeID resolves the type-title cell to a special_type_id. Returns
+// nil when the cell is empty, the lookup map is missing, or the title isn't
+// in the dictionary — the row still imports, just without a type.
+func lookupTypeID(cells []string, i int, typesByTitle map[string]int64) *int64 {
+	if i >= len(cells) {
+		return nil
+	}
+	title := strings.TrimSpace(cells[i])
+	if title == "" || typesByTitle == nil {
+		return nil
+	}
+	if id, ok := typesByTitle[title]; ok {
+		return &id
+	}
+	return nil
 }
 
 // writeHeaders writes a styled header row.

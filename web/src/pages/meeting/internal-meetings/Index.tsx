@@ -16,7 +16,6 @@ const config: CrudPageConfig = {
     labelKey: 'name',
     enableDetail: true,
     columns: [
-        { key: 'id', header: 'ID', width: 60 },
         { key: 'name', header: '会议名称' },
         { key: 'theme', header: '会议主题' },
         {

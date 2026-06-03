@@ -5,7 +5,6 @@ const config: CrudPageConfig = {
     title: '规范检查',
     endpoint: '/norm-checks',
     columns: [
-        { key: 'id', header: 'ID', width: 80 },
         { key: 'title', header: '标题' },
     ],
     formFields: [

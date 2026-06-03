@@ -115,6 +115,52 @@ export function DetailPanel({
                         </div>
                     </div>
 
+                    {(row.is_govern === 1 ||
+                        row.govern_title ||
+                        row.govern_user ||
+                        row.govern_date ||
+                        row.govern_money ||
+                        row.govern_supplies ||
+                        row.govern_text) && (
+                        <div>
+                            <p className="mb-2 text-[10px] font-semibold tracking-widest text-slate-600 uppercase">
+                                治理项目
+                            </p>
+                            <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                                <DetailField
+                                    label="治理项目"
+                                    value={row.govern_title}
+                                />
+                                <DetailField
+                                    label="治理责任人"
+                                    value={row.govern_user}
+                                />
+                                <DetailField
+                                    label="治理日期"
+                                    value={row.govern_date}
+                                />
+                                <DetailField
+                                    label="治理费用（万元）"
+                                    value={row.govern_money}
+                                />
+                                <DetailField
+                                    label="治理材料"
+                                    value={row.govern_supplies}
+                                />
+                                {row.govern_text && (
+                                    <div className="col-span-2">
+                                        <p className="text-xs text-slate-600">
+                                            治理内容
+                                        </p>
+                                        <p className="mt-0.5 text-sm leading-relaxed whitespace-pre-wrap text-slate-400">
+                                            {row.govern_text}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     {(row.review_user ||
                         row.review_date ||
                         row.review_content) && (

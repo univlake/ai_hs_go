@@ -263,7 +263,13 @@ export default function ThreeTogethersIndex() {
 
     // Table columns
     const tableColumns: ColumnDef<ThreeTogether>[] = [
-        { accessorKey: 'id', header: 'ID', size: 60 },
+        {
+            id: '__seq',
+            header: 'ID',
+            size: 60,
+            cell: ({ row }) =>
+                (current_page - 1) * per_page + row.index + 1,
+        },
         { accessorKey: 'name', header: '项目名称' },
         { accessorKey: 'three_together_type', header: '项目类型', size: 180 },
         { accessorKey: 'establish_time', header: '立项时间', size: 110 },

@@ -245,6 +245,13 @@ export default function SpaceWorksIndex() {
 
     const columns: ColumnDef<JobRow>[] = [
         {
+            id: '__seq',
+            header: 'ID',
+            size: 60,
+            cell: ({ row }) =>
+                (current_page - 1) * per_page + row.index + 1,
+        },
+        {
             accessorKey: 'type',
             header: '作业类型',
             size: 140,

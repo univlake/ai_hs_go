@@ -5,7 +5,6 @@ const config: CrudPageConfig = {
     title: '应急物资',
     endpoint: '/emergency-supplies',
     columns: [
-        { key: 'id', header: 'ID', width: 80 },
         { key: 'title', header: '名称' },
         { key: 'quantity', header: '数量' },
     ],

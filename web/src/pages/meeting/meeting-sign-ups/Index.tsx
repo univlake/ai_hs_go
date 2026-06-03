@@ -5,7 +5,6 @@ const config: CrudPageConfig = {
     title: '会议签到',
     endpoint: '/meeting-sign-ups',
     columns: [
-        { key: 'id', header: 'ID', width: 60 },
         { key: 'meeting_id', header: '会议ID' },
         { key: 'user_id', header: '用户ID' },
     ],

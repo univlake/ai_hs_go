@@ -9,7 +9,6 @@ const config: CrudPageConfig = {
     searchPlaceholder: '搜索变更标题...',
     enableDetail: true,
     columns: [
-        { key: 'id', header: 'ID', width: 60 },
         { key: 'title', header: '变更标题' },
         { key: 'department_name', header: '申请部门', width: 130 },
         {

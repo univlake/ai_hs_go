@@ -5,7 +5,6 @@ const config: CrudPageConfig = {
     title: '消控人员管理',
     endpoint: '/elimination-control-staff',
     columns: [
-        { key: 'id', header: 'ID', width: 60 },
         { key: 'name', header: '姓名' },
         { key: 'position', header: '职位' },
     ],

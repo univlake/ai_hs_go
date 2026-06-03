@@ -5,7 +5,6 @@ const config: CrudPageConfig = {
     title: '特种设备类型',
     endpoint: '/special-types',
     columns: [
-        { key: 'id', header: 'ID', width: 60 },
         { key: 'title', header: '标题' },
         { key: 'sort', header: '排序', width: 80 },
     ],

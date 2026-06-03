@@ -5,7 +5,6 @@ const config: CrudPageConfig = {
     title: '专家检查',
     endpoint: '/expert-inspections',
     columns: [
-        { key: 'id', header: 'ID', width: 60 },
         { key: 'title', header: '标题' },
         { key: 'inspect_date', header: '检查日期' },
     ],

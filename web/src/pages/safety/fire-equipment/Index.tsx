@@ -5,7 +5,6 @@ const config: CrudPageConfig = {
     title: '消防器材管理',
     endpoint: '/fire-equipment',
     columns: [
-        { key: 'id', header: 'ID', width: 60 },
         { key: 'title', header: '名称' },
         { key: 'specification', header: '规格型号' },
         { key: 'quantity', header: '数量' },

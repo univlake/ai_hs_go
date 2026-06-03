@@ -5,7 +5,6 @@ const config: CrudPageConfig = {
     title: '证书状态管理',
     endpoint: '/certificate-statuses',
     columns: [
-        { key: 'id', header: 'ID', width: 60 },
         { key: 'title', header: '名称' },
         { key: 'valid_from', header: '有效期起' },
         { key: 'valid_to', header: '有效期止' },

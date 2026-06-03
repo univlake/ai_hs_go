@@ -400,6 +400,13 @@ export default function MajorHazardousEquipmentIndex() {
             ),
         },
         {
+            id: '__seq',
+            header: 'ID',
+            size: 60,
+            cell: ({ row }) =>
+                (current_page - 1) * per_page + row.index + 1,
+        },
+        {
             accessorKey: 'equipment_name',
             header: '设备名称',
             cell: ({ row }) =>

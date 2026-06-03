@@ -138,8 +138,14 @@ func (h *Handler) ExportSpecialEquipment(c *gin.Context) {
 		response.Internal(c, "查询失败")
 		return
 	}
+	titleByID := map[int64]string{}
+	if types, err := h.svc.ListSpecialTypes(c.Request.Context()); err == nil {
+		for _, t := range types {
+			titleByID[t.ID] = t.Title
+		}
+	}
 	setXlsxAttachment(c, "特种设备台账.xlsx", "special_equipment.xlsx")
-	if err := excel.SpecialEquipmentExport(c.Writer, rows); err != nil {
+	if err := excel.SpecialEquipmentExport(c.Writer, rows, titleByID); err != nil {
 		response.Internal(c, "导出失败")
 		return
 	}
@@ -186,7 +192,13 @@ func (h *Handler) ImportSpecialEquipment(c *gin.Context) {
 		return
 	}
 	defer file.Close()
-	rows, err := excel.SpecialEquipmentImport(file)
+	typesByTitle := map[string]int64{}
+	if types, err := h.svc.ListSpecialTypes(c.Request.Context()); err == nil {
+		for _, t := range types {
+			typesByTitle[t.Title] = t.ID
+		}
+	}
+	rows, err := excel.SpecialEquipmentImport(file, typesByTitle)
 	if err != nil {
 		response.BadRequest(c, "解析 Excel 失败: "+err.Error())
 		return

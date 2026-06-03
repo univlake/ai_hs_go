@@ -857,6 +857,13 @@ function FilingPermissionsSection({ companyId }: { companyId: number }) {
 
     const columns: ColumnDef<FilingPermission>[] = [
         {
+            id: '__seq',
+            header: 'ID',
+            size: 60,
+            cell: ({ row }) =>
+                (current_page - 1) * per_page + row.index + 1,
+        },
+        {
             accessorKey: 'record_type',
             header: '备案/许可类型',
             cell: ({ row }) =>
@@ -953,6 +960,7 @@ function FilingPermissionsSection({ companyId }: { companyId: number }) {
                 title="备案/许可证详情"
                 data={detailItem as Record<string, unknown> | null}
                 onClose={detail.close}
+                hiddenKeys={['sort']}
                 labels={{
                     record_type: '备案/许可类型',
                     title: '类型名称',

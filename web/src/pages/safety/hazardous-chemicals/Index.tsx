@@ -298,7 +298,13 @@ export default function SafetyHazardousChemicals() {
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="border-b border-blue-900/40 bg-[#070d1f]/60">
-                                    <th className="h-10 px-4 text-left align-middle text-[10px] font-semibold tracking-widest text-slate-600 uppercase first:pl-5">
+                                    <th
+                                        style={{ width: '60px' }}
+                                        className="h-10 px-4 text-left align-middle text-[10px] font-semibold tracking-widest text-slate-600 uppercase first:pl-5"
+                                    >
+                                        ID
+                                    </th>
+                                    <th className="h-10 px-4 text-left align-middle text-[10px] font-semibold tracking-widest text-slate-600 uppercase">
                                         名称
                                     </th>
                                     <th className="h-10 px-4 text-left align-middle text-[10px] font-semibold tracking-widest text-slate-600 uppercase">
@@ -333,6 +339,11 @@ export default function SafetyHazardousChemicals() {
                                             }`}
                                         >
                                             <td className="px-4 py-3 align-middle text-slate-300 first:pl-5">
+                                                {(page - 1) * perPage +
+                                                    idx +
+                                                    1}
+                                            </td>
+                                            <td className="px-4 py-3 align-middle text-slate-300">
                                                 <div className="font-medium text-slate-100">
                                                     {r.name || '—'}
                                                 </div>

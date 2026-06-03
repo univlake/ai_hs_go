@@ -43,7 +43,9 @@ interface FormData {
     position: string;
     job_time: string;
     unit: string;
-    is_outsourcing: '' | '1' | '2';
+    // 0 = 自营, 1 = 外协 — matches the DB CHECK (is_outsourcing IN (0, 1))
+    // and the convention used in /space-work/space-works.
+    is_outsourcing: '' | '0' | '1';
     evaluation_unit_id: string;
     job_people_number: string;
     job_people_name: string;
@@ -69,9 +71,9 @@ const EMPTY_FORM: FormData = {
 
 const JOB_TYPES = ['一般作业', '八大特殊作业'];
 
-const OUTSOURCING_OPTIONS: { value: '1' | '2'; label: string }[] = [
+const OUTSOURCING_OPTIONS: { value: '0' | '1'; label: string }[] = [
     { value: '1', label: '是' },
-    { value: '2', label: '否' },
+    { value: '0', label: '否' },
 ];
 
 // ── Page ──────────────────────────────────────────────────────────
@@ -154,8 +156,8 @@ export default function JobManagementIndex() {
             is_outsourcing:
                 row.is_outsourcing === 1
                     ? '1'
-                    : row.is_outsourcing === 2
-                      ? '2'
+                    : row.is_outsourcing === 0
+                      ? '0'
                       : '',
             evaluation_unit_id: row.evaluation_unit_id
                 ? String(row.evaluation_unit_id)
@@ -262,7 +264,13 @@ export default function JobManagementIndex() {
     // ── Table columns ──────────────────────────────────────────────
 
     const columns: ColumnDef<JobManagement>[] = [
-        { accessorKey: 'id', header: 'ID', size: 60 },
+        {
+            id: '__seq',
+            header: 'ID',
+            size: 60,
+            cell: ({ row }) =>
+                (current_page - 1) * per_page + row.index + 1,
+        },
         { accessorKey: 'department', header: '发起部门' },
         {
             accessorKey: 'type',
@@ -309,7 +317,7 @@ export default function JobManagementIndex() {
                     <span className="inline-flex items-center rounded-full bg-amber-600/15 px-2 py-0.5 text-xs font-medium text-amber-300">
                         外协
                     </span>
-                ) : v === 2 ? (
+                ) : v === 0 ? (
                     <span className="inline-flex items-center rounded-full bg-blue-600/15 px-2 py-0.5 text-xs font-medium text-blue-300">
                         自营
                     </span>
@@ -373,7 +381,7 @@ export default function JobManagementIndex() {
               is_outsourcing:
                   detailItem.is_outsourcing === 1
                       ? '是'
-                      : detailItem.is_outsourcing === 2
+                      : detailItem.is_outsourcing === 0
                         ? '否'
                         : null,
           }

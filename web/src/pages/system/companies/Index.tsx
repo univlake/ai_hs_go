@@ -180,7 +180,13 @@ export default function CompaniesIndex() {
     };
 
     const baseColumns: ColumnDef<Company>[] = [
-        { accessorKey: 'id', header: 'ID', size: 60 },
+        {
+            id: '__seq',
+            header: 'ID',
+            size: 60,
+            cell: ({ row }) =>
+                (current_page - 1) * per_page + row.index + 1,
+        },
         { accessorKey: 'title', header: '企业名称' },
         {
             id: 'enterprise_type',

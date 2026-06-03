@@ -235,6 +235,13 @@ export default function ConfinedSpaceIndex() {
 
     const columns: ColumnDef<SpaceWorkRow>[] = [
         {
+            id: '__seq',
+            header: 'ID',
+            size: 60,
+            cell: ({ row }) =>
+                (current_page - 1) * per_page + row.index + 1,
+        },
+        {
             accessorKey: 'name',
             header: '名称',
             cell: ({ row }) => (

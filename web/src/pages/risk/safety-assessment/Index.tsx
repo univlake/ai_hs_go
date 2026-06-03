@@ -214,7 +214,13 @@ export default function SafetyAssessmentIndex() {
     // ── Table columns ──────────────────────────────────────────────
 
     const columns: ColumnDef<AssessDetect>[] = [
-        { accessorKey: 'id', header: 'ID', size: 60 },
+        {
+            id: '__seq',
+            header: 'ID',
+            size: 60,
+            cell: ({ row }) =>
+                (current_page - 1) * per_page + row.index + 1,
+        },
         { accessorKey: 'name', header: '名称' },
         {
             id: 'type',
